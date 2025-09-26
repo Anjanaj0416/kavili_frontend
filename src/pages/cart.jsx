@@ -103,8 +103,34 @@ export default function Cart() {
         }
     };
 
+    // Function to validate cart items before submission
+    const validateCartItems = (cartItems) => {
+        for (let i = 0; i < cartItems.length; i++) {
+            const item = cartItems[i];
+            
+            // Check if item has a valid price
+            const hasValidPrice = (item.lastPrice && item.lastPrice > 0) || 
+                                 (item.price && item.price > 0) || 
+                                 (item.originalPrice && item.originalPrice > 0);
+            
+            if (!hasValidPrice) {
+                throw new Error(`Item "${item.productName || item.name || 'Unknown'}" is missing price information. Please remove and re-add this item to your cart.`);
+            }
+            
+            // Check quantity
+            const quantity = Number(item.qty || item.quantity);
+            if (!quantity || quantity <= 0) {
+                throw new Error(`Item "${item.productName || item.name || 'Unknown'}" has invalid quantity.`);
+            }
+            
+            // Check product ID
+            if (!item.productId && !item.id) {
+                throw new Error(`Item "${item.productName || item.name || 'Unknown'}" is missing product ID.`);
+            }
+        }
+    };
+
     // Function to handle automatic login/registration during checkout
-    // Fixed handleAutomaticAuth function for cart.jsx
     const handleAutomaticAuth = async (customerData) => {
         try {
             console.log("Starting automatic authentication with data:", customerData);
@@ -139,7 +165,7 @@ export default function Cart() {
                     toast.success('✅ Welcome back! You have been automatically logged in.');
                 }
 
-                return { success: true, token: response.data.token, user: response.data.user };
+                return { success: true, token: response.data.token, user: response.data.user, userId: response.data.user.userId };
 
             } else {
                 console.error("Authentication failed:", response.data);
@@ -192,6 +218,32 @@ export default function Cart() {
             return;
         }
 
+        // Validate cart items before proceeding
+        try {
+            validateCartItems(cart);
+        } catch (validationError) {
+            setError(validationError.message);
+            toast.error(validationError.message);
+            return;
+        }
+
+        // Add debugging for cart state
+        console.log("=== CART DEBUGGING ===");
+        console.log("Cart length:", cart.length);
+        console.log("Full cart data:", JSON.stringify(cart, null, 2));
+
+        cart.forEach((item, index) => {
+            console.log(`\n--- Item ${index + 1} ---`);
+            console.log("Product Name:", item.productName || item.name);
+            console.log("Product ID:", item.productId || item.id);
+            console.log("Price:", item.price);
+            console.log("Last Price:", item.lastPrice);
+            console.log("Original Price:", item.originalPrice);
+            console.log("Quantity:", item.qty || item.quantity);
+            console.log("All item keys:", Object.keys(item));
+        });
+        console.log("=== END CART DEBUG ===\n");
+
         try {
             setLoading(true);
             setError("");
@@ -208,8 +260,8 @@ export default function Cart() {
             const authResult = await handleAutomaticAuth(customerData);
 
             if (!authResult.success) {
-                setError(authResult.message);
-                toast.error(authResult.message);
+                setError(authResult.error || authResult.message);
+                toast.error(authResult.error || authResult.message);
                 setLoading(false);
                 return;
             }
@@ -226,14 +278,34 @@ export default function Cart() {
                 preferredDay: preferredDay,
                 nearestTownOrCity: deliveryOption === 'delivery' ? nearestCity.trim() : undefined,
                 notes: notes.trim() || "",
-                orderedItems: cart.map(item => {
-                    // Ensure we have a valid price
-                    const itemPrice = item.lastPrice || item.price || 0;
-
+                orderedItems: cart.map((item, index) => {
+                    // Get price with improved fallback logic
+                    let itemPrice = 0;
+                    
+                    // Try different price sources
+                    if (item.lastPrice && item.lastPrice > 0) {
+                        itemPrice = item.lastPrice;
+                    } else if (item.price && item.price > 0) {
+                        itemPrice = item.price;
+                    } else if (item.originalPrice && item.originalPrice > 0) {
+                        itemPrice = item.originalPrice;
+                    }
+                    
+                    // If we still don't have a valid price, this is a problem
+                    if (itemPrice <= 0) {
+                        console.error(`Item ${index + 1} (${item.productName || item.name}) has no valid price:`, item);
+                        throw new Error(`Item ${index + 1} is missing a valid price. Please refresh the page and try again.`);
+                    }
+                    
+                    const quantity = Number(item.qty || item.quantity) || 1;
+                    if (quantity <= 0) {
+                        throw new Error(`Item ${index + 1} has invalid quantity`);
+                    }
+                    
                     return {
-                        name: item.productName || item.name,
+                        name: item.productName || item.name || 'Unknown Product',
                         price: Number(itemPrice), // Ensure it's a number
-                        quantity: Number(item.qty || item.quantity), // Ensure it's a number
+                        quantity: quantity,
                         image: item.images?.[0] || item.image || "",
                         productId: item.productId || item.id
                     };
@@ -246,12 +318,12 @@ export default function Cart() {
                 throw new Error("No items in cart");
             }
 
-            // Check each item has required fields
+            // Double-check each item has required fields (this should not fail after our improvements)
             orderData.orderedItems.forEach((item, index) => {
-                if (!item.price || item.price === 0) {
+                if (!item.price || item.price <= 0) {
                     throw new Error(`Item ${index + 1} is missing price`);
                 }
-                if (!item.quantity || item.quantity === 0) {
+                if (!item.quantity || item.quantity <= 0) {
                     throw new Error(`Item ${index + 1} is missing quantity`);
                 }
                 if (!item.productId) {
@@ -287,7 +359,7 @@ export default function Cart() {
 
         } catch (error) {
             console.error('Order submission error:', error);
-            const errorMessage = error.response?.data?.message || 'Failed to place order. Please try again.';
+            const errorMessage = error.response?.data?.message || error.message || 'Failed to place order. Please try again.';
             setError(errorMessage);
             toast.error(errorMessage);
         } finally {
