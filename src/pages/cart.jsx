@@ -7,7 +7,7 @@ import toast from "react-hot-toast";
 
 export default function Cart() {
     const navigate = useNavigate();
-    
+
     // Cart state
     const [cart, setCart] = useState([]);
     const [total, setTotal] = useState(0);
@@ -104,47 +104,76 @@ export default function Cart() {
     };
 
     // Function to handle automatic login/registration during checkout
+    // Fixed handleAutomaticAuth function for cart.jsx
     const handleAutomaticAuth = async (customerData) => {
         try {
-            const response = await axios.post(import.meta.env.VITE_BACKEND_URL + '/api/users/login-or-register', {
-                firstName: customerData.firstName,
-                lastName: customerData.lastName,
-                phonenumber: customerData.phoneNumber,
-                homeaddress: customerData.address
-            });
+            console.log("Starting automatic authentication with data:", customerData);
 
-            if (response.data.success) {
+            const response = await axios.post(
+                import.meta.env.VITE_BACKEND_URL + '/api/users/login-or-register',
+                {
+                    firstName: customerData.firstName,
+                    lastName: customerData.lastName,
+                    phonenumber: customerData.phoneNumber, // Make sure this matches
+                    homeaddress: customerData.address
+                },
+                {
+                    timeout: 10000, // 10 second timeout
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+
+            console.log("Authentication response:", response.data);
+
+            if (response.data.success && response.data.token) {
                 // Store authentication data
                 localStorage.setItem('authToken', response.data.token);
                 localStorage.setItem('userDetails', JSON.stringify(response.data.user));
-                
+
                 // Show appropriate message
                 if (response.data.isNewUser) {
                     toast.success('🎉 Account created successfully! You are now logged in.');
                 } else {
                     toast.success('✅ Welcome back! You have been automatically logged in.');
                 }
-                
-                return {
-                    success: true,
-                    token: response.data.token,
-                    userId: response.data.user.userId,
-                    message: response.data.message
-                };
+
+                return { success: true, token: response.data.token, user: response.data.user };
+
+            } else {
+                console.error("Authentication failed:", response.data);
+                toast.error(response.data.message || 'Authentication failed');
+                return { success: false, error: response.data.message };
             }
+
         } catch (error) {
-            console.error('Authentication error:', error);
-            return {
-                success: false,
-                message: error.response?.data?.message || 'Authentication failed'
-            };
+            console.error("Authentication error:", error);
+
+            let errorMessage = 'Authentication failed. Please try again.';
+
+            if (error.response) {
+                // Server responded with error status
+                console.error("Server error:", error.response.data);
+                errorMessage = error.response.data.message || `Server error (${error.response.status})`;
+            } else if (error.request) {
+                // Network error
+                console.error("Network error:", error.request);
+                errorMessage = 'Network error. Please check your connection.';
+            } else {
+                console.error("Request error:", error.message);
+                errorMessage = error.message;
+            }
+
+            toast.error(errorMessage);
+            return { success: false, error: errorMessage };
         }
     };
 
     // Updated checkout/order submission function
     const handleOrderSubmission = async () => {
         // Validate required fields
-        if (!firstName.trim() || !phoneNumber.trim() || !address.trim() || 
+        if (!firstName.trim() || !phoneNumber.trim() || !address.trim() ||
             !whatsappNumber.trim() || !preferredTime || !preferredDay) {
             setError("Please fill in all required fields");
             toast.error("Please fill in all required fields");
@@ -166,7 +195,7 @@ export default function Cart() {
         try {
             setLoading(true);
             setError("");
-            
+
             // Prepare customer data
             const customerData = {
                 firstName: firstName.trim(),
@@ -177,7 +206,7 @@ export default function Cart() {
 
             // First, handle authentication (login or register)
             const authResult = await handleAutomaticAuth(customerData);
-            
+
             if (!authResult.success) {
                 setError(authResult.message);
                 toast.error(authResult.message);
@@ -221,10 +250,10 @@ export default function Cart() {
                 setCart([]);
                 setTotal(0);
                 setLabelTotal(0);
-                
+
                 // Show success message
                 toast.success('🎉 Order placed successfully! Redirecting to your orders page...');
-                
+
                 // Navigate to My Orders page after a short delay
                 setTimeout(() => {
                     navigate('/myOrders');
@@ -247,13 +276,13 @@ export default function Cart() {
     // Real-time account checking function (optional - for better UX)
     const checkAccountExists = async (firstName, phoneNumber) => {
         if (!firstName.trim() || !phoneNumber.trim()) return;
-        
+
         try {
             const response = await axios.post(import.meta.env.VITE_BACKEND_URL + '/api/users/check-account', {
                 firstName: firstName.trim(),
                 phonenumber: phoneNumber.trim()
             });
-            
+
             if (response.data.success) {
                 if (response.data.exists) {
                     setAccountStatus('existing');
@@ -276,13 +305,13 @@ export default function Cart() {
     const handleFirstNameChange = (e) => {
         const value = e.target.value;
         setFirstName(value);
-        
+
         // Real-time account checking with debounce
         if (value.trim() && phoneNumber.trim()) {
             const timeoutId = setTimeout(() => {
                 checkAccountExists(value, phoneNumber);
             }, 500);
-            
+
             return () => clearTimeout(timeoutId);
         } else {
             setAccountStatus(null);
@@ -293,13 +322,13 @@ export default function Cart() {
     const handlePhoneNumberChange = (e) => {
         const value = e.target.value;
         setPhoneNumber(value);
-        
+
         // Real-time account checking with debounce
         if (value.trim() && firstName.trim()) {
             const timeoutId = setTimeout(() => {
                 checkAccountExists(firstName, value);
             }, 500);
-            
+
             return () => clearTimeout(timeoutId);
         } else {
             setAccountStatus(null);
@@ -318,7 +347,7 @@ export default function Cart() {
 
             <div className="w-full flex flex-col">
                 <div className="w-[90%] max-w-7xl h-full mx-auto flex flex-col py-8">
-                    
+
                     {/* Error Display */}
                     {error && (
                         <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
@@ -355,7 +384,7 @@ export default function Cart() {
                                             <td colSpan="6" className="text-center p-8 text-gray-500">
                                                 <div className="flex flex-col items-center">
                                                     <p className="text-xl mb-4">Your cart is empty</p>
-                                                    <button 
+                                                    <button
                                                         onClick={() => navigate('/products')}
                                                         className="bg-orange-600 text-white px-6 py-2 rounded-md hover:bg-orange-700 transition-colors"
                                                     >
@@ -405,21 +434,18 @@ export default function Cart() {
                             {/* Customer Details Form */}
                             <div className="mb-6 p-6 bg-white rounded-lg shadow-md">
                                 <h2 className="text-2xl font-bold mb-4 text-gray-800">Customer Details</h2>
-                                
+
                                 {/* Account Status Indicator */}
                                 {accountStatus && (
-                                    <div className={`mb-4 p-3 rounded-lg flex items-center ${
-                                        accountStatus === 'existing' 
-                                            ? 'bg-green-100 border border-green-300' 
-                                            : 'bg-blue-100 border border-blue-300'
-                                    }`}>
-                                        <div className={`w-2 h-2 rounded-full mr-2 ${
-                                            accountStatus === 'existing' ? 'bg-green-500' : 'bg-blue-500'
-                                        }`}></div>
-                                        <span className={`text-sm font-medium ${
-                                            accountStatus === 'existing' ? 'text-green-800' : 'text-blue-800'
+                                    <div className={`mb-4 p-3 rounded-lg flex items-center ${accountStatus === 'existing'
+                                        ? 'bg-green-100 border border-green-300'
+                                        : 'bg-blue-100 border border-blue-300'
                                         }`}>
-                                            {accountStatus === 'existing' 
+                                        <div className={`w-2 h-2 rounded-full mr-2 ${accountStatus === 'existing' ? 'bg-green-500' : 'bg-blue-500'
+                                            }`}></div>
+                                        <span className={`text-sm font-medium ${accountStatus === 'existing' ? 'text-green-800' : 'text-blue-800'
+                                            }`}>
+                                            {accountStatus === 'existing'
                                                 ? '✅ Account found! You will be automatically logged in.'
                                                 : '🆕 New customer - Account will be created for you automatically.'
                                             }
@@ -430,7 +456,7 @@ export default function Cart() {
                                 <p className="text-sm text-gray-600 mb-4">
                                     * We'll automatically check if you have an account and log you in. If not, we'll create one for you!
                                 </p>
-                                
+
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -446,7 +472,7 @@ export default function Cart() {
                                             disabled={loading}
                                         />
                                     </div>
-                                    
+
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">
                                             Last Name
@@ -460,7 +486,7 @@ export default function Cart() {
                                             disabled={loading}
                                         />
                                     </div>
-                                    
+
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">
                                             Phone Number *
@@ -475,7 +501,7 @@ export default function Cart() {
                                             disabled={loading}
                                         />
                                     </div>
-                                    
+
                                     <div className="md:col-span-2">
                                         <label className="block text-sm font-medium text-gray-700 mb-1">
                                             Address *
@@ -490,7 +516,7 @@ export default function Cart() {
                                             disabled={loading}
                                         />
                                     </div>
-                                    
+
                                     {deliveryOption === "delivery" && (
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -507,7 +533,7 @@ export default function Cart() {
                                             />
                                         </div>
                                     )}
-                                    
+
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">
                                             WhatsApp Number *
@@ -522,7 +548,7 @@ export default function Cart() {
                                             disabled={loading}
                                         />
                                     </div>
-                                    
+
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">
                                             Preferred Time *
@@ -536,7 +562,7 @@ export default function Cart() {
                                             disabled={loading}
                                         />
                                     </div>
-                                    
+
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">
                                             Preferred Day *
@@ -558,7 +584,7 @@ export default function Cart() {
                                             <option value="Sunday">Sunday</option>
                                         </select>
                                     </div>
-                                    
+
                                     <div className="md:col-span-3">
                                         <label className="block text-sm font-medium text-gray-700 mb-1">
                                             Special Notes (Optional)
@@ -588,7 +614,7 @@ export default function Cart() {
                                             <p className="text-2xl font-bold text-orange-600">Total: Rs. {total.toFixed(2)}</p>
                                         </div>
                                     </div>
-                                    
+
                                     <div className="flex gap-4">
                                         <button
                                             onClick={onGoBackClick}
@@ -597,7 +623,7 @@ export default function Cart() {
                                         >
                                             Go Back
                                         </button>
-                                        
+
                                         <button
                                             onClick={onCloseOrdersClick}
                                             className="px-6 py-3 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors duration-200 disabled:opacity-50"
@@ -605,7 +631,7 @@ export default function Cart() {
                                         >
                                             Clear Cart
                                         </button>
-                                        
+
                                         <button
                                             onClick={handleOrderSubmission}
                                             disabled={loading || cart.length === 0}
