@@ -10,8 +10,10 @@ export default function Cart() {
 
     // Cart state
     const [cart, setCart] = useState([]);
+    const [cartWithDetails, setCartWithDetails] = useState([]); // New state for cart with product details
     const [total, setTotal] = useState(0);
     const [labelTotal, setLabelTotal] = useState(0);
+    const [cartLoading, setCartLoading] = useState(true); // New loading state for cart details
 
     // Delivery option state
     const [deliveryOption, setDeliveryOption] = useState("pickup");
@@ -29,15 +31,56 @@ export default function Cart() {
 
     // Loading and status states
     const [isCheckingOut, setIsCheckingOut] = useState(false);
-    const [accountStatus, setAccountStatus] = useState(null); // 'existing', 'new', null
+    const [accountStatus, setAccountStatus] = useState(null);
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
+
+    // Function to fetch product details for cart items
+    const fetchCartDetails = async (cartItems) => {
+        if (cartItems.length === 0) {
+            setCartWithDetails([]);
+            setCartLoading(false);
+            return;
+        }
+
+        try {
+            const detailedCart = [];
+            
+            for (const item of cartItems) {
+                try {
+                    const response = await axios.get(
+                        import.meta.env.VITE_BACKEND_URL + `/api/products/${item.productId}`
+                    );
+                    
+                    if (response.data) {
+                        detailedCart.push({
+                            ...item, // Keep original productId and qty
+                            ...response.data, // Add all product details
+                            quantity: item.qty, // Ensure quantity is available
+                        });
+                    }
+                } catch (error) {
+                    console.error(`Error fetching product ${item.productId}:`, error);
+                    // If product doesn't exist, skip it (it will be handled by CartCard component)
+                }
+            }
+            
+            setCartWithDetails(detailedCart);
+            setCartLoading(false);
+        } catch (error) {
+            console.error("Error fetching cart details:", error);
+            setCartLoading(false);
+        }
+    };
 
     // Load cart on component mount
     useEffect(() => {
         const currentCart = loadCart();
         setCart(currentCart);
         console.log("Loaded cart:", currentCart);
+
+        // Fetch product details for cart items
+        fetchCartDetails(currentCart);
 
         if (currentCart.length > 0) {
             // Get quote for cart items
@@ -60,6 +103,10 @@ export default function Cart() {
     function refreshCart() {
         const updatedCart = loadCart();
         setCart(updatedCart);
+        
+        // Refetch product details
+        setCartLoading(true);
+        fetchCartDetails(updatedCart);
 
         if (updatedCart.length > 0) {
             axios.post(import.meta.env.VITE_BACKEND_URL + "/api/orders/quote", {
@@ -89,6 +136,7 @@ export default function Cart() {
         if (confirmClose) {
             clearCart();
             setCart([]);
+            setCartWithDetails([]);
             setTotal(0);
             setLabelTotal(0);
             toast.success("Cart cleared successfully");
@@ -99,11 +147,11 @@ export default function Cart() {
     const handleDeliveryOptionChange = (option) => {
         setDeliveryOption(option);
         if (option === "pickup") {
-            setNearestCity(""); // Clear nearest city for pickup orders
+            setNearestCity("");
         }
     };
 
-    // Function to validate cart items before submission
+    // Updated function to validate cart items (now uses cartWithDetails)
     const validateCartItems = (cartItems) => {
         for (let i = 0; i < cartItems.length; i++) {
             const item = cartItems[i];
@@ -140,11 +188,11 @@ export default function Cart() {
                 {
                     firstName: customerData.firstName,
                     lastName: customerData.lastName,
-                    phonenumber: customerData.phoneNumber, // Make sure this matches
+                    phonenumber: customerData.phoneNumber,
                     homeaddress: customerData.address
                 },
                 {
-                    timeout: 10000, // 10 second timeout
+                    timeout: 10000,
                     headers: {
                         'Content-Type': 'application/json'
                     }
@@ -154,11 +202,9 @@ export default function Cart() {
             console.log("Authentication response:", response.data);
 
             if (response.data.success && response.data.token) {
-                // Store authentication data
                 localStorage.setItem('authToken', response.data.token);
                 localStorage.setItem('userDetails', JSON.stringify(response.data.user));
 
-                // Show appropriate message
                 if (response.data.isNewUser) {
                     toast.success('🎉 Account created successfully! You are now logged in.');
                 } else {
@@ -179,11 +225,9 @@ export default function Cart() {
             let errorMessage = 'Authentication failed. Please try again.';
 
             if (error.response) {
-                // Server responded with error status
                 console.error("Server error:", error.response.data);
                 errorMessage = error.response.data.message || `Server error (${error.response.status})`;
             } else if (error.request) {
-                // Network error
                 console.error("Network error:", error.request);
                 errorMessage = 'Network error. Please check your connection.';
             } else {
@@ -198,6 +242,12 @@ export default function Cart() {
 
     // Updated checkout/order submission function
     const handleOrderSubmission = async () => {
+        // Wait for cart details to load
+        if (cartLoading) {
+            toast.error("Please wait for cart details to load...");
+            return;
+        }
+
         // Validate required fields
         if (!firstName.trim() || !phoneNumber.trim() || !address.trim() ||
             !whatsappNumber.trim() || !preferredTime || !preferredDay) {
@@ -212,37 +262,23 @@ export default function Cart() {
             return;
         }
 
-        if (cart.length === 0) {
+        if (cartWithDetails.length === 0) {
             setError("Your cart is empty");
             toast.error("Your cart is empty");
             return;
         }
 
-        // Validate cart items before proceeding
+        // Validate cart items before proceeding (now using cartWithDetails)
         try {
-            validateCartItems(cart);
+            validateCartItems(cartWithDetails);
         } catch (validationError) {
             setError(validationError.message);
             toast.error(validationError.message);
             return;
         }
 
-        // Add debugging for cart state
         console.log("=== CART DEBUGGING ===");
-        console.log("Cart length:", cart.length);
-        console.log("Full cart data:", JSON.stringify(cart, null, 2));
-
-        cart.forEach((item, index) => {
-            console.log(`\n--- Item ${index + 1} ---`);
-            console.log("Product Name:", item.productName || item.name);
-            console.log("Product ID:", item.productId || item.id);
-            console.log("Price:", item.price);
-            console.log("Last Price:", item.lastPrice);
-            console.log("Original Price:", item.originalPrice);
-            console.log("Quantity:", item.qty || item.quantity);
-            console.log("All item keys:", Object.keys(item));
-        });
-        console.log("=== END CART DEBUG ===\n");
+        console.log("Cart with details:", JSON.stringify(cartWithDetails, null, 2));
 
         try {
             setLoading(true);
@@ -256,7 +292,7 @@ export default function Cart() {
                 address: `${address.trim()}${nearestCity.trim() ? ', ' + nearestCity.trim() : ''}`
             };
 
-            // First, handle authentication (login or register)
+            // First, handle authentication
             const authResult = await handleAutomaticAuth(customerData);
 
             if (!authResult.success) {
@@ -266,7 +302,7 @@ export default function Cart() {
                 return;
             }
 
-            // Now create the order with the authenticated user
+            // Now create the order with the authenticated user and detailed cart
             const orderData = {
                 userId: authResult.userId,
                 phone: phoneNumber.trim(),
@@ -278,11 +314,10 @@ export default function Cart() {
                 preferredDay: preferredDay,
                 nearestTownOrCity: deliveryOption === 'delivery' ? nearestCity.trim() : undefined,
                 notes: notes.trim() || "",
-                orderedItems: cart.map((item, index) => {
+                orderedItems: cartWithDetails.map((item, index) => {
                     // Get price with improved fallback logic
                     let itemPrice = 0;
                     
-                    // Try different price sources
                     if (item.lastPrice && item.lastPrice > 0) {
                         itemPrice = item.lastPrice;
                     } else if (item.price && item.price > 0) {
@@ -291,7 +326,6 @@ export default function Cart() {
                         itemPrice = item.originalPrice;
                     }
                     
-                    // If we still don't have a valid price, this is a problem
                     if (itemPrice <= 0) {
                         console.error(`Item ${index + 1} (${item.productName || item.name}) has no valid price:`, item);
                         throw new Error(`Item ${index + 1} is missing a valid price. Please refresh the page and try again.`);
@@ -304,7 +338,7 @@ export default function Cart() {
                     
                     return {
                         name: item.productName || item.name || 'Unknown Product',
-                        price: Number(itemPrice), // Ensure it's a number
+                        price: Number(itemPrice),
                         quantity: quantity,
                         image: item.images?.[0] || item.image || "",
                         productId: item.productId || item.id
@@ -318,19 +352,6 @@ export default function Cart() {
                 throw new Error("No items in cart");
             }
 
-            // Double-check each item has required fields (this should not fail after our improvements)
-            orderData.orderedItems.forEach((item, index) => {
-                if (!item.price || item.price <= 0) {
-                    throw new Error(`Item ${index + 1} is missing price`);
-                }
-                if (!item.quantity || item.quantity <= 0) {
-                    throw new Error(`Item ${index + 1} is missing quantity`);
-                }
-                if (!item.productId) {
-                    throw new Error(`Item ${index + 1} is missing product ID`);
-                }
-            });
-
             // Create the order with authentication token
             const orderResponse = await axios.post(import.meta.env.VITE_BACKEND_URL + '/api/orders/', orderData, {
                 headers: {
@@ -339,16 +360,14 @@ export default function Cart() {
             });
 
             if (orderResponse.data.success) {
-                // Clear cart
                 clearCart();
                 setCart([]);
+                setCartWithDetails([]);
                 setTotal(0);
                 setLabelTotal(0);
 
-                // Show success message
                 toast.success('🎉 Order placed successfully! Redirecting to your orders page...');
 
-                // Navigate to My Orders page after a short delay
                 setTimeout(() => {
                     navigate('/myOrders');
                 }, 2000);
@@ -367,85 +386,22 @@ export default function Cart() {
         }
     };
 
-    // Real-time account checking function (optional - for better UX)
-    const checkAccountExists = async (firstName, phoneNumber) => {
-        if (!firstName.trim() || !phoneNumber.trim()) return;
-
-        try {
-            const response = await axios.post(import.meta.env.VITE_BACKEND_URL + '/api/users/check-account', {
-                firstName: firstName.trim(),
-                phonenumber: phoneNumber.trim()
-            });
-
-            if (response.data.success) {
-                if (response.data.exists) {
-                    setAccountStatus('existing');
-                    // Optionally pre-fill other fields from existing account
-                    if (response.data.user.homeaddress) {
-                        // You could pre-fill address if needed
-                        // setAddress(response.data.user.homeaddress);
-                    }
-                } else {
-                    setAccountStatus('new');
-                }
-            }
-        } catch (error) {
-            console.error('Account check error:', error);
-            setAccountStatus(null);
-        }
-    };
-
-    // Handle first name change with real-time account checking
-    const handleFirstNameChange = (e) => {
-        const value = e.target.value;
-        setFirstName(value);
-
-        // Real-time account checking with debounce
-        if (value.trim() && phoneNumber.trim()) {
-            const timeoutId = setTimeout(() => {
-                checkAccountExists(value, phoneNumber);
-            }, 500);
-
-            return () => clearTimeout(timeoutId);
-        } else {
-            setAccountStatus(null);
-        }
-    };
-
-    // Handle phone number change with real-time account checking
-    const handlePhoneNumberChange = (e) => {
-        const value = e.target.value;
-        setPhoneNumber(value);
-
-        // Real-time account checking with debounce
-        if (value.trim() && firstName.trim()) {
-            const timeoutId = setTimeout(() => {
-                checkAccountExists(firstName, value);
-            }, 500);
-
-            return () => clearTimeout(timeoutId);
-        } else {
-            setAccountStatus(null);
-        }
-    };
-
     return (
-        <div className="min-h-screen bg-orange-50 pt-20">
-            {/* Header Section */}
-            <div className="h-[200px] bg-gradient-to-br from-orange-500 via-orange-500 to-orange-300 overflow-hidden relative">
-                <div className="absolute inset-0 bg-opacity-20"></div>
-                <div className="w-full h-full flex items-center justify-center">
-                    <span className="text-6xl font-bold text-white">Cart</span>
-                </div>
-            </div>
-
-            <div className="w-full flex flex-col">
+        <>
+            <div className="pt-24 min-h-screen bg-orange-100 flex flex-col">
                 <div className="w-[90%] max-w-7xl h-full mx-auto flex flex-col py-8">
 
                     {/* Error Display */}
                     {error && (
                         <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
                             <p className="text-red-600">{error}</p>
+                        </div>
+                    )}
+
+                    {/* Cart Loading State */}
+                    {cartLoading && (
+                        <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                            <p className="text-blue-600">Loading cart details...</p>
                         </div>
                     )}
 
@@ -493,8 +449,8 @@ export default function Cart() {
                         </div>
                     </div>
 
-                    {/* Only show checkout form if cart has items */}
-                    {cart.length > 0 && (
+                    {/* Only show checkout form if cart has items and details are loaded */}
+                    {cart.length > 0 && !cartLoading && (
                         <>
                             {/* Delivery Option Selection */}
                             <div className="mb-6 p-6 bg-white rounded-lg shadow-md">
@@ -532,143 +488,139 @@ export default function Cart() {
                                 {/* Account Status Indicator */}
                                 {accountStatus && (
                                     <div className={`mb-4 p-3 rounded-lg flex items-center ${accountStatus === 'existing'
-                                        ? 'bg-green-100 border border-green-300'
-                                        : 'bg-blue-100 border border-blue-300'
+                                        ? 'bg-green-50 border border-green-200'
+                                        : 'bg-blue-50 border border-blue-200'
                                         }`}>
-                                        <div className={`w-2 h-2 rounded-full mr-2 ${accountStatus === 'existing' ? 'bg-green-500' : 'bg-blue-500'
-                                            }`}></div>
-                                        <span className={`text-sm font-medium ${accountStatus === 'existing' ? 'text-green-800' : 'text-blue-800'
-                                            }`}>
+                                        <span className={`${accountStatus === 'existing' ? 'text-green-600' : 'text-blue-600'}`}>
                                             {accountStatus === 'existing'
-                                                ? '✅ Account found! You will be automatically logged in.'
-                                                : '🆕 New customer - Account will be created for you automatically.'
+                                                ? '✓ Account found! You will be automatically logged in.'
+                                                : '✨ New account will be created for you.'
                                             }
                                         </span>
                                     </div>
                                 )}
 
-                                <p className="text-sm text-gray-600 mb-4">
-                                    * We'll automatically check if you have an account and log you in. If not, we'll create one for you!
-                                </p>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
                                             First Name *
                                         </label>
                                         <input
                                             type="text"
                                             value={firstName}
-                                            onChange={handleFirstNameChange}
-                                            className="w-full p-3 border border-gray-300 rounded-md focus:ring-orange-500 focus:border-orange-500"
+                                            onChange={(e) => setFirstName(e.target.value)}
+                                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                                             placeholder="Enter your first name"
                                             required
-                                            disabled={loading}
                                         />
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
                                             Last Name
                                         </label>
                                         <input
                                             type="text"
                                             value={lastName}
                                             onChange={(e) => setLastName(e.target.value)}
-                                            className="w-full p-3 border border-gray-300 rounded-md focus:ring-orange-500 focus:border-orange-500"
+                                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                                             placeholder="Enter your last name"
-                                            disabled={loading}
                                         />
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
                                             Phone Number *
                                         </label>
                                         <input
                                             type="tel"
                                             value={phoneNumber}
-                                            onChange={handlePhoneNumberChange}
-                                            className="w-full p-3 border border-gray-300 rounded-md focus:ring-orange-500 focus:border-orange-500"
-                                            placeholder="Enter your phone number"
+                                            onChange={(e) => setPhoneNumber(e.target.value)}
+                                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                            placeholder="071XXXXXXX"
                                             required
-                                            disabled={loading}
                                         />
                                     </div>
-
-                                    <div className="md:col-span-2">
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            Address *
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={address}
-                                            onChange={(e) => setAddress(e.target.value)}
-                                            className="w-full p-3 border border-gray-300 rounded-md focus:ring-orange-500 focus:border-orange-500"
-                                            placeholder="Enter your full address"
-                                            required
-                                            disabled={loading}
-                                        />
-                                    </div>
-
-                                    {deliveryOption === "delivery" && (
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                                Nearest City *
-                                            </label>
-                                            <input
-                                                type="text"
-                                                value={nearestCity}
-                                                onChange={(e) => setNearestCity(e.target.value)}
-                                                className="w-full p-3 border border-gray-300 rounded-md focus:ring-orange-500 focus:border-orange-500"
-                                                placeholder="Enter your nearest city"
-                                                required
-                                                disabled={loading}
-                                            />
-                                        </div>
-                                    )}
 
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
                                             WhatsApp Number *
                                         </label>
                                         <input
                                             type="tel"
                                             value={whatsappNumber}
                                             onChange={(e) => setWhatsappNumber(e.target.value)}
-                                            className="w-full p-3 border border-gray-300 rounded-md focus:ring-orange-500 focus:border-orange-500"
-                                            placeholder="Enter your WhatsApp number"
+                                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                            placeholder="071XXXXXXX"
                                             required
-                                            disabled={loading}
                                         />
                                     </div>
 
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            Preferred Time *
+                                    <div className="md:col-span-2">
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            Address *
                                         </label>
                                         <input
-                                            type="time"
-                                            value={preferredTime}
-                                            onChange={(e) => setPreferredTime(e.target.value)}
-                                            className="w-full p-3 border border-gray-300 rounded-md focus:ring-orange-500 focus:border-orange-500"
+                                            type="text"
+                                            value={address}
+                                            onChange={(e) => setAddress(e.target.value)}
+                                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                            placeholder="Enter your full address"
                                             required
-                                            disabled={loading}
                                         />
                                     </div>
 
+                                    {deliveryOption === "delivery" && (
+                                        <div className="md:col-span-2">
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                Nearest City *
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={nearestCity}
+                                                onChange={(e) => setNearestCity(e.target.value)}
+                                                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                                placeholder="Enter your nearest city"
+                                                required
+                                            />
+                                        </div>
+                                    )}
+
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            Preferred Time *
+                                        </label>
+                                        <select
+                                            value={preferredTime}
+                                            onChange={(e) => setPreferredTime(e.target.value)}
+                                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                            required
+                                        >
+                                            <option value="">Select time</option>
+                                            <option value="09:00 AM">09:00 AM</option>
+                                            <option value="10:00 AM">10:00 AM</option>
+                                            <option value="11:00 AM">11:00 AM</option>
+                                            <option value="12:00 PM">12:00 PM</option>
+                                            <option value="01:00 PM">01:00 PM</option>
+                                            <option value="02:00 PM">02:00 PM</option>
+                                            <option value="03:00 PM">03:00 PM</option>
+                                            <option value="04:00 PM">04:00 PM</option>
+                                            <option value="05:00 PM">05:00 PM</option>
+                                            <option value="06:00 PM">06:00 PM</option>
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
                                             Preferred Day *
                                         </label>
                                         <select
                                             value={preferredDay}
                                             onChange={(e) => setPreferredDay(e.target.value)}
-                                            className="w-full p-3 border border-gray-300 rounded-md focus:ring-orange-500 focus:border-orange-500"
+                                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                                             required
-                                            disabled={loading}
                                         >
-                                            <option value="">Select a day</option>
+                                            <option value="">Select day</option>
                                             <option value="Monday">Monday</option>
                                             <option value="Tuesday">Tuesday</option>
                                             <option value="Wednesday">Wednesday</option>
@@ -679,67 +631,69 @@ export default function Cart() {
                                         </select>
                                     </div>
 
-                                    <div className="md:col-span-3">
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    <div className="md:col-span-2">
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
                                             Special Notes (Optional)
                                         </label>
                                         <textarea
                                             value={notes}
                                             onChange={(e) => setNotes(e.target.value)}
-                                            className="w-full p-3 border border-gray-300 rounded-md focus:ring-orange-500 focus:border-orange-500"
                                             rows="3"
+                                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                                             placeholder="Any special instructions or notes for your order"
-                                            disabled={loading}
-                                        />
+                                        ></textarea>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Order Summary and Checkout */}
-                            <div className="bg-white rounded-lg shadow-md p-6">
-                                <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
-                                    <div className="mb-4 md:mb-0">
-                                        <h3 className="text-2xl font-bold text-gray-800 mb-2">Order Summary</h3>
-                                        <div className="text-lg text-gray-600">
-                                            <p>Items: {cart.length}</p>
-                                            {labelTotal !== total && (
-                                                <p className="line-through text-gray-400">Original: Rs. {labelTotal.toFixed(2)}</p>
-                                            )}
-                                            <p className="text-2xl font-bold text-orange-600">Total: Rs. {total.toFixed(2)}</p>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex gap-4">
-                                        <button
-                                            onClick={onGoBackClick}
-                                            className="px-6 py-3 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors duration-200 disabled:opacity-50"
-                                            disabled={loading}
-                                        >
-                                            Go Back
-                                        </button>
-
-                                        <button
-                                            onClick={onCloseOrdersClick}
-                                            className="px-6 py-3 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors duration-200 disabled:opacity-50"
-                                            disabled={loading}
-                                        >
-                                            Clear Cart
-                                        </button>
-
-                                        <button
-                                            onClick={handleOrderSubmission}
-                                            disabled={loading || cart.length === 0}
-                                            className="px-8 py-3 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                                        >
-                                            {loading ? 'Processing...' : 'Place Order'}
-                                        </button>
-                                    </div>
+                            {/* Order Summary */}
+                            <div className="mb-6 p-6 bg-white rounded-lg shadow-md">
+                                <h2 className="text-2xl font-bold mb-4 text-gray-800">Order Summary</h2>
+                                <div className="flex justify-between text-lg font-medium">
+                                    <span>Items: {cart.length}</span>
+                                    <span>Original: Rs. {labelTotal.toFixed(2)}</span>
+                                </div>
+                                <div className="text-2xl font-bold text-orange-600 mt-2">
+                                    Total: Rs. {total.toFixed(2)}
                                 </div>
                             </div>
                         </>
                     )}
+
+                    {/* Action Buttons */}
+                    <div className="flex justify-between gap-4">
+                        <button
+                            onClick={onGoBackClick}
+                            className="px-6 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+                        >
+                            Go Back
+                        </button>
+
+                        {cart.length > 0 && (
+                            <button
+                                onClick={onCloseOrdersClick}
+                                className="px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                            >
+                                Clear Cart
+                            </button>
+                        )}
+
+                        {cart.length > 0 && !cartLoading && (
+                            <button
+                                onClick={handleOrderSubmission}
+                                disabled={loading}
+                                className={`px-8 py-3 rounded-lg font-semibold transition-colors ${
+                                    loading 
+                                        ? 'bg-gray-400 cursor-not-allowed' 
+                                        : 'bg-orange-600 hover:bg-orange-700 text-white'
+                                }`}
+                            >
+                                {loading ? 'Processing...' : 'Place Order'}
+                            </button>
+                        )}
+                    </div>
                 </div>
             </div>
-        </div>
+        </>
     );
 }

@@ -171,11 +171,7 @@ export default function MyOrders() {
                         </button>
                     </div>
                     
-                    <div className="mt-4 p-4 bg-blue-50 rounded-md">
-                        <p className="text-xs text-blue-700">
-                            <strong>New customer?</strong> Your account will be created automatically when you make your first order.
-                        </p>
-                    </div>
+                    
                 </div>
             </div>
         );
