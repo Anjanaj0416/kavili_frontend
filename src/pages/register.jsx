@@ -82,7 +82,7 @@ export default function Register() {
     };
 
     return (
-        <div className="w-full min-h-screen bg-orange-100">
+        <div className="w-full min-h-screen bg-orange-100 ">
             <div className="w-full h-[300px] bg-gradient-to-br from-orange-500 via-orange-500 to-orange-300 overflow-hidden relative">
                 <div className="absolute inset-0 flex items-center justify-center">
                     <div className="relative w-full h-full">
@@ -120,7 +120,7 @@ export default function Register() {
                                     value={formData.firstName}
                                     onChange={handleInputChange}
                                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                                    placeholder="Enter your first name"
+                                    placeholder="Enter your first name, First letter capitalized"
                                     required
                                 />
                             </div>

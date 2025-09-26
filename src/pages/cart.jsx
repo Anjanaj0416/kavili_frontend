@@ -597,6 +597,8 @@ export default function Cart() {
                                             required
                                         >
                                             <option value="">Select time</option>
+                                            <option value="07:00 AM - 08:00 AM">07:00 AM - 08:00 AM</option>
+                                            <option value="08:00 AM">08:00 AM</option>
                                             <option value="09:00 AM">09:00 AM</option>
                                             <option value="10:00 AM">10:00 AM</option>
                                             <option value="11:00 AM">11:00 AM</option>
@@ -607,28 +609,23 @@ export default function Cart() {
                                             <option value="04:00 PM">04:00 PM</option>
                                             <option value="05:00 PM">05:00 PM</option>
                                             <option value="06:00 PM">06:00 PM</option>
+                                            <option value="07:00 PM">07:00 PM</option>
+                                            <option value="08:00 PM">08:00 PM</option>
                                         </select>
                                     </div>
 
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Preferred Day *
+                                            Preferred Date *
                                         </label>
-                                        <select
+                                        <input
+                                            type="date"
                                             value={preferredDay}
                                             onChange={(e) => setPreferredDay(e.target.value)}
                                             className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                            min={new Date().toISOString().split('T')[0]} // Prevent selecting past dates
                                             required
-                                        >
-                                            <option value="">Select day</option>
-                                            <option value="Monday">Monday</option>
-                                            <option value="Tuesday">Tuesday</option>
-                                            <option value="Wednesday">Wednesday</option>
-                                            <option value="Thursday">Thursday</option>
-                                            <option value="Friday">Friday</option>
-                                            <option value="Saturday">Saturday</option>
-                                            <option value="Sunday">Sunday</option>
-                                        </select>
+                                        />
                                     </div>
 
                                     <div className="md:col-span-2">

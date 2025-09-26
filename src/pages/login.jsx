@@ -1,13 +1,11 @@
-
 // Login.jsx
 import React, { useState } from 'react';
 import { User, Phone, Eye, EyeOff } from 'lucide-react';
 import { loginUser, validateFormData } from '../utils/myOrdersFunction';
-import {  useNavigate } from 'react-router-dom';
-
+import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 const Login = ({ onLoginSuccess, onBack }) => {
-
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
         firstName: '',
@@ -25,6 +23,18 @@ const Login = ({ onLoginSuccess, onBack }) => {
         }));
     };
 
+    const handleSignUpClick = () => {
+        navigate('/register');
+    };
+
+    const handleBackClick = () => {
+        if (onBack) {
+            onBack();
+        } else {
+            navigate('/'); // Default navigation to home
+        }
+    };
+
     const handleSubmit = async () => {
         setLoading(true);
         setMessage('');
@@ -34,7 +44,11 @@ const Login = ({ onLoginSuccess, onBack }) => {
         if (!validation.valid) {
             setMessage(validation.message);
             setLoading(false);
-            navigate('/register');
+            // If validation fails, suggest registration
+            toast.error(validation.message + " - Redirecting to registration...");
+            setTimeout(() => {
+                navigate('/register');
+            }, 2000);
             return;
         }
 
@@ -42,7 +56,12 @@ const Login = ({ onLoginSuccess, onBack }) => {
             const result = await loginUser(formData);
 
             if (result.success && result.data.token) {
-                setMessage('Login successful!');
+                setMessage('Login successful! Redirecting to your orders...');
+                toast.success('Login successful! Welcome back!');
+
+                // Store authentication data in localStorage
+                localStorage.setItem('authToken', result.data.token);
+                localStorage.setItem('userDetails', JSON.stringify(result.data.user));
 
                 // Clear form
                 setFormData({
@@ -50,30 +69,40 @@ const Login = ({ onLoginSuccess, onBack }) => {
                     phonenumber: ''
                 });
 
-                // Call success callback with user data
-                setTimeout(() => {
+                // Call success callback if provided (for MyOrders component)
+                if (onLoginSuccess) {
                     onLoginSuccess(result.data.token, result.data.user);
-                    
+                }
 
+                // Navigate to My Orders page after a short delay
+                setTimeout(() => {
+                    navigate('/myOrders', { 
+                        replace: true,
+                        state: { 
+                            loginSuccess: true, 
+                            user: result.data.user 
+                        }
+                    });
                 }, 1500);
+
             } else {
-                setMessage(result.data?.message || result.error || 'Login failed');
+                const errorMessage = result.data?.message || result.error || 'Login failed';
+                setMessage(errorMessage);
+                toast.error(errorMessage);
             }
         } catch (error) {
-            setMessage('An unexpected error occurred. Please try again.');
+            const errorMessage = 'An unexpected error occurred. Please try again.';
+            setMessage(errorMessage);
+            toast.error(errorMessage);
             console.error('Login error:', error);
         } finally {
             setLoading(false);
         }
     };
 
-    const handleSignUpClick = () => {
-        navigate('/register');
-    };
-
     return (
         <div className="w-full min-h-screen bg-orange-100">
-            {/* Header with spice design */}
+            {/* Left Side - Hero Section */}
             <div className="w-full h-[300px] bg-gradient-to-br from-orange-500 via-orange-500 to-orange-300 overflow-hidden relative">
                 <div className="absolute inset-0 flex items-center justify-center">
                     <div className="relative w-full h-full">
@@ -81,7 +110,7 @@ const Login = ({ onLoginSuccess, onBack }) => {
                         <div className="absolute right-50 top-1/2 transform -translate-y-1/2 w-80 h-80 bg-gradient-to-br from-orange-600 to-red-600 rounded-full opacity-90"></div>
                         <div className="absolute right-48 top-1/2 transform -translate-y-1/2 w-80 h-80 bg-gradient-to-br from-orange-600 to-red-600 rounded-full opacity-90"></div>
                         <div className="absolute right-16 top-1/2 transform -translate-y-1/2 w-72 h-72 bg-gradient-to-br from-orange-500 to-red-500 rounded-full opacity-80"></div>
-
+                        
                         {/* Additional spice piles */}
                         <div className="absolute left-50 top-1/3 w-48 h-48 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-full opacity-60"></div>
                         <div className="absolute left-70 top-2/3 w-40 h-40 bg-gradient-to-br from-red-500 to-orange-600 rounded-full opacity-50"></div>
@@ -93,18 +122,29 @@ const Login = ({ onLoginSuccess, onBack }) => {
                 </div>
             </div>
 
-            {/* Login Form */}
+            {/* Right Side - Login Form */}
             <div className="flex-1 flex items-center justify-center p-8">
                 <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-8">
                     <div className="flex items-center justify-between mb-6">
                         <h2 className="text-2xl font-bold text-gray-800">Welcome Back</h2>
                         <button
-                            onClick={onBack}
-                            className="text-gray-500 hover:text-gray-700 text-sm"
+                            onClick={handleBackClick}
+                            className="text-gray-500 hover:text-gray-700 text-sm transition-colors"
                         >
                             ← Back
                         </button>
                     </div>
+
+                    {/* Display message */}
+                    {message && (
+                        <div className={`mb-4 p-3 rounded-lg text-sm ${
+                            message.includes('successful') 
+                                ? 'bg-green-50 text-green-600 border border-green-200' 
+                                : 'bg-red-50 text-red-600 border border-red-200'
+                        }`}>
+                            {message}
+                        </div>
+                    )}
 
                     <div className="space-y-6">
                         <div>
@@ -121,6 +161,7 @@ const Login = ({ onLoginSuccess, onBack }) => {
                                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                                     placeholder="Enter your first name"
                                     required
+                                    disabled={loading}
                                 />
                             </div>
                         </div>
@@ -132,42 +173,34 @@ const Login = ({ onLoginSuccess, onBack }) => {
                             <div className="relative">
                                 <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                                 <input
-                                    type={showPassword ?  "password" : "text" }
+                                    type={showPassword ? 'text' : 'password'}
                                     name="phonenumber"
                                     value={formData.phonenumber}
                                     onChange={handleInputChange}
                                     className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                                     placeholder="Enter your phone number"
-                                    maxLength="10"
                                     required
+                                    disabled={loading}
                                 />
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
                                     className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                    disabled={loading}
                                 >
                                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                                 </button>
                             </div>
-                            <p className="text-xs text-gray-500 mt-1">
-                                Your phone number is your password
-                            </p>
                         </div>
 
-                        {message && (
-                            <div className={`p-3 rounded-lg text-sm ${message.includes('successful')
-                                ? 'bg-green-100 text-green-700'
-                                : 'bg-red-100 text-red-700'
-                                }`}>
-                                {message}
-                            </div>
-                        )}
-
                         <button
-                            type="button"
                             onClick={handleSubmit}
                             disabled={loading}
-                            className="w-full bg-orange-500 text-white py-3 px-4 rounded-lg hover:bg-orange-600 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                            className={`w-full py-3 px-4 rounded-lg font-semibold transition-colors ${
+                                loading
+                                    ? 'bg-gray-400 cursor-not-allowed'
+                                    : 'bg-orange-600 hover:bg-orange-700 text-white'
+                            }`}
                         >
                             {loading ? 'Logging in...' : 'Login'}
                         </button>
@@ -179,6 +212,7 @@ const Login = ({ onLoginSuccess, onBack }) => {
                             <button
                                 onClick={handleSignUpClick}
                                 className="text-orange-500 hover:text-orange-600 font-medium transition-colors"
+                                disabled={loading}
                             >
                                 Sign up here
                             </button>
@@ -190,7 +224,7 @@ const Login = ({ onLoginSuccess, onBack }) => {
                             <strong>How to login:</strong><br />
                             1. Enter your first name<br />
                             2. Enter your phone number (this is your password)<br />
-                            3. Click Login
+                            3. Click Login to go to your orders page
                         </p>
                     </div>
                 </div>
