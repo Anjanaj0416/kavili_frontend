@@ -216,7 +216,7 @@ export default function Cart() {
 
             // Now create the order with the authenticated user
             const orderData = {
-                userId: authResult.userId, // Include user ID in order
+                userId: authResult.userId,
                 phone: phoneNumber.trim(),
                 name: `${firstName.trim()} ${lastName.trim()}`.trim(),
                 address: customerData.address,
@@ -226,16 +226,38 @@ export default function Cart() {
                 preferredDay: preferredDay,
                 nearestTownOrCity: deliveryOption === 'delivery' ? nearestCity.trim() : undefined,
                 notes: notes.trim() || "",
-                orderedItems: cart.map(item => ({
-                    name: item.productName,
-                    price: item.lastPrice || item.price,
-                    quantity: item.qty,
-                    image: item.images?.[0] || "",
-                    productId: item.productId
-                }))
+                orderedItems: cart.map(item => {
+                    // Ensure we have a valid price
+                    const itemPrice = item.lastPrice || item.price || 0;
+
+                    return {
+                        name: item.productName || item.name,
+                        price: Number(itemPrice), // Ensure it's a number
+                        quantity: Number(item.qty || item.quantity), // Ensure it's a number
+                        image: item.images?.[0] || item.image || "",
+                        productId: item.productId || item.id
+                    };
+                })
             };
 
-            console.log("Submitting order data:", orderData);
+            console.log("Order data before submission:", JSON.stringify(orderData, null, 2));
+
+            if (!orderData.orderedItems || orderData.orderedItems.length === 0) {
+                throw new Error("No items in cart");
+            }
+
+            // Check each item has required fields
+            orderData.orderedItems.forEach((item, index) => {
+                if (!item.price || item.price === 0) {
+                    throw new Error(`Item ${index + 1} is missing price`);
+                }
+                if (!item.quantity || item.quantity === 0) {
+                    throw new Error(`Item ${index + 1} is missing quantity`);
+                }
+                if (!item.productId) {
+                    throw new Error(`Item ${index + 1} is missing product ID`);
+                }
+            });
 
             // Create the order with authentication token
             const orderResponse = await axios.post(import.meta.env.VITE_BACKEND_URL + '/api/orders/', orderData, {
