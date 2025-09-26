@@ -39,9 +39,11 @@ export default function MyOrders() {
     // Check authentication on component mount
     useEffect(() => {
         const checkAuth = async () => {
-            // Check if coming from successful login
+            // Check if coming from successful login or registration
             if (location.state?.loginSuccess) {
                 toast.success(`Welcome back, ${location.state.user?.firstName || 'User'}!`);
+            } else if (location.state?.registrationSuccess) {
+                toast.success(`🎉 Welcome to Udari Shop, ${location.state.user?.firstName || 'User'}! Your account has been created successfully!`);
             }
 
             const { token, userData } = getAuthData();
@@ -59,16 +61,33 @@ export default function MyOrders() {
                     setUserDetails(userData);
                     setCurrentView('orders');
                     
-                    // Set orders if response contains them
-                    if (response.data.success && response.data.orders) {
-                        setOrders(response.data.orders);
+                    // Set orders if response contains them, but don't show errors for empty orders
+                    if (response.data.success) {
+                        setOrders(response.data.orders || []);
+                    } else {
+                        setOrders([]); // Just set empty array, no error for new users
                     }
                 } catch (error) {
                     console.error('Token validation error:', error);
-                    // Token is invalid or expired
-                    clearAuthData();
-                    setCurrentView('prompt');
-                    toast.error('Your session has expired. Please log in again.');
+                    // Only show error if it's not about no orders (404) or authentication issues
+                    if (error.response?.status === 401 || error.response?.status === 403) {
+                        // Token is invalid or expired
+                        clearAuthData();
+                        setCurrentView('prompt');
+                        toast.error('Your session has expired. Please log in again.');
+                    } else if (error.response?.status === 404) {
+                        // User exists but has no orders - this is fine for new users
+                        setAuthToken(token);
+                        setUserDetails(userData);
+                        setCurrentView('orders');
+                        setOrders([]);
+                    } else {
+                        // Other errors - token is probably still valid, just orders fetch failed
+                        setAuthToken(token);
+                        setUserDetails(userData);
+                        setCurrentView('orders');
+                        setOrders([]);
+                    }
                 }
             } else {
                 // No token found
@@ -83,7 +102,12 @@ export default function MyOrders() {
     // Fetch orders when authenticated
     useEffect(() => {
         if (currentView === 'orders' && authToken && orders.length === 0) {
-            fetchOrders();
+            // Only fetch if we haven't already loaded orders during auth check
+            const hasTriedFetch = sessionStorage.getItem('ordersFetchAttempted');
+            if (!hasTriedFetch) {
+                sessionStorage.setItem('ordersFetchAttempted', 'true');
+                fetchOrders();
+            }
         }
     }, [currentView, authToken]);
 
@@ -99,12 +123,16 @@ export default function MyOrders() {
             
             if (response.data.success) {
                 setOrders(response.data.orders || []);
-                if (response.data.orders?.length === 0) {
-                    toast.info('No orders found. Start shopping to see your orders here!');
-                }
+                // Don't show any message for empty orders - let the UI handle it naturally
             } else {
-                setError(response.data.message || 'Failed to fetch orders');
-                toast.error(response.data.message || 'Failed to fetch orders');
+                // Only show error if it's not about empty orders
+                const errorMessage = response.data.message || 'Failed to fetch orders';
+                if (!errorMessage.toLowerCase().includes('no orders') && 
+                    !errorMessage.toLowerCase().includes('not found')) {
+                    setError(errorMessage);
+                    toast.error(errorMessage);
+                }
+                setOrders([]); // Set empty array for no orders case
             }
         } catch (error) {
             console.error('Error fetching orders:', error);
@@ -112,8 +140,13 @@ export default function MyOrders() {
                 // Token expired, redirect to login
                 handleLogout();
                 toast.error('Your session has expired. Please log in again.');
+            } else if (error.response?.status === 404) {
+                // 404 might mean no orders found, not necessarily an error
+                setOrders([]);
+                // Don't show error message for 404 - user just has no orders
             } else {
-                const errorMessage = error.response?.data?.message || 'Failed to fetch orders';
+                // Only show error for actual server/network issues
+                const errorMessage = error.response?.data?.message || 'Unable to load orders. Please try again.';
                 setError(errorMessage);
                 toast.error(errorMessage);
             }
@@ -152,6 +185,8 @@ export default function MyOrders() {
 
     const handleRefreshOrders = () => {
         setOrders([]);
+        setError(null); // Clear any existing errors
+        sessionStorage.removeItem('ordersFetchAttempted'); // Reset fetch attempt
         fetchOrders();
     };
 

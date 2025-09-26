@@ -1,7 +1,10 @@
 import { useState } from 'react';
-import { User, Phone, MapPin } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { User, Phone, MapPin, ArrowLeft } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function Register() {
+    const navigate = useNavigate();
     const [formData, setFormData] = useState({
         firstName: '',
         lastName: '',
@@ -19,6 +22,14 @@ export default function Register() {
         }));
     };
 
+    const handleBackClick = () => {
+        navigate('/login');
+    };
+
+    const handleLoginClick = () => {
+        navigate('/login');
+    };
+
     const handleSubmit = async () => {
         setLoading(true);
         setMessage('');
@@ -27,6 +38,7 @@ export default function Register() {
         if (!formData.firstName || !formData.phonenumber || !formData.homeaddress) {
             setMessage('First name, phone number, and home address are required');
             setLoading(false);
+            toast.error('Please fill in all required fields');
             return;
         }
 
@@ -35,12 +47,15 @@ export default function Register() {
         if (!phoneRegex.test(formData.phonenumber)) {
             setMessage('Phone number must be 10 digits');
             setLoading(false);
+            toast.error('Phone number must be exactly 10 digits');
             return;
         }
 
         try {
-            // Change the URL to match your server configuration
-            const response = await fetch('http://localhost:3000/api/users', {
+            // Use environment variable for backend URL or fallback to localhost
+            const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+            
+            const response = await fetch(`${backendUrl}/api/users`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -51,10 +66,12 @@ export default function Register() {
             const data = await response.json();
             
             if (response.ok && data.token) {
-                // Store token and user data
+                // Store token and user data in localStorage
                 localStorage.setItem('authToken', data.token);
-                localStorage.setItem('userData', JSON.stringify(data.user));
-                setMessage('Registration successful! You are now logged in.');
+                localStorage.setItem('userDetails', JSON.stringify(data.user));
+                
+                setMessage('Registration successful! Redirecting to your orders page...');
+                toast.success(`🎉 Welcome ${data.user.firstName}! Account created successfully!`);
                 
                 // Clear form
                 setFormData({
@@ -64,17 +81,36 @@ export default function Register() {
                     homeaddress: ''
                 });
                 
-                // Redirect after a short delay
+                // Navigate to My Orders page after a short delay
                 setTimeout(() => {
-                    // You can redirect to dashboard or another page here
-                    console.log('Redirecting to dashboard...');
-                    // window.location.href = '/dashboard';
+                    navigate('/myOrders', { 
+                        replace: true,
+                        state: { 
+                            registrationSuccess: true, 
+                            user: data.user 
+                        }
+                    });
                 }, 2000);
+                
             } else {
-                setMessage(data.message || 'Registration failed');
+                const errorMessage = data.message || 'Registration failed';
+                setMessage(errorMessage);
+                toast.error(errorMessage);
+                
+                // If user already exists, suggest login
+                if (errorMessage.toLowerCase().includes('already exists')) {
+                    setTimeout(() => {
+                        const shouldLogin = window.confirm('This phone number is already registered. Would you like to go to the login page?');
+                        if (shouldLogin) {
+                            navigate('/login');
+                        }
+                    }, 1000);
+                }
             }
         } catch (error) {
-            setMessage('Network error. Please try again.');
+            const errorMessage = 'Network error. Please check your connection and try again.';
+            setMessage(errorMessage);
+            toast.error(errorMessage);
             console.error('Registration error:', error);
         } finally {
             setLoading(false);
@@ -82,17 +118,14 @@ export default function Register() {
     };
 
     return (
-        <div className="w-full min-h-screen bg-orange-100 ">
-            <div className="w-full h-[300px] bg-gradient-to-br from-orange-500 via-orange-500 to-orange-300 overflow-hidden relative">
+        <div className="min-h-screen flex">
+            {/* Left Side - Hero Section */}
+            <div className="flex-1 bg-gradient-to-br from-orange-500 via-orange-500 to-orange-300 relative overflow-hidden">
+                {/* Background spice effects */}
                 <div className="absolute inset-0 flex items-center justify-center">
                     <div className="relative w-full h-full">
-                        {/* Main spice pile */}
-                        <div className="absolute right-50 top-1/2 transform -translate-y-1/2 w-80 h-80 bg-gradient-to-br from-orange-600 to-red-600 rounded-full opacity-90"></div>
-                        <div className="absolute right-48 top-1/2 transform -translate-y-1/2 w-80 h-80 bg-gradient-to-br from-orange-600 to-red-600 rounded-full opacity-90"></div>
-                        <div className="absolute right-16 top-1/2 transform -translate-y-1/2 w-72 h-72 bg-gradient-to-br from-orange-500 to-red-500 rounded-full opacity-80"></div>
-                        
-                        {/* Additional spice piles */}
-                        <div className="absolute left-50 top-1/3 w-48 h-48 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-full opacity-60"></div>
+                        <div className="absolute left-20 top-1/2 transform -translate-y-1/2 w-80 h-80 bg-gradient-to-br from-orange-600 to-red-600 rounded-full opacity-90"></div>
+                        <div className="absolute left-24 top-1/2 transform -translate-y-1/2 w-72 h-72 bg-gradient-to-br from-orange-500 to-red-500 rounded-full opacity-80"></div>
                         <div className="absolute left-70 top-2/3 w-40 h-40 bg-gradient-to-br from-red-500 to-orange-600 rounded-full opacity-50"></div>
                         <div className="absolute left-[300px] top-1/2 w-56 h-56 bg-gradient-to-br from-orange-600 to-red-600 rounded-full opacity-40"></div>
                     </div>
@@ -102,10 +135,30 @@ export default function Register() {
                 </div>
             </div>
 
-            {/* Register Form */}
+            {/* Right Side - Register Form */}
             <div className="flex-1 flex items-center justify-center p-8">
                 <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-8">
-                    <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">Create Account</h2>
+                    <div className="flex items-center justify-between mb-6">
+                        <h2 className="text-2xl font-bold text-gray-800">Create Account</h2>
+                        <button
+                            onClick={handleBackClick}
+                            className="text-gray-500 hover:text-gray-700 text-sm transition-colors flex items-center"
+                        >
+                            <ArrowLeft className="w-4 h-4 mr-1" />
+                            Back
+                        </button>
+                    </div>
+
+                    {/* Display message */}
+                    {message && (
+                        <div className={`mb-4 p-3 rounded-lg text-sm ${
+                            message.includes('successful') 
+                                ? 'bg-green-50 text-green-600 border border-green-200' 
+                                : 'bg-red-50 text-red-600 border border-red-200'
+                        }`}>
+                            {message}
+                        </div>
+                    )}
                     
                     <div className="space-y-6">
                         <div>
@@ -120,8 +173,9 @@ export default function Register() {
                                     value={formData.firstName}
                                     onChange={handleInputChange}
                                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                                    placeholder="Enter your first name, First letter capitalized"
+                                    placeholder="Enter your first name"
                                     required
+                                    disabled={loading}
                                 />
                             </div>
                         </div>
@@ -139,6 +193,7 @@ export default function Register() {
                                     onChange={handleInputChange}
                                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                                     placeholder="Enter your last name"
+                                    disabled={loading}
                                 />
                             </div>
                         </div>
@@ -158,8 +213,12 @@ export default function Register() {
                                     placeholder="Enter 10-digit phone number"
                                     maxLength="10"
                                     required
+                                    disabled={loading}
                                 />
                             </div>
+                            <p className="text-xs text-gray-500 mt-1">
+                                This will be used as your password for future logins
+                            </p>
                         </div>
 
                         <div>
@@ -176,31 +235,53 @@ export default function Register() {
                                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none"
                                     placeholder="Enter your home address"
                                     required
+                                    disabled={loading}
                                 />
                             </div>
                         </div>
-
-                        {message && (
-                            <div className={`p-3 rounded-lg text-sm ${
-                                message.includes('successful') 
-                                    ? 'bg-green-100 text-green-700' 
-                                    : 'bg-red-100 text-red-700'
-                            }`}>
-                                {message}
-                            </div>
-                        )}
 
                         <button
                             type="button"
                             onClick={handleSubmit}
                             disabled={loading}
-                            className="w-full bg-orange-500 text-white py-3 px-4 rounded-lg hover:bg-orange-600 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                            className={`w-full py-3 px-4 rounded-lg font-semibold transition-colors ${
+                                loading
+                                    ? 'bg-gray-400 cursor-not-allowed'
+                                    : 'bg-orange-600 hover:bg-orange-700 text-white'
+                            }`}
                         >
-                            {loading ? 'Creating Account...' : 'Register'}
+                            {loading ? (
+                                <div className="flex items-center justify-center">
+                                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                                    Creating Account...
+                                </div>
+                            ) : (
+                                'Register'
+                            )}
                         </button>
                     </div>
 
-                    
+                    <div className="mt-6 text-center">
+                        <p className="text-sm text-gray-600">
+                            Already have an account?{' '}
+                            <button
+                                onClick={handleLoginClick}
+                                className="text-orange-500 hover:text-orange-600 font-medium transition-colors"
+                                disabled={loading}
+                            >
+                                Login here
+                            </button>
+                        </p>
+                    </div>
+
+                    <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                        <p className="text-xs text-blue-600">
+                            <strong>After registration:</strong><br />
+                            • Your account will be created automatically<br />
+                            • You'll be logged in and redirected to your orders page<br />
+                            • Use your phone number as password for future logins
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
