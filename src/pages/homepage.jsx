@@ -10,7 +10,13 @@ import About from './about';
 import ContactPage from './contactPage';
 import MyOrders from './myOrders';
 
+import Register from './register';
+import Login from './login';
+
+
+
 export default function HomePage() {
+  
   return (
     <div className="min-h-screen w-full relative">
       {/* Header */}
@@ -94,20 +100,18 @@ export default function HomePage() {
             <MyOrders />
 
           } />
-
-
           <Route path="/category/:category/productInfo/:productId" element={
               <ProductOverView />
           } />
-
           <Route path="/checkout" element={
             <div className="pt-24 min-h-screen bg-orange-100">
               <CheckoutForm />
             </div>
           } />
+          <Route path="/login" element={<Login/>} />
+          <Route path="/register" element={<Register />} />
           <Route path="/products" element={<ProductPage />} />
           <Route path="/products/:category" element={<ProductPage />} />
-
           <Route path="*" element={
             <div className="pt-24 min-h-screen bg-orange-100">
               <NotFound />

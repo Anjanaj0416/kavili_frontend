@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { loadCart, clearCart } from "../utils/cartFunction";
+import { storeAuthData } from "../utils/myOrdersFunction";
 import CartCard from "../components/cartCard";
 import toast from "react-hot-toast";
 
@@ -10,26 +11,24 @@ export default function Cart() {
     const [labelTotal, setLabelTotal] = useState(0);
 
     // Delivery option state
-    const [deliveryOption, setDeliveryOption] = useState("pickup"); // "pickup" or "delivery"
+    const [deliveryOption, setDeliveryOption] = useState("pickup");
 
     // Customer details state
-    const [customerName, setCustomerName] = useState("");
-    const [customerPhone, setCustomerPhone] = useState("");
-    const [customerAddress, setCustomerAddress] = useState("");
-    const [nearestTownOrCity, setNearestTownOrCity] = useState("");
-    const [customeremail, setCustomerEmail] = useState("");
-    const [whatsappNumber, setWhatsappNumber] = useState("");
+    const [firstName, setFirstName] = useState("");
+    const [lastName, setLastName] = useState("");
+    const [phoneNumber, setPhoneNumber] = useState("");
+    const [homeAddress, setHomeAddress] = useState("");
     const [preferredTime, setPreferredTime] = useState("");
     const [preferredDay, setPreferredDay] = useState("");
+    const [nearestCity, setNearestCity] = useState("");
 
-    // Delivery-specific details
-    const [deliveryName, setDeliveryName] = useState("");
-    const [deliveryPhone, setDeliveryPhone] = useState("");
-    const [deliveryAddress, setDeliveryAddress] = useState("");
-    const [deliveryWhatsapp, setDeliveryWhatsapp] = useState("");
-    const [deliveryTownOrCity, setDeliveryTownOrCity] = useState("");
-    const [deliveryTime, setDeliveryTime] = useState("");
-    const [deliveryDay, setDeliveryDay] = useState("");
+    // Loading state for checkout
+    const [isCheckingOut, setIsCheckingOut] = useState(false);
+    
+    // Account status state
+    const [accountStatus, setAccountStatus] = useState(null); // 'existing', 'new', null
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [currentUser, setCurrentUser] = useState(null);
 
     useEffect(() => {
         const currentCart = loadCart();
@@ -82,116 +81,332 @@ export default function Cart() {
             setCart([]);
             setTotal(0);
             setLabelTotal(0);
-            // Clear all form fields
             clearAllFields();
+            setAccountStatus(null);
+            setIsLoggedIn(false);
+            setCurrentUser(null);
             alert("All items have been removed from the cart.");
         }
     }
 
     // Function to clear all form fields
     function clearAllFields() {
-        setCustomerName("");
-        setCustomerPhone("");
-        setCustomerAddress("");
-        setNearestTownOrCity("");
-        setCustomerEmail("");
-        setWhatsappNumber("");
+        setFirstName("");
+        setLastName("");
+        setPhoneNumber("");
+        setHomeAddress("");
         setPreferredTime("");
         setPreferredDay("");
-        setDeliveryName("");
-        setDeliveryPhone("");
-        setDeliveryAddress("");
-        setDeliveryWhatsapp("");
-        setDeliveryTownOrCity("");
-        setDeliveryTime("");
-        setDeliveryDay("");
+        setNearestCity("");
     }
 
     // Function to handle delivery option change
     function handleDeliveryOptionChange(option) {
         setDeliveryOption(option);
-        // Clear fields when switching options
-        if (option === "pickup") {
-            setDeliveryName("");
-            setDeliveryPhone("");
-            setDeliveryAddress("");
-            setDeliveryWhatsapp("");
-            setDeliveryTownOrCity("");
-            setDeliveryTime("");
-            setDeliveryDay("");
-        } else {
-            setCustomerName("");
-            setCustomerPhone("");
-            setCustomerAddress("");
-            setNearestTownOrCity("");
-            setWhatsappNumber("");
-            setPreferredTime("");
-            setPreferredDay("");
-        }
     }
 
-    function onOrderCheckOutClick() {
-        // Validate based on delivery option
-        if (deliveryOption === "pickup") {
-            if (!customerName.trim() || !customerPhone.trim() || !whatsappNumber.trim() || !preferredTime.trim() || !preferredDay.trim()) {
-                toast.error("Please fill in all required pickup details");
-                return;
-            }
-        } else {
-            if (!deliveryName.trim() || !deliveryPhone.trim() || !deliveryAddress.trim() || !deliveryWhatsapp.trim() || !deliveryTownOrCity.trim() || !deliveryTime.trim() || !deliveryDay.trim()) {
-                toast.error("Please fill in all required delivery details");
-                return;
-            }
-        }
-
-        if (cart.length === 0) {
-            toast.error("Your cart is empty");
+    // Enhanced function to check account status and perform auto-login
+    async function checkAccountStatusAndLogin() {
+        if (!firstName.trim() || !phoneNumber.trim()) {
             return;
         }
 
-        // Prepare order data based on delivery option
+        try {
+            // First, check if account exists
+            const checkResponse = await axios.post(import.meta.env.VITE_BACKEND_URL + "/api/users/check-account", {
+                firstName: firstName.trim(),
+                phonenumber: phoneNumber.trim()
+            });
+
+            if (checkResponse.data.exists) {
+                // Account exists, perform automatic login
+                try {
+                    const loginResponse = await axios.post(import.meta.env.VITE_BACKEND_URL + "/api/users/login", {
+                        firstName: firstName.trim(),
+                        phonenumber: phoneNumber.trim()
+                    });
+
+                    if (loginResponse.data.token) {
+                        // Store authentication data
+                        storeAuthData(loginResponse.data.token, loginResponse.data.user);
+                        
+                        // Update local state
+                        setAccountStatus('existing');
+                        setIsLoggedIn(true);
+                        setCurrentUser(loginResponse.data.user);
+
+                        // Auto-fill form fields with existing user data
+                        setLastName(loginResponse.data.user.lastName || "");
+                        setHomeAddress(loginResponse.data.user.homeaddress || "");
+
+                        toast.success("✅ Welcome back! You're automatically logged in!");
+                    }
+                } catch (loginError) {
+                    console.error("Auto-login failed:", loginError);
+                    setAccountStatus('existing');
+                    toast.error("Account found but login failed. Please try again.");
+                }
+            } else {
+                // Account doesn't exist
+                setAccountStatus('new');
+                setIsLoggedIn(false);
+                setCurrentUser(null);
+                toast.info("🆕 New account will be created with your details.");
+            }
+        } catch (error) {
+            console.error("Error checking account:", error);
+            setAccountStatus('new');
+            setIsLoggedIn(false);
+            setCurrentUser(null);
+        }
+    }
+
+    // Enhanced checkout function with streamlined authentication
+    // Enhanced checkout function with proper token handling
+// Fixed checkout function with proper token handling
+async function onOrderCheckOutClick() {
+    // Validate all required fields
+    if (!firstName.trim() || !lastName.trim() || !phoneNumber.trim() || !homeAddress.trim() || !preferredTime.trim() || !preferredDay.trim() || !nearestCity.trim()) {
+        toast.error("Please fill in all required fields");
+        return;
+    }
+
+    if (cart.length === 0) {
+        toast.error("Your cart is empty");
+        return;
+    }
+
+    setIsCheckingOut(true);
+
+    try {
+        let authToken = null;
+        let user = null;
+
+        // Check if already logged in from auto-login
+        if (isLoggedIn && currentUser) {
+            // Use existing login data
+            const storedToken = localStorage.getItem('authToken');
+            if (!storedToken) {
+                toast.error("Authentication token not found. Please try again.");
+                setIsCheckingOut(false);
+                return;
+            }
+            authToken = storedToken;
+            user = currentUser;
+            
+            console.log("Using existing token:", authToken.substring(0, 20) + "..."); // Debug log
+            toast.success("🛍️ Using your existing account for checkout!");
+        } else {
+            // Need to authenticate (either login or register)
+            const authResult = await checkUserAndAuthenticate();
+            
+            if (!authResult.success) {
+                toast.error(authResult.error);
+                setIsCheckingOut(false);
+                return;
+            }
+
+            authToken = authResult.token;
+            user = authResult.user;
+            
+            console.log("New authentication token:", authToken.substring(0, 20) + "..."); // Debug log
+
+            // Show appropriate success message
+            if (authResult.isNewUser) {
+                toast.success("🎉 Welcome! Your account has been created successfully!");
+            } else {
+                toast.success("✅ Logged in successfully! Welcome back!");
+            }
+        }
+
+        // Verify token exists before making order request
+        if (!authToken) {
+            toast.error("Authentication failed. Please try again.");
+            setIsCheckingOut(false);
+            return;
+        }
+
+        // Step 2: Prepare order data
         const orderData = {
             orderedItems: cart,
             deliveryOption: deliveryOption,
-            email: customeremail.trim()
+            name: `${firstName.trim()} ${lastName.trim()}`,
+            phone: phoneNumber.trim(),
+            address: homeAddress.trim(),
+            whatsappNumber: phoneNumber.trim(),
+            preferredTime: preferredTime.trim(),
+            preferredDay: preferredDay.trim(),
+            nearestTownOrCity: nearestCity.trim()
         };
 
-        if (deliveryOption === "pickup") {
-            orderData.name = customerName.trim();
-            orderData.phone = customerPhone.trim();
-            orderData.whatsappNumber = whatsappNumber.trim();
-            orderData.preferredTime = preferredTime.trim();
-            orderData.preferredDay = preferredDay.trim();
-            orderData.address = "Pickup"; // Default for pickup orders
+        console.log("Making order request with token:", authToken ? "Present" : "Missing"); // Debug log
+        console.log("Order data:", orderData); // Debug log
+        console.log("Request URL:", import.meta.env.VITE_BACKEND_URL + "/api/orders"); // Debug log
+
+        // Step 3: Place order with authentication token
+        // Make sure the Authorization header is properly formatted
+        const orderResponse = await axios.post(
+            import.meta.env.VITE_BACKEND_URL + "/api/orders", 
+            orderData,
+            {
+                headers: {
+                    'Authorization': `Bearer ${authToken}`,
+                    'Content-Type': 'application/json'
+                },
+                // Add timeout to prevent hanging
+                timeout: 30000 // 30 seconds
+            }
+        );
+
+        if (orderResponse.data.success) {
+            const orderDetails = orderResponse.data.order;
+            
+            // Show success message with order tracking info
+            toast.success(
+                `🛍️ Order #${orderDetails.orderId} placed successfully!`,
+                { duration: 3000 }
+            );
+
+            // Show tracking message
+            toast.success(
+                "📱 You can now track your order in 'My Orders' section!",
+                { duration: 4000 }
+            );
+            
+            // Clear cart and form after successful order
+            clearCart();
+            setCart([]);
+            clearAllFields();
+            setTotal(0);
+            setLabelTotal(0);
+            setAccountStatus(null);
+            setIsLoggedIn(false);
+            setCurrentUser(null);
+
+            // Show navigation options
+            const userChoice = window.confirm(
+                `Order placed successfully!\n\nWould you like to:\n- Click "OK" to view your orders\n- Click "Cancel" to continue shopping`
+            );
+
+            if (userChoice) {
+                // Redirect to My Orders page
+                window.location.href = '/my-orders';
+            } else {
+                // Redirect to products page or home
+                window.location.href = '/products';
+            }
+        }
+    } catch (error) {
+        console.error("Checkout error:", error);
+        console.error("Error response:", error.response); // Debug log
+        
+        // Better error handling
+        if (error.response?.status === 401) {
+            console.log("401 error details:", error.response.data); // Debug log
+            toast.error("Authentication failed. Please try logging in again.");
+            
+            // Clear invalid auth data
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('userData');
+            setIsLoggedIn(false);
+            setCurrentUser(null);
+            setAccountStatus(null);
+        } else if (error.response?.status === 400) {
+            toast.error(error.response.data.message || "Invalid order data. Please check your information.");
+        } else if (error.code === 'ECONNABORTED') {
+            toast.error("Request timeout. Please check your internet connection and try again.");
         } else {
-            orderData.name = deliveryName.trim();
-            orderData.phone = deliveryPhone.trim();
-            orderData.address = deliveryAddress.trim();
-            orderData.whatsappNumber = deliveryWhatsapp.trim();
-            orderData.nearestTownOrCity = deliveryTownOrCity.trim();
-            orderData.preferredTime = deliveryTime.trim();
-            orderData.preferredDay = deliveryDay.trim();
+            toast.error(error.response?.data?.message || "Failed to place order. Please try again.");
+        }
+    } finally {
+        setIsCheckingOut(false);
+    }
+}
+
+    // Function to check if user exists and login/register (fallback for non-auto-login cases)
+    async function checkUserAndAuthenticate() {
+        try {
+            // First, try to login with existing credentials
+            const loginResponse = await axios.post(import.meta.env.VITE_BACKEND_URL + "/api/users/login", {
+                firstName: firstName.trim(),
+                phonenumber: phoneNumber.trim()
+            });
+
+            if (loginResponse.data.token) {
+                // User exists, store auth data
+                storeAuthData(loginResponse.data.token, loginResponse.data.user);
+                return {
+                    success: true,
+                    token: loginResponse.data.token,
+                    user: loginResponse.data.user,
+                    isNewUser: false
+                };
+            }
+        } catch (loginError) {
+            // User doesn't exist, try to create new account
+            try {
+                const registerResponse = await axios.post(import.meta.env.VITE_BACKEND_URL + "/api/users", {
+                    firstName: firstName.trim(),
+                    lastName: lastName.trim(),
+                    phonenumber: phoneNumber.trim(),
+                    homeaddress: homeAddress.trim(),
+                    type: "customer"
+                });
+
+                if (registerResponse.data.token) {
+                    // New user created, store auth data
+                    storeAuthData(registerResponse.data.token, registerResponse.data.user);
+                    return {
+                        success: true,
+                        token: registerResponse.data.token,
+                        user: registerResponse.data.user,
+                        isNewUser: true
+                    };
+                }
+            } catch (registerError) {
+                console.error("Registration failed:", registerError);
+                return {
+                    success: false,
+                    error: registerError.response?.data?.message || "Failed to create account"
+                };
+            }
         }
 
-        axios.post(import.meta.env.VITE_BACKEND_URL + "/api/orders", orderData)
-            .then((res) => {
-                console.log(res.data);
-                toast.success("Order placed successfully!");
-                // Clear cart and form after successful order
-                clearCart();
-                setCart([]);
-                clearAllFields();
-                setTotal(0);
-                setLabelTotal(0);
-            }).catch((err) => {
-                console.log(err);
-                toast.error("Failed to place order. Please try again.");
-            });
+        return {
+            success: false,
+            error: "Authentication failed"
+        };
     }
 
+    // Handle input changes to trigger auto-login check
+    const handleFirstNameChange = (e) => {
+        setFirstName(e.target.value);
+        setAccountStatus(null);
+        setIsLoggedIn(false);
+        setCurrentUser(null);
+    };
+
+    const handlePhoneNumberChange = (e) => {
+        setPhoneNumber(e.target.value);
+        setAccountStatus(null);
+        setIsLoggedIn(false);
+        setCurrentUser(null);
+    };
+
+    // Check account status and perform auto-login when both fields are entered
+    useEffect(() => {
+        const timeoutId = setTimeout(() => {
+            if (firstName.trim() && phoneNumber.trim()) {
+                checkAccountStatusAndLogin();
+            }
+        }, 1000); // Debounce for 1 second
+
+        return () => clearTimeout(timeoutId);
+    }, [firstName, phoneNumber]);
+
     return (
-        <div className="relative w-full min-h-screen bg-orange-100  ">
-            <div className="w-full h-[300px]  bg-gradient-to-br from-orange-500 via-orange-500 to-orange-300 overflow-hidden relative">
+        <div className="relative w-full min-h-screen bg-orange-100">
+            <div className="w-full h-[300px] bg-gradient-to-br from-orange-500 via-orange-500 to-orange-300 overflow-hidden relative">
                 <div className="absolute inset-0 flex items-center justify-center">
                     <div className="relative w-full h-full">
                         {/* Main spice pile */}
@@ -199,19 +414,19 @@ export default function Cart() {
                         <div className="absolute right-48 top-1/2 transform -translate-y-1/2 w-80 h-80 bg-gradient-to-br from-orange-600 to-red-600 rounded-full opacity-90"></div>
                         <div className="absolute right-16 top-1/2 transform -translate-y-1/2 w-72 h-72 bg-gradient-to-br from-orange-500 to-red-500 rounded-full opacity-80"></div>
 
-
                         {/* Additional spice piles */}
                         <div className="absolute left-50 top-1/3 w-48 h-48 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-full opacity-60"></div>
-                        <div className="absolute left`-70 top-2/3 w-40 h-40 bg-gradient-to-br from-red-500 to-orange-600 rounded-full opacity-50"></div>
+                        <div className="absolute left-70 top-2/3 w-40 h-40 bg-gradient-to-br from-red-500 to-orange-600 rounded-full opacity-50"></div>
                         <div className="absolute left-[300px] top-1/2 w-56 h-56 bg-gradient-to-br from-orange-600 to-red-600 rounded-full opacity-40"></div>
                     </div>
                 </div>
                 <div className="w-full h-full flex items-center justify-center my-9">
-                    <span className="text-6xl font-bold text-white flex text-center"> Cart</span>
+                    <span className="text-6xl font-bold text-white flex text-center">Cart</span>
                 </div>
             </div>
-            <div className="w-full h- flex flex-col ">
-                <div className="w-[90%] h-full mx-auto flex flex-col ">
+
+            <div className="w-full h- flex flex-col">
+                <div className="w-[90%] h-full mx-auto flex flex-col">
                     {/* Cart Items Table */}
                     <div className="flex-grow">
                         <table className="w-full border-collapse">
@@ -277,195 +492,141 @@ export default function Cart() {
 
                     {/* Customer Details Form */}
                     <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-                        <h2 className="text-xl font-bold mb-4">
-                            {deliveryOption === "pickup" ? "Pickup Details" : "Delivery Details"}
-                        </h2>
-
-                        {deliveryOption === "pickup" ? (
-                            // Pickup form fields
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Full Name *
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={customerName}
-                                        onChange={(e) => setCustomerName(e.target.value)}
-                                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                                        placeholder="Enter your full name"
-                                        required
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Phone Number *
-                                    </label>
-                                    <input
-                                        type="tel"
-                                        value={customerPhone}
-                                        onChange={(e) => setCustomerPhone(e.target.value)}
-                                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                                        placeholder="Enter your phone number"
-                                        required
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        WhatsApp Number *
-                                    </label>
-                                    <input
-                                        type="tel"
-                                        value={whatsappNumber}
-                                        onChange={(e) => setWhatsappNumber(e.target.value)}
-                                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                                        placeholder="Enter your WhatsApp number"
-                                        required
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Preferred Time *
-                                    </label>
-                                    <input
-                                        type="time"
-                                        value={preferredTime}
-                                        onChange={(e) => setPreferredTime(e.target.value)}
-                                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                                        required
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Preferred Day *
-                                    </label>
-                                    <input
-                                        type="date"
-                                        value={preferredDay}
-                                        onChange={(e) => setPreferredDay(e.target.value)}
-                                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                                        required
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Email (Optional)
-                                    </label>
-                                    <input
-                                        type="email"
-                                        value={customeremail}
-                                        onChange={(e) => setCustomerEmail(e.target.value)}
-                                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                                        placeholder="Enter your email address"
-                                    />
-                                </div>
-                            </div>
-                        ) : (
-                            // Delivery form fields
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Full Name *
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={deliveryName}
-                                        onChange={(e) => setDeliveryName(e.target.value)}
-                                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                                        placeholder="Enter recipient's full name"
-                                        required
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Phone Number *
-                                    </label>
-                                    <input
-                                        type="tel"
-                                        value={deliveryPhone}
-                                        onChange={(e) => setDeliveryPhone(e.target.value)}
-                                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                                        placeholder="Enter recipient's phone number"
-                                        required
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        WhatsApp Number *
-                                    </label>
-                                    <input
-                                        type="tel"
-                                        value={deliveryWhatsapp}
-                                        onChange={(e) => setDeliveryWhatsapp(e.target.value)}
-                                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                                        placeholder="Enter recipient's WhatsApp number"
-                                        required
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Nearest Town or City *
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={deliveryTownOrCity}
-                                        onChange={(e) => setDeliveryTownOrCity(e.target.value)}
-                                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                                        placeholder="Enter nearest town or city"
-                                        required
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Preferred Time *
-                                    </label>
-                                    <input
-                                        type="time"
-                                        value={deliveryTime}
-                                        onChange={(e) => setDeliveryTime(e.target.value)}
-                                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                                        required
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Preferred Day *
-                                    </label>
-                                    <input
-                                        type="date"
-                                        value={deliveryDay}
-                                        onChange={(e) => setDeliveryDay(e.target.value)}
-                                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                                        required
-                                    />
-                                </div>
-                                <div className="md:col-span-2">
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Home Address *
-                                    </label>
-                                    <textarea
-                                        value={deliveryAddress}
-                                        onChange={(e) => setDeliveryAddress(e.target.value)}
-                                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                                        placeholder="Enter complete delivery address"
-                                        rows="3"
-                                        required
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Email (Optional)
-                                    </label>
-                                    <input
-                                        type="email"
-                                        value={customeremail}
-                                        onChange={(e) => setCustomerEmail(e.target.value)}
-                                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                                        placeholder="Enter your email address"
-                                    />
-                                </div>
+                        <h2 className="text-xl font-bold mb-4">Customer Details</h2>
+                        
+                        {/* Account Status Indicator */}
+                        {accountStatus && (
+                            <div className={`mb-4 p-3 rounded-lg flex items-center ${
+                                accountStatus === 'existing' 
+                                    ? 'bg-green-100 border border-green-300' 
+                                    : 'bg-blue-100 border border-blue-300'
+                            }`}>
+                                <div className={`w-2 h-2 rounded-full mr-2 ${
+                                    accountStatus === 'existing' ? 'bg-green-500' : 'bg-blue-500'
+                                }`}></div>
+                                <span className={`text-sm font-medium ${
+                                    accountStatus === 'existing' ? 'text-green-800' : 'text-blue-800'
+                                }`}>
+                                    {accountStatus === 'existing' 
+                                        ? (isLoggedIn 
+                                            ? '✅ Welcome back! You are automatically logged in. Order will be added to your account.'
+                                            : '✅ Account found! Order will be added to your existing account.')
+                                        : '🆕 New account will be created with your details.'
+                                    }
+                                </span>
                             </div>
                         )}
+
+                        {/* Login Status Indicator */}
+                        {isLoggedIn && currentUser && (
+                            <div className="mb-4 p-3 rounded-lg bg-green-50 border border-green-200">
+                                <div className="flex items-center">
+                                    <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                                    <span className="text-sm font-medium text-green-800">
+                                        🔐 Logged in as: {currentUser.firstName} {currentUser.lastName}
+                                    </span>
+                                </div>
+                                <p className="text-xs text-green-600 mt-1">
+                                    You can now view your orders in "My Orders" section after checkout!
+                                </p>
+                            </div>
+                        )}
+
+                        <p className="text-sm text-gray-600 mb-4">
+                            * We'll automatically check if you have an account and log you in. If not, we'll create one for you!
+                        </p>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    First Name * (simple letters only)
+                                </label>
+                                <input
+                                    type="text"
+                                    value={firstName}
+                                    onChange={handleFirstNameChange}
+                                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                                    placeholder="Enter your first name"
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Last Name * (simple letters only)
+                                </label>
+                                <input
+                                    type="text"
+                                    value={lastName}
+                                    onChange={(e) => setLastName(e.target.value)}
+                                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                                    placeholder="Enter your last name"
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Phone Number *
+                                </label>
+                                <input
+                                    type="tel"
+                                    value={phoneNumber}
+                                    onChange={handlePhoneNumberChange}
+                                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                                    placeholder="Enter your phone number"
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Nearest City *
+                                </label>
+                                <input
+                                    type="text"
+                                    value={nearestCity}
+                                    onChange={(e) => setNearestCity(e.target.value)}
+                                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                                    placeholder="Enter your nearest city"
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Preferred Time *
+                                </label>
+                                <input
+                                    type="time"
+                                    value={preferredTime}
+                                    onChange={(e) => setPreferredTime(e.target.value)}
+                                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Preferred Day *
+                                </label>
+                                <input
+                                    type="date"
+                                    value={preferredDay}
+                                    onChange={(e) => setPreferredDay(e.target.value)}
+                                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                                    required
+                                />
+                            </div>
+                            <div className="md:col-span-3">
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Home Address *
+                                </label>
+                                <textarea
+                                    value={homeAddress}
+                                    onChange={(e) => setHomeAddress(e.target.value)}
+                                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                                    placeholder="Enter your complete home address"
+                                    rows="3"
+                                    required
+                                />
+                            </div>
+                        </div>
                     </div>
 
                     {/* Order Summary and Checkout */}
@@ -482,11 +643,12 @@ export default function Cart() {
                             </h1>
                         </div>
 
-                        <div className="flex justify-between w-full items-center ">
+                        <div className="flex justify-between w-full items-center">
                             {/* Go Back button on the left */}
                             <button
                                 onClick={onGoBackClick}
                                 className="bg-green-500 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg w-[200px]"
+                                disabled={isCheckingOut}
                             >
                                 Go Back
                             </button>
@@ -496,26 +658,30 @@ export default function Cart() {
                                 <button
                                     onClick={onCloseOrdersClick}
                                     className="bg-red-500 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg w-[200px] disabled:bg-gray-400"
-                                    disabled={cart.length === 0}
+                                    disabled={cart.length === 0 || isCheckingOut}
                                 >
                                     Clear Cart
                                 </button>
 
                                 <button
                                     onClick={onOrderCheckOutClick}
-                                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg w-[200px] disabled:bg-gray-400"
-                                    disabled={cart.length === 0}
+                                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg w-[200px] disabled:bg-gray-400 flex items-center justify-center"
+                                    disabled={cart.length === 0 || isCheckingOut}
                                 >
-                                    Checkout
+                                    {isCheckingOut ? (
+                                        <>
+                                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                            Processing...
+                                        </>
+                                    ) : (
+                                        'Checkout'
+                                    )}
                                 </button>
                             </div>
                         </div>
                     </div>
                 </div>
-
             </div>
-
-
         </div>
-    )
+    );
 }
