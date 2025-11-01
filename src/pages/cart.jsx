@@ -45,13 +45,13 @@ export default function Cart() {
 
         try {
             const detailedCart = [];
-            
+
             for (const item of cartItems) {
                 try {
                     const response = await axios.get(
                         import.meta.env.VITE_BACKEND_URL + `/api/products/${item.productId}`
                     );
-                    
+
                     if (response.data) {
                         detailedCart.push({
                             ...item, // Keep original productId and qty
@@ -64,7 +64,7 @@ export default function Cart() {
                     // If product doesn't exist, skip it (it will be handled by CartCard component)
                 }
             }
-            
+
             setCartWithDetails(detailedCart);
             setCartLoading(false);
         } catch (error) {
@@ -103,7 +103,7 @@ export default function Cart() {
     function refreshCart() {
         const updatedCart = loadCart();
         setCart(updatedCart);
-        
+
         // Refetch product details
         setCartLoading(true);
         fetchCartDetails(updatedCart);
@@ -155,22 +155,22 @@ export default function Cart() {
     const validateCartItems = (cartItems) => {
         for (let i = 0; i < cartItems.length; i++) {
             const item = cartItems[i];
-            
+
             // Check if item has a valid price
-            const hasValidPrice = (item.lastPrice && item.lastPrice > 0) || 
-                                 (item.price && item.price > 0) || 
-                                 (item.originalPrice && item.originalPrice > 0);
-            
+            const hasValidPrice = (item.lastPrice && item.lastPrice > 0) ||
+                (item.price && item.price > 0) ||
+                (item.originalPrice && item.originalPrice > 0);
+
             if (!hasValidPrice) {
                 throw new Error(`Item "${item.productName || item.name || 'Unknown'}" is missing price information. Please remove and re-add this item to your cart.`);
             }
-            
+
             // Check quantity
             const quantity = Number(item.qty || item.quantity);
             if (!quantity || quantity <= 0) {
                 throw new Error(`Item "${item.productName || item.name || 'Unknown'}" has invalid quantity.`);
             }
-            
+
             // Check product ID
             if (!item.productId && !item.id) {
                 throw new Error(`Item "${item.productName || item.name || 'Unknown'}" is missing product ID.`);
@@ -306,6 +306,8 @@ export default function Cart() {
             const orderData = {
                 userId: authResult.userId,
                 phone: phoneNumber.trim(),
+                firstName: firstName.trim(),
+                lastName: lastName.trim(),
                 name: `${firstName.trim()} ${lastName.trim()}`.trim(),
                 address: customerData.address,
                 deliveryOption: deliveryOption,
@@ -317,7 +319,7 @@ export default function Cart() {
                 orderedItems: cartWithDetails.map((item, index) => {
                     // Get price with improved fallback logic
                     let itemPrice = 0;
-                    
+
                     if (item.lastPrice && item.lastPrice > 0) {
                         itemPrice = item.lastPrice;
                     } else if (item.price && item.price > 0) {
@@ -325,17 +327,17 @@ export default function Cart() {
                     } else if (item.originalPrice && item.originalPrice > 0) {
                         itemPrice = item.originalPrice;
                     }
-                    
+
                     if (itemPrice <= 0) {
                         console.error(`Item ${index + 1} (${item.productName || item.name}) has no valid price:`, item);
                         throw new Error(`Item ${index + 1} is missing a valid price. Please refresh the page and try again.`);
                     }
-                    
+
                     const quantity = Number(item.qty || item.quantity) || 1;
                     if (quantity <= 0) {
                         throw new Error(`Item ${index + 1} has invalid quantity`);
                     }
-                    
+
                     return {
                         name: item.productName || item.name || 'Unknown Product',
                         price: Number(itemPrice),
@@ -679,11 +681,10 @@ export default function Cart() {
                             <button
                                 onClick={handleOrderSubmission}
                                 disabled={loading}
-                                className={`px-8 py-3 rounded-lg font-semibold transition-colors ${
-                                    loading 
-                                        ? 'bg-gray-400 cursor-not-allowed' 
+                                className={`px-8 py-3 rounded-lg font-semibold transition-colors ${loading
+                                        ? 'bg-gray-400 cursor-not-allowed'
                                         : 'bg-orange-600 hover:bg-orange-700 text-white'
-                                }`}
+                                    }`}
                             >
                                 {loading ? 'Processing...' : 'Place Order'}
                             </button>
