@@ -12,34 +12,50 @@ const ProductOrderStats = () => {
   const fetchProductStats = async () => {
     try {
       setLoading(true);
-      // Try multiple possible base URLs
-      const possibleURLs = [
-        'http://localhost:3000',
-        'https://your-api-domain.com', // Replace with your actual API domain
-        '' // Empty string for same origin
-      ];
+      setError(null);
       
-      let response;
-      let lastError;
+      // Get the auth token from localStorage
+      const token = localStorage.getItem('authToken');
       
-      for (const baseURL of possibleURLs) {
-        try {
-          const url = baseURL ? `${baseURL}/api/orders/product-stats` : '/api/orders/product-stats';
-          response = await fetch(url);
-          if (response.ok) {
-            break; // Success, exit loop
-          }
-        } catch (err) {
-          lastError = err;
-          continue; // Try next URL
-        }
+      if (!token) {
+        setError('Authentication required. Please log in again.');
+        setLoading(false);
+        return;
       }
       
-      if (!response || !response.ok) {
-        throw new Error(`HTTP error! status: ${response?.status || 'Network error'}`);
+      // Use the backend URL from environment variables
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+      const url = `${backendUrl}/api/orders/product-stats`;
+      
+      console.log('Fetching product stats from:', url);
+      console.log('Using auth token:', token ? 'Present' : 'Missing');
+      
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}` // Add authentication token
+        }
+      });
+      
+      console.log('Response status:', response.status);
+      
+      if (response.status === 401) {
+        setError('Session expired. Please log in again.');
+        setLoading(false);
+        // Optionally redirect to login
+        // window.location.href = '/admin/login';
+        return;
+      }
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Response error:', errorText);
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
       
       const data = await response.json();
+      console.log('Product stats data:', data);
       
       if (data.products) {
         setProducts(data.products);
@@ -48,7 +64,8 @@ const ProductOrderStats = () => {
         setError(data.message || 'No products data received');
       }
     } catch (err) {
-      setError(`Error fetching product statistics: ${err.message}`);
+      const errorMessage = `Error fetching product statistics: ${err.message}`;
+      setError(errorMessage);
       console.error('Fetch error:', err);
     } finally {
       setLoading(false);
@@ -117,44 +134,34 @@ const ProductOrderStats = () => {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {products.map((product, index) => (
-                <tr key={product.productId} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                <tr key={product.productId || index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex-shrink-0 h-16 w-16">
                       {product.productImage ? (
                         <img
-                          className="h-16 w-16 rounded-lg object-cover"
                           src={product.productImage}
                           alt={product.productName}
+                          className="h-16 w-16 rounded object-cover"
                           onError={(e) => {
                             e.target.onerror = null;
-                            e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0yMCAyMEg0NFY0NEgyMFYyMFoiIGZpbGw9IiNEMUQ1REIiLz4KPHBhdGggZD0iTTI2IDI4QzI3LjEwNDYgMjggMjggMjcuMTA0NiAyOCAyNkMyOCAyNC44OTU0IDI3LjEwNDYgMjQgMjYgMjRDMjQuODk1NCAyNCAyNCAyNC44OTU0IDI0IDI2QzI0IDI3LjEwNDYgMjQuODk1NCAyOCAyNiAyOFoiIGZpbGw9IiM5Q0EzQUYiLz4KPHBhdGggZD0iTTIwIDM4TDI2IDMwTDMwIDM0TDM4IDI2TDQ0IDM4SDIwWiIgZmlsbD0iIzlDQTNBRiIvPgo8L3N2Zz4K';
+                            e.target.src = 'https://via.placeholder.com/64?text=No+Image';
                           }}
                         />
                       ) : (
-                        <div className="h-16 w-16 bg-gray-200 rounded-lg flex items-center justify-center">
+                        <div className="h-16 w-16 rounded bg-gray-200 flex items-center justify-center">
                           <span className="text-gray-400 text-xs">No Image</span>
                         </div>
                       )}
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-6 py-4">
                     <div className="text-sm font-medium text-gray-900">
-                      {product.productName}
+                      {product.productName || 'Unknown Product'}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <span className="text-2xl font-bold text-blue-600 mr-2">
-                        {product.totalQuantityOrdered}
-                      </span>
-                      <div className="flex-1 bg-gray-200 rounded-full h-2">
-                        <div
-                          className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                          style={{
-                            width: `${Math.min((product.totalQuantityOrdered / Math.max(...products.map(p => p.totalQuantityOrdered))) * 100, 100)}%`
-                          }}
-                        ></div>
-                      </div>
+                    <div className="text-sm text-gray-900">
+                      {product.totalQuantityOrdered || 0}
                     </div>
                   </td>
                 </tr>
@@ -167,4 +174,16 @@ const ProductOrderStats = () => {
   );
 };
 
-export default ProductOrderStats;
+// Main Dashboard Component
+export default function AdminDashboard() {
+  return (
+    <div className="min-h-screen bg-gray-100 p-6">
+      <div className="max-w-7xl mx-auto">
+        <h1 className="text-3xl font-bold text-gray-900 mb-6">Admin Dashboard</h1>
+        <ProductOrderStats />
+      </div>
+    </div>
+  );
+}
+
+///Anjana@Shop2024!
