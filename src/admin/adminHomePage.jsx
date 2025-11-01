@@ -1,3 +1,4 @@
+// src/admin/adminHomePage.jsx
 import { Link, Route, Routes, useNavigate } from "react-router-dom";
 import { MdDashboard, MdOutlineProductionQuantityLimits, MdShoppingCart, MdPeople } from "react-icons/md";
 import { Shield, LogOut } from "lucide-react";
@@ -7,6 +8,7 @@ import AddProductForm from "./addProductFrom";
 import AdminOrdersPage from "../components/adminOrderPage";
 import AdminDashboard from "./adminDashboard";
 import AdminUserManagement from "./adminUserManagement";
+import AdminCustomerManagement from "./adminCustomerManagement";
 import toast from "react-hot-toast";
 
 export default function AdminHomePage() {
@@ -75,7 +77,7 @@ export default function AdminHomePage() {
           <Route path="/products/addProduct" element={<AddProductForm/>}/>
           <Route path="/products/category/:category/productInfo/:productId/edit" element={<EditProductForm/>} />
           <Route path="/orders" element={<AdminOrdersPage/>}/>
-          <Route path="/customers" element={<h1>Customers</h1>}/> 
+          <Route path="/customers" element={<AdminCustomerManagement/>}/> 
           <Route path="/users" element={<AdminUserManagement/>}/>
         </Routes>
       </div>
