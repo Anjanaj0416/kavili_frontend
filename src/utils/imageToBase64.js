@@ -14,10 +14,10 @@ export default function convertImageToBase64(file) {
             return;
         }
 
-        // Validate file size (max 2MB for better performance)
-        const maxSize = 2 * 1024 * 1024; // 2MB in bytes
+        // Validate file size (max 5MB for better flexibility)
+        const maxSize = 5 * 1024 * 1024; // 5MB in bytes
         if (file.size > maxSize) {
-            reject(new Error("Image size must be less than 2MB. Please compress or resize your image."));
+            reject(new Error("Image size must be less than 5MB. Please compress or resize your image."));
             return;
         }
 

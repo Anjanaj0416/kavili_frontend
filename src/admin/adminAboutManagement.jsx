@@ -433,12 +433,19 @@ export default function AdminAboutManagement() {
                                             <label className="block text-sm font-medium text-gray-700 mb-2">Photo</label>
                                             
                                             {member.image && (
-                                                <div className="mb-3">
+                                                <div className="mb-3 relative inline-block">
                                                     <img 
                                                         src={member.image} 
                                                         alt={member.name} 
                                                         className="w-32 h-32 object-cover rounded-lg"
                                                     />
+                                                    <button
+                                                        onClick={() => handleTeamMemberChange(index, "image", "")}
+                                                        className="absolute top-2 right-2 p-1.5 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors shadow-lg"
+                                                        title="Remove photo"
+                                                    >
+                                                        <Trash2 size={16} />
+                                                    </button>
                                                 </div>
                                             )}
 
