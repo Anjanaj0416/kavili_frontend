@@ -1,6 +1,6 @@
 // src/admin/adminHomePage.jsx
 import { Link, Route, Routes, useNavigate } from "react-router-dom";
-import { MdDashboard, MdOutlineProductionQuantityLimits, MdShoppingCart, MdPeople, MdContactMail } from "react-icons/md";
+import { MdDashboard, MdOutlineProductionQuantityLimits, MdShoppingCart, MdPeople, MdContactMail, MdInfo } from "react-icons/md";
 import { Shield, LogOut } from "lucide-react";
 import AdminProductPage from "./adminProductPage";
 import EditProductForm from "./editProductForm";
@@ -10,6 +10,7 @@ import AdminDashboard from "./adminDashboard";
 import AdminUserManagement from "./adminUserManagement";
 import AdminCustomerManagement from "./adminCustomerManagement";
 import AdminContactManagement from "./adminContactManagement";
+import AdminAboutManagement from "./adminAboutManagement";
 import toast from "react-hot-toast";
 
 export default function AdminHomePage() {
@@ -20,10 +21,10 @@ export default function AdminHomePage() {
     // Clear authentication data
     localStorage.removeItem('authToken');
     localStorage.removeItem('userDetails');
-    
+
     // Show success message
     toast.success('Signed out successfully');
-    
+
     // Redirect to admin login page
     navigate('/admin/login', { replace: true });
   };
@@ -63,6 +64,11 @@ export default function AdminHomePage() {
             <MdContactMail size={24} />
             <span>Contact Info</span>
           </Link>
+          <Link to="/admin/about" className="flex items-center space-x-2 hover:text-gray-300 transition-colors">
+            <MdInfo size={24} />
+            <span>About Info</span>
+          </Link>
+
         </div>
 
         {/* Right side - Sign Out Button */}
@@ -78,14 +84,15 @@ export default function AdminHomePage() {
       {/* Admin Routes */}
       <div className="w-full h-[calc(100vh-100px)]">
         <Routes>
-          <Route path="/dashboard" element={<AdminDashboard/>} />
-          <Route path="/products" element={<AdminProductPage/>}/>
-          <Route path="/products/addProduct" element={<AddProductForm/>}/>
-          <Route path="/products/category/:category/productInfo/:productId/edit" element={<EditProductForm/>} />
-          <Route path="/orders" element={<AdminOrdersPage/>}/>
-          <Route path="/customers" element={<AdminCustomerManagement/>}/> 
-          <Route path="/contact" element={<AdminContactManagement/>}/>
-          <Route path="/users" element={<AdminUserManagement/>}/>
+          <Route path="/dashboard" element={<AdminDashboard />} />
+          <Route path="/products" element={<AdminProductPage />} />
+          <Route path="/products/addProduct" element={<AddProductForm />} />
+          <Route path="/products/category/:category/productInfo/:productId/edit" element={<EditProductForm />} />
+          <Route path="/orders" element={<AdminOrdersPage />} />
+          <Route path="/customers" element={<AdminCustomerManagement />} />
+          <Route path="/contact" element={<AdminContactManagement />} />
+          <Route path="/about" element={<AdminAboutManagement/>}/>
+          <Route path="/users" element={<AdminUserManagement />} />
         </Routes>
       </div>
     </div>
