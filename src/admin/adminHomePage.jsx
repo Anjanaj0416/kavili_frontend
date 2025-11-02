@@ -1,6 +1,6 @@
 // src/admin/adminHomePage.jsx
 import { Link, Route, Routes, useNavigate } from "react-router-dom";
-import { MdDashboard, MdOutlineProductionQuantityLimits, MdShoppingCart, MdPeople } from "react-icons/md";
+import { MdDashboard, MdOutlineProductionQuantityLimits, MdShoppingCart, MdPeople, MdContactMail } from "react-icons/md";
 import { Shield, LogOut } from "lucide-react";
 import AdminProductPage from "./adminProductPage";
 import EditProductForm from "./editProductForm";
@@ -9,6 +9,7 @@ import AdminOrdersPage from "../components/adminOrderPage";
 import AdminDashboard from "./adminDashboard";
 import AdminUserManagement from "./adminUserManagement";
 import AdminCustomerManagement from "./adminCustomerManagement";
+import AdminContactManagement from "./adminContactManagement";
 import toast from "react-hot-toast";
 
 export default function AdminHomePage() {
@@ -57,6 +58,11 @@ export default function AdminHomePage() {
             <Shield size={24} />
             <span>Admin Users</span>
           </Link>
+
+          <Link to="/admin/contact" className="flex items-center space-x-2 hover:text-gray-300 transition-colors">
+            <MdContactMail size={24} />
+            <span>Contact Info</span>
+          </Link>
         </div>
 
         {/* Right side - Sign Out Button */}
@@ -78,6 +84,7 @@ export default function AdminHomePage() {
           <Route path="/products/category/:category/productInfo/:productId/edit" element={<EditProductForm/>} />
           <Route path="/orders" element={<AdminOrdersPage/>}/>
           <Route path="/customers" element={<AdminCustomerManagement/>}/> 
+          <Route path="/contact" element={<AdminContactManagement/>}/>
           <Route path="/users" element={<AdminUserManagement/>}/>
         </Routes>
       </div>
