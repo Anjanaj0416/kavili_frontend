@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
-import { User, Phone, Home, Package, Calendar, Clock, MapPin, LogOut, ShoppingBag, AlertCircle } from 'lucide-react';
+import { User, Phone, Home, Package, Calendar, Clock, MapPin, LogOut, ShoppingBag, AlertCircle, Edit2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function MyOrders() {
@@ -12,7 +12,7 @@ export default function MyOrders() {
     const [loading, setLoading] = useState(true);
     const [ordersLoading, setOrdersLoading] = useState(false);
     const [error, setError] = useState(null);
-    
+
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -47,7 +47,7 @@ export default function MyOrders() {
             }
 
             const { token, userData } = getAuthData();
-            
+
             if (token && userData) {
                 try {
                     // Verify token is still valid by making a test request
@@ -55,12 +55,12 @@ export default function MyOrders() {
                         import.meta.env.VITE_BACKEND_URL + '/api/users/my-orders', {
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
-                    
+
                     // Token is valid
                     setAuthToken(token);
                     setUserDetails(userData);
                     setCurrentView('orders');
-                    
+
                     // Set orders if response contains them, but don't show errors for empty orders
                     if (response.data.success) {
                         setOrders(response.data.orders || []);
@@ -114,20 +114,20 @@ export default function MyOrders() {
     const fetchOrders = async () => {
         setOrdersLoading(true);
         setError(null);
-        
+
         try {
             const response = await axios.get(
                 import.meta.env.VITE_BACKEND_URL + '/api/users/my-orders', {
                 headers: { 'Authorization': `Bearer ${authToken}` }
             });
-            
+
             if (response.data.success) {
                 setOrders(response.data.orders || []);
                 // Don't show any message for empty orders - let the UI handle it naturally
             } else {
                 // Only show error if it's not about empty orders
                 const errorMessage = response.data.message || 'Failed to fetch orders';
-                if (!errorMessage.toLowerCase().includes('no orders') && 
+                if (!errorMessage.toLowerCase().includes('no orders') &&
                     !errorMessage.toLowerCase().includes('not found')) {
                     setError(errorMessage);
                     toast.error(errorMessage);
@@ -250,7 +250,7 @@ export default function MyOrders() {
                     <p className="text-gray-600 mb-6">
                         Please log in to view your order history and track your purchases.
                     </p>
-                    
+
                     <div className="space-y-3">
                         <button
                             onClick={handleGoToLogin}
@@ -258,7 +258,7 @@ export default function MyOrders() {
                         >
                             Login to View Orders
                         </button>
-                        
+
                         <button
                             onClick={handleBackToShopping}
                             className="w-full bg-gray-200 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-300 transition-colors duration-200"
@@ -314,7 +314,16 @@ export default function MyOrders() {
                 {userDetails && (
                     <div className="max-w-6xl mx-auto px-4 py-6">
                         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-                            <h2 className="text-xl font-semibold text-gray-800 mb-4">Account Information</h2>
+                            <div className="flex justify-between items-center mb-4">
+                                <h2 className="text-xl font-semibold text-gray-800">Account Information</h2>
+                                <button
+                                    onClick={() => navigate('/profile')}
+                                    className="flex items-center px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
+                                >
+                                    <Edit2 className="w-4 h-4 mr-2" />
+                                    Edit Details
+                                </button>
+                            </div>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div className="flex items-center">
                                     <User className="w-5 h-5 text-gray-400 mr-3" />
@@ -382,7 +391,7 @@ export default function MyOrders() {
                                 <div className="flex justify-between items-center">
                                     <h2 className="text-2xl font-bold text-gray-800">Your Orders ({orders.length})</h2>
                                 </div>
-                                
+
                                 {orders.map((order) => (
                                     <div key={order.orderId || order._id} className="bg-white rounded-lg shadow-md p-6">
                                         <div className="flex justify-between items-start mb-4">

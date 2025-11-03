@@ -9,6 +9,7 @@ import HomeBody from '../components/homeBody';
 import About from './about';
 import ContactPage from './contactPage';
 import MyOrders from './myOrders';
+import CustomerProfile from './customerProfile';
 
 import Register from './register';
 import Login from './login';
@@ -98,6 +99,11 @@ export default function HomePage() {
           <Route path="/myOrders" element={
 
             <MyOrders />
+
+          } />
+          <Route path="/profile" element={
+
+            <CustomerProfile />
 
           } />
           <Route path="/category/:category/productInfo/:productId" element={
