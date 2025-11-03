@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Phone, MapPin, ArrowLeft } from 'lucide-react';
+import { User, Phone, MapPin, Mail, ArrowLeft } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function Register() {
@@ -9,7 +9,8 @@ export default function Register() {
         firstName: '',
         lastName: '',
         phonenumber: '',
-        homeaddress: ''
+        homeaddress: '',
+        email: ''
     });
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
@@ -51,6 +52,17 @@ export default function Register() {
             return;
         }
 
+        // Email validation (if provided)
+        if (formData.email && formData.email.trim()) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(formData.email.trim())) {
+                setMessage('Please enter a valid email address');
+                setLoading(false);
+                toast.error('Please enter a valid email address');
+                return;
+            }
+        }
+
         try {
             // Use environment variable for backend URL or fallback to localhost
             const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
@@ -71,16 +83,17 @@ export default function Register() {
                 localStorage.setItem('userDetails', JSON.stringify(data.user));
                 
                 setMessage('Registration successful! Redirecting to your orders page...');
-                toast.success(`🎉 Welcome ${data.user.firstName}! Account created successfully!`);
-                
+                toast.success(`🎉 Welcome ${data.user.firstName}! ${formData.email ? 'Email notifications enabled!' : ''}`);
+
                 // Clear form
                 setFormData({
                     firstName: '',
                     lastName: '',
                     phonenumber: '',
-                    homeaddress: ''
+                    homeaddress: '',
+                    email: ''
                 });
-                
+
                 // Navigate to My Orders page after a short delay
                 setTimeout(() => {
                     navigate('/myOrders', { 
@@ -91,16 +104,14 @@ export default function Register() {
                         }
                     });
                 }, 2000);
-                
+
             } else {
-                const errorMessage = data.message || 'Registration failed';
-                setMessage(errorMessage);
-                toast.error(errorMessage);
+                setMessage(data.message || 'Registration failed. Please try again.');
+                toast.error(data.message || 'Registration failed');
                 
-                // If user already exists, suggest login
-                if (errorMessage.toLowerCase().includes('already exists')) {
+                if (response.status === 409) {
                     setTimeout(() => {
-                        const shouldLogin = window.confirm('This phone number is already registered. Would you like to go to the login page?');
+                        const shouldLogin = window.confirm('User already exists. Would you like to go to the login page?');
                         if (shouldLogin) {
                             navigate('/login');
                         }
@@ -223,6 +234,27 @@ export default function Register() {
 
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Email Address (Optional)
+                            </label>
+                            <div className="relative">
+                                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                                <input
+                                    type="email"
+                                    name="email"
+                                    value={formData.email}
+                                    onChange={handleInputChange}
+                                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                    placeholder="Enter your email address"
+                                    disabled={loading}
+                                />
+                            </div>
+                            <p className="text-xs text-gray-500 mt-1">
+                                Get email notifications when your order status changes
+                            </p>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
                                 Home Address *
                             </label>
                             <div className="relative">
@@ -279,7 +311,8 @@ export default function Register() {
                             <strong>After registration:</strong><br />
                             • Your account will be created automatically<br />
                             • You'll be logged in and redirected to your orders page<br />
-                            • Use your phone number as password for future logins
+                            • Use your phone number as password for future logins<br />
+                            • Add email to receive order status notifications
                         </p>
                     </div>
                 </div>
