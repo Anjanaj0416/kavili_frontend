@@ -10,6 +10,7 @@ import AdminHomePage from './admin/adminHomePage.jsx'
 import ProductPage from './pages/products.jsx'
 import AdminLogin from './pages/AdminLogin.jsx' 
 import ProductOverView from './pages/productOverView.jsx'
+import CompleteProfile from './pages/CompleteProfile';
 
 
 
@@ -23,6 +24,7 @@ function App() {
         <Route path="/*" element={<HomePage/>} />
         <Route path="/admin/login" element={<AdminLogin/>} />
         <Route path="/admin/*" element={<AdminHomePage/>} />
+        <Route path="/complete-profile" element={<CompleteProfile />} />
         
       </Routes>
     </BrowserRouter>
