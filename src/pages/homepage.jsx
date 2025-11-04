@@ -10,7 +10,7 @@ import About from './about';
 import ContactPage from './contactPage';
 import MyOrders from './myOrders';
 import CustomerProfile from './customerProfile';
-import GoogleOneTap from '../components/GoogleOneTap';
+
 
 import Register from './register';
 import Login from './login';
@@ -21,7 +21,7 @@ export default function HomePage() {
   
   return (
     <div className="min-h-screen w-full relative">
-      <GoogleOneTap />
+      
       {/* Header */}
       <Header />
 
