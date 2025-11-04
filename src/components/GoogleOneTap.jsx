@@ -20,8 +20,34 @@ const GoogleOneTap = () => {
             return;
         }
 
-        hasInitialized.current = true;
+        // Check if backend is accessible before initializing One Tap
+        checkBackendHealth().then(isHealthy => {
+            if (!isHealthy) {
+                console.warn('Backend not accessible, skipping Google One Tap initialization');
+                return;
+            }
 
+            hasInitialized.current = true;
+            initializeGoogleOneTap();
+        });
+
+    }, []);
+
+    const checkBackendHealth = async () => {
+        try {
+            const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+            const response = await fetch(`${backendUrl}/api/products`, {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            return response.ok;
+        } catch (error) {
+            console.error('Backend health check failed:', error);
+            return false;
+        }
+    };
+
+    const initializeGoogleOneTap = () => {
         // Load Google Identity Services script
         const script = document.createElement('script');
         script.src = 'https://accounts.google.com/gsi/client';
@@ -32,16 +58,20 @@ const GoogleOneTap = () => {
             try {
                 // Initialize Google One Tap with proper configuration
                 if (window.google && window.google.accounts && window.google.accounts.id) {
+                    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+                    
+                    if (!clientId) {
+                        console.error('VITE_GOOGLE_CLIENT_ID not found in environment variables');
+                        return;
+                    }
+
                     window.google.accounts.id.initialize({
-                        // IMPORTANT: Replace this with your actual Google OAuth Client ID
-                        // Get it from: https://console.cloud.google.com/apis/credentials
-                        client_id: '774378170093-YOUR_FULL_CLIENT_ID_HERE.apps.googleusercontent.com',
+                        client_id: clientId,
                         callback: handleCredentialResponse,
                         auto_select: false,
                         cancel_on_tap_outside: true,
                         context: 'signin',
                         itp_support: true,
-                        use_fedcm_for_prompt: false, // Disable FedCM to avoid errors
                     });
 
                     // Display the One Tap prompt
@@ -50,19 +80,22 @@ const GoogleOneTap = () => {
                             const reason = notification.getNotDisplayedReason();
                             console.log('One Tap not displayed. Reason:', reason);
                             
-                            // Only show error for critical issues
                             if (reason === 'invalid_client') {
-                                console.error('Invalid Google Client ID. Please check your configuration.');
+                                console.error('Invalid Google Client ID. Please check your .env configuration.');
+                            } else if (reason === 'opt_out_or_no_session') {
+                                console.log('User opted out or no Google session available');
                             }
                         }
                         if (notification.isSkippedMoment()) {
                             console.log('One Tap skipped:', notification.getSkippedReason());
                         }
+                        if (notification.isDismissedMoment()) {
+                            console.log('One Tap dismissed:', notification.getDismissedReason());
+                        }
                     });
                 }
             } catch (error) {
                 console.error('Error initializing Google One Tap:', error);
-                // Silently fail - don't disrupt user experience
             }
         };
 
@@ -78,7 +111,7 @@ const GoogleOneTap = () => {
                 document.body.removeChild(script);
             }
             // Cancel any pending One Tap prompts
-            if (window.google && window.google.accounts && window.google.accounts.id) {
+            if (window.google?.accounts?.id) {
                 try {
                     window.google.accounts.id.cancel();
                 } catch (e) {
@@ -86,7 +119,7 @@ const GoogleOneTap = () => {
                 }
             }
         };
-    }, []);
+    };
 
     const handleCredentialResponse = async (response) => {
         // Prevent multiple simultaneous processing
@@ -108,10 +141,11 @@ const GoogleOneTap = () => {
                 displayName: payload.name,
                 firstName: payload.given_name || payload.name.split(' ')[0],
                 lastName: payload.family_name || payload.name.split(' ').slice(1).join(' '),
-                photoURL: payload.picture
+                photoURL: payload.picture,
+                emailVerified: payload.email_verified
             };
 
-            console.log('Google One Tap authentication successful');
+            console.log('Google One Tap authentication successful:', userData.email);
 
             // Check if user exists in backend
             const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
@@ -123,7 +157,7 @@ const GoogleOneTap = () => {
                     googleId: userData.googleId,
                     displayName: userData.displayName
                 }, {
-                    timeout: 10000, // 10 second timeout
+                    timeout: 15000,
                     headers: {
                         'Content-Type': 'application/json'
                     }
@@ -146,14 +180,17 @@ const GoogleOneTap = () => {
                                 user: loginResponse.data.user 
                             }
                         });
-                    }, 1000);
+                    }, 800);
                 }
             } catch (loginError) {
-                console.log('Login attempt result:', loginError.response?.status);
+                console.log('Login attempt failed:', {
+                    status: loginError.response?.status,
+                    message: loginError.response?.data?.message,
+                    error: loginError.message
+                });
                 
-                // User doesn't exist or login failed
+                // User doesn't exist - redirect to complete profile
                 if (loginError.response?.status === 404) {
-                    // User not found - redirect to complete profile
                     toast.success('Welcome! Please complete your profile to continue.');
                     
                     // Store Google user data temporarily for profile completion
@@ -164,16 +201,22 @@ const GoogleOneTap = () => {
                         navigate('/complete-profile', {
                             state: { googleUserData: userData }
                         });
-                    }, 1000);
+                    }, 800);
+                } else if (loginError.code === 'ECONNABORTED' || loginError.code === 'ERR_NETWORK') {
+                    // Network/timeout error
+                    toast.error('Unable to connect to server. Please check if the backend is running.');
+                    console.error('Backend connection error. Is your backend running on port 3000?');
+                } else if (loginError.response?.status === 500) {
+                    toast.error('Server error. Please try again later.');
                 } else {
                     // Other error
-                    console.error('Login error:', loginError);
-                    throw new Error('Failed to authenticate with backend');
+                    toast.error('Authentication failed. Please try again or use traditional login.');
+                    console.error('Unexpected login error:', loginError);
                 }
             }
         } catch (error) {
             console.error('Google One Tap error:', error);
-            toast.error('Failed to sign in with Google. Please try traditional login.');
+            toast.error('Failed to process Google sign-in. Please try traditional login.');
         } finally {
             isProcessing.current = false;
         }
