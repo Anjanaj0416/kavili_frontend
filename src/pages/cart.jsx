@@ -35,6 +35,29 @@ export default function Cart() {
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
 
+    useEffect(() => {
+        const authToken = localStorage.getItem('authToken');
+        const userDetailsString = localStorage.getItem('userDetails');
+
+        if (authToken && userDetailsString) {
+            try {
+                const userDetails = JSON.parse(userDetailsString);
+                
+                // Auto-fill form fields with stored user data
+                setFirstName(userDetails.firstName || "");
+                setLastName(userDetails.lastName || "");
+                setPhoneNumber(userDetails.phonenumber || "");
+                setWhatsappNumber(userDetails.phonenumber || ""); // Default to same as phone
+                setAddress(userDetails.homeaddress || "");
+                
+                console.log("Auto-filled customer details from logged-in user:", userDetails);
+                toast.success(`Welcome back, ${userDetails.firstName}! Your details have been auto-filled.`);
+            } catch (error) {
+                console.error("Error parsing user details:", error);
+            }
+        }
+    }, []); // Run once on component mount
+
     // Function to fetch product details for cart items
     const fetchCartDetails = async (cartItems) => {
         if (cartItems.length === 0) {
