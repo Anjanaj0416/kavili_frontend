@@ -2,11 +2,12 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { User, Phone, MapPin, Mail } from 'lucide-react';
 import toast from 'react-hot-toast';
+import axios from 'axios';
 
 export default function CompleteProfile() {
     const navigate = useNavigate();
     const location = useLocation();
-    const [googleUser, setGoogleUser] = useState(null);
+    const [googleUserData, setGoogleUserData] = useState(null);
     const [formData, setFormData] = useState({
         firstName: '',
         lastName: '',
@@ -18,8 +19,15 @@ export default function CompleteProfile() {
     const [message, setMessage] = useState('');
 
     useEffect(() => {
-        // Get Google user data from navigation state
-        const googleData = location.state?.googleUser;
+        // Get Google user data from navigation state or sessionStorage
+        let googleData = location.state?.googleUserData;
+        
+        if (!googleData) {
+            const storedData = sessionStorage.getItem('googleUserData');
+            if (storedData) {
+                googleData = JSON.parse(storedData);
+            }
+        }
         
         if (!googleData) {
             toast.error('No Google authentication data found. Please try again.');
@@ -27,7 +35,7 @@ export default function CompleteProfile() {
             return;
         }
 
-        setGoogleUser(googleData);
+        setGoogleUserData(googleData);
         
         // Pre-fill form with Google data
         setFormData(prev => ({
@@ -46,7 +54,8 @@ export default function CompleteProfile() {
         }));
     };
 
-    const handleSubmit = async () => {
+    const handleSubmit = async (e) => {
+        e.preventDefault();
         setLoading(true);
         setMessage('');
 
@@ -70,10 +79,10 @@ export default function CompleteProfile() {
         // Email validation (should already be valid from Google)
         if (formData.email && formData.email.trim()) {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(formData.email.trim())) {
+            if (!emailRegex.test(formData.email)) {
                 setMessage('Please enter a valid email address');
                 setLoading(false);
-                toast.error('Please enter a valid email address');
+                toast.error('Invalid email address');
                 return;
             }
         }
@@ -81,30 +90,24 @@ export default function CompleteProfile() {
         try {
             const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
             
-            // Include Google user ID for linking accounts
-            const registrationData = {
+            // Register the user with complete profile data
+            const response = await axios.post(`${backendUrl}/api/users/google-register`, {
                 ...formData,
-                googleId: googleUser.uid,
-                authProvider: 'google'
-            };
-
-            const response = await fetch(`${backendUrl}/api/users/google-register`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(registrationData)
+                googleId: googleUserData.googleId,
+                displayName: googleUserData.displayName,
+                photoURL: googleUserData.photoURL
             });
 
-            const data = await response.json();
-            
-            if (response.ok && data.token) {
-                // Store token and user data in localStorage
-                localStorage.setItem('authToken', data.token);
-                localStorage.setItem('userDetails', JSON.stringify(data.user));
-                
-                setMessage('Profile completed successfully! Redirecting...');
-                toast.success(`🎉 Welcome ${data.user.firstName}! Your account is ready!`);
+            if (response.data.success) {
+                setMessage('Registration successful! Redirecting...');
+                toast.success(`🎉 Welcome ${formData.firstName}! Registration complete!`);
+
+                // Store authentication data
+                localStorage.setItem('authToken', response.data.token);
+                localStorage.setItem('userDetails', JSON.stringify(response.data.user));
+
+                // Clear session storage
+                sessionStorage.removeItem('googleUserData');
 
                 // Clear form
                 setFormData({
@@ -121,31 +124,35 @@ export default function CompleteProfile() {
                         replace: true,
                         state: { 
                             registrationSuccess: true, 
-                            user: data.user 
+                            user: response.data.user 
                         }
                     });
                 }, 2000);
 
             } else {
-                setMessage(data.message || 'Registration failed. Please try again.');
-                toast.error(data.message || 'Registration failed');
+                setMessage(response.data.message || 'Registration failed. Please try again.');
+                toast.error(response.data.message || 'Registration failed');
             }
         } catch (error) {
-            const errorMessage = 'Network error. Please check your connection and try again.';
+            const errorMessage = error.response?.data?.message || 'Network error. Please check your connection and try again.';
             console.error('Registration error:', error);
             setMessage(errorMessage);
             toast.error(errorMessage);
+            
+            if (error.response?.status === 409) {
+                setTimeout(() => {
+                    navigate('/login');
+                }, 2000);
+            }
         } finally {
             setLoading(false);
         }
     };
 
-    if (!googleUser) {
+    if (!googleUserData) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100 flex items-center justify-center p-4">
-                <div className="text-center">
-                    <p className="text-gray-600">Loading...</p>
-                </div>
+            <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100 flex items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600"></div>
             </div>
         );
     }
@@ -160,22 +167,19 @@ export default function CompleteProfile() {
                             <User className="w-8 h-8 text-white" />
                         </div>
                         <h1 className="text-3xl font-bold text-gray-800 mb-2">Complete Your Profile</h1>
-                        <p className="text-gray-600">
-                            Welcome! Please provide additional details to complete your registration.
-                        </p>
-                    </div>
-
-                    {/* Google Account Info */}
-                    <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-                        <p className="text-sm text-green-800 flex items-center gap-2">
-                            <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                            Signed in with Google: {googleUser.email}
-                        </p>
+                        <p className="text-gray-600">Just a few more details to get started</p>
+                        
+                        {/* Google Account Info */}
+                        <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                            <p className="text-sm text-blue-700">
+                                ✓ Signed in with: <strong>{googleUserData.email}</strong>
+                            </p>
+                        </div>
                     </div>
 
                     {message && (
                         <div className={`mb-4 p-3 rounded-lg ${
-                            message.includes('success') 
+                            message.includes('success') || message.includes('Redirecting')
                                 ? 'bg-green-50 text-green-700 border border-green-200' 
                                 : 'bg-red-50 text-red-700 border border-red-200'
                         }`}>
@@ -184,7 +188,7 @@ export default function CompleteProfile() {
                     )}
 
                     {/* Form */}
-                    <div className="space-y-4">
+                    <form onSubmit={handleSubmit} className="space-y-4">
                         {/* First Name */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -238,12 +242,10 @@ export default function CompleteProfile() {
                                     disabled={loading}
                                     maxLength="10"
                                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all disabled:bg-gray-100"
-                                    placeholder="10-digit phone number"
+                                    placeholder="0771234567"
                                 />
                             </div>
-                            <p className="mt-1 text-xs text-gray-500">
-                                This will be used for order updates
-                            </p>
+                            <p className="text-xs text-gray-500 mt-1">10 digits, no spaces</p>
                         </div>
 
                         {/* Home Address */}
@@ -260,15 +262,15 @@ export default function CompleteProfile() {
                                     disabled={loading}
                                     rows="3"
                                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all disabled:bg-gray-100 resize-none"
-                                    placeholder="Enter your complete home address"
+                                    placeholder="Enter your delivery address"
                                 />
                             </div>
                         </div>
 
-                        {/* Email (pre-filled from Google) */}
+                        {/* Email (Pre-filled from Google) */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Email Address
+                                Email
                             </label>
                             <div className="relative">
                                 <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -276,22 +278,23 @@ export default function CompleteProfile() {
                                     type="email"
                                     name="email"
                                     value={formData.email}
-                                    onChange={handleInputChange}
                                     disabled={true}
-                                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg bg-gray-50 cursor-not-allowed"
-                                    placeholder="Email from Google"
+                                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-600"
+                                    placeholder="your.email@example.com"
                                 />
                             </div>
-                            <p className="mt-1 text-xs text-gray-500">
-                                Email is linked to your Google account
-                            </p>
+                            <p className="text-xs text-gray-500 mt-1">✓ Verified by Google</p>
                         </div>
 
                         {/* Submit Button */}
                         <button
-                            onClick={handleSubmit}
+                            type="submit"
                             disabled={loading}
-                            className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white py-3 rounded-lg font-semibold hover:from-orange-600 hover:to-orange-700 transform hover:scale-[1.02] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-md"
+                            className={`w-full py-3 rounded-lg font-semibold text-white transition-all duration-200 ${
+                                loading
+                                    ? 'bg-gray-400 cursor-not-allowed'
+                                    : 'bg-orange-600 hover:bg-orange-700 active:scale-95'
+                            }`}
                         >
                             {loading ? (
                                 <span className="flex items-center justify-center gap-2">
@@ -305,7 +308,7 @@ export default function CompleteProfile() {
                                 'Complete Registration'
                             )}
                         </button>
-                    </div>
+                    </form>
 
                     {/* Info Note */}
                     <div className="mt-6 p-3 bg-blue-50 rounded-lg">
