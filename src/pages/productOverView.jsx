@@ -92,17 +92,14 @@ export default function ProductOverView() {
 
   };
 
-  // NEW: Buy Now functionality
+  // FIXED: Buy Now functionality - no longer clears cart
   const handleBuyNow = () => {
     if (product.quantity === 0) {
       toast.error("Product is out of stock");
       return;
     }
 
-    // Clear existing cart first (optional - remove if you want to keep existing items)
-    clearCart();
-
-    // Add current product to cart
+    // Add current product to cart (keeping existing items)
     addToCart(product.productId, quantity);
 
     // Show success message
@@ -341,7 +338,7 @@ export default function ProductOverView() {
             ) : relatedProducts.length > 0 ? (
               <div
                 id="related-products-container"
-                className="flex gap-6 overflow-x-auto scrollbar-hide pb-4"
+                className="flex gap-6 overflow-x-auto px-6 pb-6 scrollbar-hide"
                 style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
               >
                 {relatedProducts.map((relatedProduct) => (
@@ -352,14 +349,13 @@ export default function ProductOverView() {
                 ))}
               </div>
             ) : (
-              <div className="text-center text-gray-500 py-12">
-                <p className="text-lg">No related products found in this category.</p>
+              <div className="text-center py-8 text-white">
+                <p className="text-xl">No related products found</p>
               </div>
             )}
           </div>
         </>
       )}
     </div>
-
   );
 }
