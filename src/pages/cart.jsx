@@ -39,26 +39,52 @@ export default function Cart() {
     // NEW: Modal state
     const [showConfirmationModal, setShowConfirmationModal] = useState(false);
 
+    // Verify authentication and auto-fill user details only if truly logged in
     useEffect(() => {
         const authToken = localStorage.getItem('authToken');
         const userDetailsString = localStorage.getItem('userDetails');
 
         if (authToken && userDetailsString) {
-            try {
-                const userDetails = JSON.parse(userDetailsString);
-                
-                // Auto-fill form fields with stored user data
-                setFirstName(userDetails.firstName || "");
-                setLastName(userDetails.lastName || "");
-                setPhoneNumber(userDetails.phonenumber || "");
-                setWhatsappNumber(userDetails.phonenumber || ""); // Default to same as phone
-                setAddress(userDetails.homeaddress || "");
-                
-                console.log("Auto-filled customer details from logged-in user:", userDetails);
-                toast.success(`Welcome back, ${userDetails.firstName}! Your details have been auto-filled.`);
-            } catch (error) {
-                console.error("Error parsing user details:", error);
-            }
+            // Verify token is valid by making an authenticated request to my-orders endpoint
+            axios.get(import.meta.env.VITE_BACKEND_URL + '/api/users/my-orders', {
+                headers: {
+                    'Authorization': `Bearer ${authToken}`
+                }
+            })
+            .then((response) => {
+                if (response.data && response.data.success) {
+                    // Token is valid, auto-fill details
+                    try {
+                        const userDetails = JSON.parse(userDetailsString);
+                        
+                        // Auto-fill form fields with stored user data
+                        setFirstName(userDetails.firstName || "");
+                        setLastName(userDetails.lastName || "");
+                        setPhoneNumber(userDetails.phonenumber || "");
+                        setWhatsappNumber(userDetails.phonenumber || ""); // Default to same as phone
+                        setAddress(userDetails.homeaddress || "");
+                        
+                        console.log("Auto-filled customer details from logged-in user:", userDetails);
+                        toast.success(`Welcome back, ${userDetails.firstName}! Your details have been auto-filled.`);
+                    } catch (error) {
+                        console.error("Error parsing user details:", error);
+                    }
+                } else {
+                    // Token invalid, clear stale data
+                    localStorage.removeItem('authToken');
+                    localStorage.removeItem('userDetails');
+                    console.log("Invalid token detected, cleared auth data");
+                }
+            })
+            .catch((error) => {
+                console.error("Error verifying authentication:", error);
+                // If verification fails (401/403), clear potentially stale data
+                if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+                    localStorage.removeItem('authToken');
+                    localStorage.removeItem('userDetails');
+                    console.log("Invalid/expired token, cleared auth data");
+                }
+            });
         }
     }, []); // Run once on component mount
 
@@ -466,7 +492,7 @@ export default function Cart() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {cart.length > 0 ? (
+                                    {cart.length > 0 ?
                                         cart.map((item) => (
                                             <CartCard
                                                 key={item.productId}
@@ -475,25 +501,33 @@ export default function Cart() {
                                                 onCartUpdate={handleCartUpdate}
                                             />
                                         ))
-                                    ) : (
+                                        :
                                         <tr>
-                                            <td colSpan="6" className="text-center p-8 text-gray-500">
-                                                Your cart is empty. <span className="text-orange-600 hover:underline cursor-pointer" onClick={onGoBackClick}>Start shopping!</span>
+                                            <td colSpan="6" className="text-center p-8">
+                                                <div className="flex flex-col items-center gap-4">
+                                                    <p className="text-gray-500 text-lg">Your cart is empty. Start shopping to add items!</p>
+                                                    <button
+                                                        onClick={() => navigate('/products')}
+                                                        className="px-8 py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-semibold transition-colors"
+                                                    >
+                                                        Start Shopping
+                                                    </button>
+                                                </div>
                                             </td>
                                         </tr>
-                                    )}
+                                    }
                                 </tbody>
                             </table>
                         </div>
                     </div>
 
-                    {/* Checkout Section */}
+                    {/* Only show form if cart has items */}
                     {cart.length > 0 && (
                         <>
-                            {/* Delivery Option Selection */}
+                            {/* Delivery Option */}
                             <div className="mb-6 p-6 bg-white rounded-lg shadow-md">
                                 <h2 className="text-2xl font-bold mb-4 text-gray-800">Delivery Option</h2>
-                                <div className="flex flex-col space-y-3">
+                                <div className="flex gap-6">
                                     <label className="flex items-center cursor-pointer">
                                         <input
                                             type="radio"
@@ -568,7 +602,7 @@ export default function Cart() {
                                             value={phoneNumber}
                                             onChange={handlePhoneNumberChange}
                                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                                            placeholder="0714289356"
+                                            placeholder="0712345678"
                                             maxLength="10"
                                         />
                                     </div>
@@ -580,7 +614,7 @@ export default function Cart() {
                                             value={whatsappNumber}
                                             onChange={(e) => setWhatsappNumber(e.target.value)}
                                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                                            placeholder="0714289356"
+                                            placeholder="0712345678"
                                             maxLength="10"
                                         />
                                     </div>
@@ -590,15 +624,40 @@ export default function Cart() {
                                         <textarea
                                             value={address}
                                             onChange={(e) => setAddress(e.target.value)}
-                                            rows="3"
                                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                                             placeholder="369/1"
+                                            rows="3"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">Preferred Time *</label>
+                                        <select
+                                            value={preferredTime}
+                                            onChange={(e) => setPreferredTime(e.target.value)}
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                        >
+                                            <option value="">Select time</option>
+                                            <option value="morning">Morning (8 AM - 12 PM)</option>
+                                            <option value="afternoon">Afternoon (12 PM - 5 PM)</option>
+                                            <option value="evening">Evening (5 PM - 8 PM)</option>
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">Preferred Date *</label>
+                                        <input
+                                            type="date"
+                                            value={preferredDay}
+                                            onChange={(e) => setPreferredDay(e.target.value)}
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                            min={new Date().toISOString().split('T')[0]}
                                         />
                                     </div>
 
                                     {deliveryOption === "delivery" && (
-                                        <div className="md:col-span-2">
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">Nearest Town/City *</label>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">Nearest City *</label>
                                             <input
                                                 type="text"
                                                 value={nearestCity}
@@ -609,55 +668,26 @@ export default function Cart() {
                                         </div>
                                     )}
 
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">Preferred Time *</label>
-                                        <select
-                                            value={preferredTime}
-                                            onChange={(e) => setPreferredTime(e.target.value)}
-                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                                        >
-                                            <option value="">Select time</option>
-                                            <option value="morning">Morning (8AM - 12PM)</option>
-                                            <option value="afternoon">Afternoon (12PM - 4PM)</option>
-                                            <option value="evening">Evening (4PM - 8PM)</option>
-                                        </select>
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">Preferred Date *</label>
-                                        <input
-                                            type="date"
-                                            value={preferredDay}
-                                            onChange={(e) => setPreferredDay(e.target.value)}
-                                            min={new Date().toISOString().split('T')[0]}
-                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                                        />
-                                    </div>
-
                                     <div className="md:col-span-2">
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">Special Notes (Optional)</label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">Additional Notes (Optional)</label>
                                         <textarea
                                             value={notes}
                                             onChange={(e) => setNotes(e.target.value)}
-                                            rows="3"
                                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                                            placeholder="Any special instructions or notes for your order"
+                                            placeholder="Any special instructions..."
+                                            rows="2"
                                         />
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Order Summary */}
-                            <div className="mb-8 p-6 bg-white rounded-lg shadow-md">
+                            {/* Price Summary */}
+                            <div className="mb-6 p-6 bg-white rounded-lg shadow-md">
                                 <h2 className="text-2xl font-bold mb-4 text-gray-800">Order Summary</h2>
-                                <div className="space-y-2 text-gray-700">
-                                    <div className="flex justify-between">
-                                        <span>Items: {cart.length}</span>
-                                        <span></span>
-                                    </div>
-                                    <div className="flex justify-between text-sm text-gray-600">
-                                        <span>Original Total:</span>
-                                        <span>Rs. {labelTotal.toFixed(2)}</span>
+                                <div className="space-y-2">
+                                    <div className="flex justify-between text-lg">
+                                        <span className="text-gray-600">Subtotal:</span>
+                                        <span className="font-semibold">Rs. {labelTotal.toFixed(2)}</span>
                                     </div>
                                     <div className="text-2xl font-bold text-orange-600 mt-2">
                                         Total: Rs. {total.toFixed(2)}
