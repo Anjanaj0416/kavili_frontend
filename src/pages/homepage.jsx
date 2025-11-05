@@ -1,5 +1,6 @@
 import { Route, Routes } from 'react-router-dom';
 import Header from '../components/header';
+import Footer from '../components/footer';
 import ProductPage from './products';
 import NotFound from '../components/notFound';
 import ProductOverView from './productOverView';
@@ -20,13 +21,13 @@ import Login from './login';
 export default function HomePage() {
   
   return (
-    <div className="min-h-screen w-full relative">
+    <div className="min-h-screen w-full relative flex flex-col">
       
       {/* Header */}
       <Header />
 
       {/* Main Content */}
-      <main className="w-full">
+      <main className="w-full flex-grow">
         {/* Hero Section - only show on home page */}
         <Routes>
           <Route path="/" element={
@@ -41,31 +42,17 @@ export default function HomePage() {
                   <div className="relative w-full h-full">
                     {/* Main spice pile */}
                     <div className="absolute right-20 top-1/2 transform -translate-y-1/2 w-80 h-80 bg-gradient-to-br from-orange-600 to-red-600 rounded-full opacity-90"></div>
-                    <div className="absolute right-24 top-1/2 transform -translate-y-1/2 w-72 h-72 bg-gradient-to-br from-orange-500 to-red-500 rounded-full opacity-80"></div>
-                    <div className="absolute right-28 top-1/2 transform -translate-y-1/2 w-64 h-64 bg-gradient-to-br from-orange-400 to-red-400 rounded-full opacity-70"></div>
+                    <div className="absolute right-24 top-1/2 transform -translate-y-1/2 w-72 h-72 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-full opacity-80"></div>
 
-                    {/* Additional spice piles */}
-                    <div className="absolute right-96 top-1/3 w-48 h-48 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-full opacity-60"></div>
-                    <div className="absolute right-80 top-2/3 w-40 h-40 bg-gradient-to-br from-red-500 to-orange-600 rounded-full opacity-50"></div>
-                    <div className="absolute right-[500px] top-1/2 w-56 h-56 bg-gradient-to-br from-orange-600 to-red-600 rounded-full opacity-40"></div>
-                  </div>
-                </div>
-
-                {/* Hero Content */}
-                <div className="absolute inset-0 z-10 flex items-center h-full">
-                  <div className="container mx-auto px-8">
-                    <div className="max-w-2xl">
-                      <h1 className="text-6xl font-bold text-white mb-6 leading-tight">
-                        <span className="text-orange-200">PREMIUM</span> QUALITY<br />
-                        <span className="text-orange-200">UDARI</span><br />
-                        <span className="text-orange-300">SHOP</span> <span className="text-orange-400">EXPERIENCE</span>
+                    {/* Text content */}
+                    <div className="absolute left-20 top-1/2 transform -translate-y-1/2 z-10 max-w-2xl">
+                      <h1 className="text-7xl font-bold text-white mb-6 drop-shadow-lg">
+                        We bring unique flavors
                       </h1>
-
-                      <p className="text-xl text-white mb-8 leading-relaxed">
-                        Discover amazing products with the best quality and service
+                      <p className="text-2xl text-white mb-8 drop-shadow-md">
+                        Authentic, Fresh and Direct from the Farms
                       </p>
-
-                      <button className="bg-orange-700 hover:bg-orange-800 text-white px-8 py-3 rounded-lg font-semibold transition-colors duration-300">
+                      <button className="bg-orange-800 hover:bg-orange-800 text-white px-8 py-3 rounded-lg font-semibold transition-colors duration-300">
                         SHOP NOW
                       </button>
                     </div>
@@ -127,6 +114,9 @@ export default function HomePage() {
           } />
         </Routes>
       </main>
+
+      {/* Footer - Added here to show on all customer pages */}
+      <Footer />
     </div>
   );
 }
