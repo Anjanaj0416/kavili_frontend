@@ -11,6 +11,7 @@ import About from './about';
 import ContactPage from './contactPage';
 import MyOrders from './myOrders';
 import CustomerProfile from './customerProfile';
+import FAQ from './faq';
 
 
 import Register from './register';
@@ -75,6 +76,7 @@ export default function HomePage() {
           <Route path="/about" element={
             <About />
           } />
+          <Route path="/faq" element={<FAQ />} />
 
           <Route path="/contact" element={
             <ContactPage />
