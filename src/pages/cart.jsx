@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from "axios";
 import { loadCart, clearCart } from "../utils/cartFunction";
 import CartCard from "../components/cartCard";
+import OrderConfirmationModal from "../components/OrderConfirmationModal";
 import toast from "react-hot-toast";
 
 export default function Cart() {
@@ -34,6 +35,9 @@ export default function Cart() {
     const [accountStatus, setAccountStatus] = useState(null);
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
+
+    // NEW: Modal state
+    const [showConfirmationModal, setShowConfirmationModal] = useState(false);
 
     useEffect(() => {
         const authToken = localStorage.getItem('authToken');
@@ -117,18 +121,16 @@ export default function Cart() {
                 }
             }).catch((err) => {
                 console.error("Error getting quote:", err);
-                toast.error("Failed to calculate total");
             });
         }
     }, []);
 
-    // Function to refresh cart data
-    function refreshCart() {
+    // Handle cart refresh
+    const handleCartUpdate = () => {
         const updatedCart = loadCart();
         setCart(updatedCart);
 
-        // Refetch product details
-        setCartLoading(true);
+        // Fetch product details for updated cart
         fetchCartDetails(updatedCart);
 
         if (updatedCart.length > 0) {
@@ -140,23 +142,24 @@ export default function Cart() {
                     setLabelTotal(res.data.labelTotal);
                 }
             }).catch((err) => {
-                console.error("Error refreshing quote:", err);
+                console.error("Error updating quote:", err);
             });
         } else {
             setTotal(0);
             setLabelTotal(0);
         }
-    }
+    };
 
-    // Function to go back to previous page
-    function onGoBackClick() {
-        window.history.back();
-    }
+    const handleDeliveryOptionChange = (option) => {
+        setDeliveryOption(option);
+    };
 
-    // Function to clear all orders
-    function onCloseOrdersClick() {
-        const confirmClose = window.confirm("Are you sure you want to remove all items from the cart?");
-        if (confirmClose) {
+    const onGoBackClick = () => {
+        navigate("/products");
+    };
+
+    const onCloseOrdersClick = () => {
+        if (window.confirm("Are you sure you want to clear your cart?")) {
             clearCart();
             setCart([]);
             setCartWithDetails([]);
@@ -164,37 +167,50 @@ export default function Cart() {
             setLabelTotal(0);
             toast.success("Cart cleared successfully");
         }
-    }
+    };
 
-    // Handle delivery option change
-    const handleDeliveryOptionChange = (option) => {
-        setDeliveryOption(option);
-        if (option === "pickup") {
-            setNearestCity("");
+    // Handle account checking when user types phone number
+    const handlePhoneNumberChange = async (e) => {
+        const phone = e.target.value;
+        setPhoneNumber(phone);
+
+        if (phone.length === 10 && /^\d{10}$/.test(phone)) {
+            try {
+                const response = await axios.post(
+                    import.meta.env.VITE_BACKEND_URL + '/api/users/check-account',
+                    { phonenumber: phone }
+                );
+
+                if (response.data.exists) {
+                    setAccountStatus('existing');
+                } else {
+                    setAccountStatus('new');
+                }
+            } catch (error) {
+                console.error("Error checking account:", error);
+                setAccountStatus(null);
+            }
+        } else {
+            setAccountStatus(null);
         }
     };
 
-    // Updated function to validate cart items (now uses cartWithDetails)
-    const validateCartItems = (cartItems) => {
-        for (let i = 0; i < cartItems.length; i++) {
-            const item = cartItems[i];
-
-            // Check if item has a valid price
-            const hasValidPrice = (item.lastPrice && item.lastPrice > 0) ||
-                (item.price && item.price > 0) ||
-                (item.originalPrice && item.originalPrice > 0);
-
-            if (!hasValidPrice) {
-                throw new Error(`Item "${item.productName || item.name || 'Unknown'}" is missing price information. Please remove and re-add this item to your cart.`);
+    // Validate cart items
+    const validateCartItems = (items) => {
+        for (let i = 0; i < items.length; i++) {
+            const item = items[i];
+            
+            // Check price
+            const itemPrice = item.lastPrice || item.price;
+            if (!itemPrice || typeof itemPrice !== 'number' || itemPrice <= 0) {
+                throw new Error(`Item "${item.productName || item.name || 'Unknown'}" has invalid price. Please refresh the page and try again.`);
             }
 
-            // Check quantity
             const quantity = Number(item.qty || item.quantity);
             if (!quantity || quantity <= 0) {
                 throw new Error(`Item "${item.productName || item.name || 'Unknown'}" has invalid quantity.`);
             }
 
-            // Check product ID
             if (!item.productId && !item.id) {
                 throw new Error(`Item "${item.productName || item.name || 'Unknown'}" is missing product ID.`);
             }
@@ -263,8 +279,8 @@ export default function Cart() {
         }
     };
 
-    // Updated checkout/order submission function
-    const handleOrderSubmission = async () => {
+    // NEW: Function to handle "Place Order" button click (shows modal)
+    const handlePlaceOrderClick = async () => {
         // Wait for cart details to load
         if (cartLoading) {
             toast.error("Please wait for cart details to load...");
@@ -291,7 +307,7 @@ export default function Cart() {
             return;
         }
 
-        // Validate cart items before proceeding (now using cartWithDetails)
+        // Validate cart items before proceeding
         try {
             validateCartItems(cartWithDetails);
         } catch (validationError) {
@@ -300,6 +316,12 @@ export default function Cart() {
             return;
         }
 
+        // Show confirmation modal
+        setShowConfirmationModal(true);
+    };
+
+    // NEW: Function to handle order confirmation (called when user clicks "Confirm" in modal)
+    const handleOrderConfirmation = async () => {
         console.log("=== CART DEBUGGING ===");
         console.log("Cart with details:", JSON.stringify(cartWithDetails, null, 2));
 
@@ -312,48 +334,38 @@ export default function Cart() {
                 firstName: firstName.trim(),
                 lastName: lastName.trim(),
                 phoneNumber: phoneNumber.trim(),
-                address: `${address.trim()}${nearestCity.trim() ? ', ' + nearestCity.trim() : ''}`
+                address: `${address.trim()}${nearestCity.trim() ? `, ${nearestCity.trim()}` : ''}`
             };
 
-            // First, handle authentication
+            console.log("Starting authentication process...");
+
+            // Authenticate or register user first
             const authResult = await handleAutomaticAuth(customerData);
 
             if (!authResult.success) {
-                setError(authResult.error || authResult.message);
-                toast.error(authResult.error || authResult.message);
-                setLoading(false);
+                setError('Failed to authenticate. Please try again.');
+                toast.error('Failed to authenticate. Please try again.');
                 return;
             }
 
-            // Now create the order with the authenticated user and detailed cart
+            console.log("Authentication successful, proceeding with order...");
+
+            // Prepare order data
             const orderData = {
-                userId: authResult.userId,
-                phone: phoneNumber.trim(),
-                firstName: firstName.trim(),
-                lastName: lastName.trim(),
                 name: `${firstName.trim()} ${lastName.trim()}`.trim(),
-                address: customerData.address,
+                phone: phoneNumber.trim(),
+                address: `${address.trim()}${nearestCity.trim() ? `, ${nearestCity.trim()}` : ''}`,
                 deliveryOption: deliveryOption,
                 whatsappNumber: whatsappNumber.trim(),
                 preferredTime: preferredTime,
                 preferredDay: preferredDay,
-                nearestTownOrCity: deliveryOption === 'delivery' ? nearestCity.trim() : undefined,
-                notes: notes.trim() || "",
+                nearestTownOrCity: nearestCity.trim() || undefined,
+                notes: notes.trim() || undefined,
                 orderedItems: cartWithDetails.map((item, index) => {
-                    // Get price with improved fallback logic
-                    let itemPrice = 0;
+                    const itemPrice = item.lastPrice || item.price;
 
-                    if (item.lastPrice && item.lastPrice > 0) {
-                        itemPrice = item.lastPrice;
-                    } else if (item.price && item.price > 0) {
-                        itemPrice = item.price;
-                    } else if (item.originalPrice && item.originalPrice > 0) {
-                        itemPrice = item.originalPrice;
-                    }
-
-                    if (itemPrice <= 0) {
-                        console.error(`Item ${index + 1} (${item.productName || item.name}) has no valid price:`, item);
-                        throw new Error(`Item ${index + 1} is missing a valid price. Please refresh the page and try again.`);
+                    if (!itemPrice || typeof itemPrice !== 'number') {
+                        throw new Error(`Item ${index + 1} has invalid price. Please refresh the page and try again.`);
                     }
 
                     const quantity = Number(item.qty || item.quantity) || 1;
@@ -390,6 +402,7 @@ export default function Cart() {
                 setCartWithDetails([]);
                 setTotal(0);
                 setLabelTotal(0);
+                setShowConfirmationModal(false);
 
                 toast.success('🎉 Order placed successfully! Redirecting to your orders page...');
 
@@ -413,6 +426,14 @@ export default function Cart() {
 
     return (
         <>
+            {/* NEW: Order Confirmation Modal */}
+            <OrderConfirmationModal
+                isOpen={showConfirmationModal}
+                onClose={() => setShowConfirmationModal(false)}
+                onConfirm={handleOrderConfirmation}
+                loading={loading}
+            />
+
             <div className="pt-24 min-h-screen bg-orange-100 flex flex-col">
                 <div className="w-[90%] max-w-7xl h-full mx-auto flex flex-col py-8">
 
@@ -445,27 +466,19 @@ export default function Cart() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {cart.length > 0 ? cart.map((item) => {
-                                        return (
+                                    {cart.length > 0 ? (
+                                        cart.map((item) => (
                                             <CartCard
                                                 key={item.productId}
                                                 productId={item.productId}
                                                 qty={item.qty}
-                                                onCartUpdate={refreshCart}
+                                                onCartUpdate={handleCartUpdate}
                                             />
-                                        )
-                                    }) : (
+                                        ))
+                                    ) : (
                                         <tr>
                                             <td colSpan="6" className="text-center p-8 text-gray-500">
-                                                <div className="flex flex-col items-center">
-                                                    <p className="text-xl mb-4">Your cart is empty</p>
-                                                    <button
-                                                        onClick={() => navigate('/products')}
-                                                        className="bg-orange-600 text-white px-6 py-2 rounded-md hover:bg-orange-700 transition-colors"
-                                                    >
-                                                        Continue Shopping
-                                                    </button>
-                                                </div>
+                                                Your cart is empty. <span className="text-orange-600 hover:underline cursor-pointer" onClick={onGoBackClick}>Start shopping!</span>
                                             </td>
                                         </tr>
                                     )}
@@ -474,13 +487,13 @@ export default function Cart() {
                         </div>
                     </div>
 
-                    {/* Only show checkout form if cart has items and details are loaded */}
-                    {cart.length > 0 && !cartLoading && (
+                    {/* Checkout Section */}
+                    {cart.length > 0 && (
                         <>
                             {/* Delivery Option Selection */}
                             <div className="mb-6 p-6 bg-white rounded-lg shadow-md">
                                 <h2 className="text-2xl font-bold mb-4 text-gray-800">Delivery Option</h2>
-                                <div className="flex gap-6">
+                                <div className="flex flex-col space-y-3">
                                     <label className="flex items-center cursor-pointer">
                                         <input
                                             type="radio"
@@ -490,7 +503,7 @@ export default function Cart() {
                                             onChange={() => handleDeliveryOptionChange("pickup")}
                                             className="mr-3 w-4 h-4 text-orange-600"
                                         />
-                                        <span className="text-lg font-medium text-gray-700">Pickup Order</span>
+                                        <span className="text-lg font-medium text-gray-700">Pick-up Order</span>
                                     </label>
                                     <label className="flex items-center cursor-pointer">
                                         <input
@@ -525,158 +538,130 @@ export default function Cart() {
                                     </div>
                                 )}
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            First Name *
-                                        </label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">First Name *</label>
                                         <input
                                             type="text"
                                             value={firstName}
                                             onChange={(e) => setFirstName(e.target.value)}
-                                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                                            placeholder="Enter your first name"
-                                            required
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                            placeholder="Anjana"
                                         />
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Last Name
-                                        </label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
                                         <input
                                             type="text"
                                             value={lastName}
                                             onChange={(e) => setLastName(e.target.value)}
-                                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                                            placeholder="Enter your last name"
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                            placeholder="Jayasinghe"
                                         />
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Phone Number *
-                                        </label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number *</label>
                                         <input
                                             type="tel"
                                             value={phoneNumber}
-                                            onChange={(e) => setPhoneNumber(e.target.value)}
-                                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                                            placeholder="071XXXXXXX"
-                                            required
+                                            onChange={handlePhoneNumberChange}
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                            placeholder="0714289356"
+                                            maxLength="10"
                                         />
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            WhatsApp Number *
-                                        </label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">WhatsApp Number *</label>
                                         <input
                                             type="tel"
                                             value={whatsappNumber}
                                             onChange={(e) => setWhatsappNumber(e.target.value)}
-                                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                                            placeholder="071XXXXXXX"
-                                            required
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                            placeholder="0714289356"
+                                            maxLength="10"
                                         />
                                     </div>
 
                                     <div className="md:col-span-2">
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Address *
-                                        </label>
-                                        <input
-                                            type="text"
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">Address *</label>
+                                        <textarea
                                             value={address}
                                             onChange={(e) => setAddress(e.target.value)}
-                                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                                            placeholder="Enter your full address"
-                                            required
+                                            rows="3"
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                            placeholder="369/1"
                                         />
                                     </div>
 
                                     {deliveryOption === "delivery" && (
                                         <div className="md:col-span-2">
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                Nearest City *
-                                            </label>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">Nearest Town/City *</label>
                                             <input
                                                 type="text"
                                                 value={nearestCity}
                                                 onChange={(e) => setNearestCity(e.target.value)}
-                                                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                                                placeholder="Enter your nearest city"
-                                                required
+                                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                                placeholder="Colombo"
                                             />
                                         </div>
                                     )}
 
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Preferred Time *
-                                        </label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">Preferred Time *</label>
                                         <select
                                             value={preferredTime}
                                             onChange={(e) => setPreferredTime(e.target.value)}
-                                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                                            required
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                                         >
                                             <option value="">Select time</option>
-                                            <option value="07:00 AM - 08:00 AM">07:00 AM - 08:00 AM</option>
-                                            <option value="08:00 AM">08:00 AM</option>
-                                            <option value="09:00 AM">09:00 AM</option>
-                                            <option value="10:00 AM">10:00 AM</option>
-                                            <option value="11:00 AM">11:00 AM</option>
-                                            <option value="12:00 PM">12:00 PM</option>
-                                            <option value="01:00 PM">01:00 PM</option>
-                                            <option value="02:00 PM">02:00 PM</option>
-                                            <option value="03:00 PM">03:00 PM</option>
-                                            <option value="04:00 PM">04:00 PM</option>
-                                            <option value="05:00 PM">05:00 PM</option>
-                                            <option value="06:00 PM">06:00 PM</option>
-                                            <option value="07:00 PM">07:00 PM</option>
-                                            <option value="08:00 PM">08:00 PM</option>
+                                            <option value="morning">Morning (8AM - 12PM)</option>
+                                            <option value="afternoon">Afternoon (12PM - 4PM)</option>
+                                            <option value="evening">Evening (4PM - 8PM)</option>
                                         </select>
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Preferred Date *
-                                        </label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">Preferred Date *</label>
                                         <input
                                             type="date"
                                             value={preferredDay}
                                             onChange={(e) => setPreferredDay(e.target.value)}
-                                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                                            min={new Date().toISOString().split('T')[0]} // Prevent selecting past dates
-                                            required
+                                            min={new Date().toISOString().split('T')[0]}
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                                         />
                                     </div>
 
                                     <div className="md:col-span-2">
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Special Notes (Optional)
-                                        </label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">Special Notes (Optional)</label>
                                         <textarea
                                             value={notes}
                                             onChange={(e) => setNotes(e.target.value)}
                                             rows="3"
-                                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                                             placeholder="Any special instructions or notes for your order"
-                                        ></textarea>
+                                        />
                                     </div>
                                 </div>
                             </div>
 
                             {/* Order Summary */}
-                            <div className="mb-6 p-6 bg-white rounded-lg shadow-md">
+                            <div className="mb-8 p-6 bg-white rounded-lg shadow-md">
                                 <h2 className="text-2xl font-bold mb-4 text-gray-800">Order Summary</h2>
-                                <div className="flex justify-between text-lg font-medium">
-                                    <span>Items: {cart.length}</span>
-                                    <span>Original: Rs. {labelTotal.toFixed(2)}</span>
-                                </div>
-                                <div className="text-2xl font-bold text-orange-600 mt-2">
-                                    Total: Rs. {total.toFixed(2)}
+                                <div className="space-y-2 text-gray-700">
+                                    <div className="flex justify-between">
+                                        <span>Items: {cart.length}</span>
+                                        <span></span>
+                                    </div>
+                                    <div className="flex justify-between text-sm text-gray-600">
+                                        <span>Original Total:</span>
+                                        <span>Rs. {labelTotal.toFixed(2)}</span>
+                                    </div>
+                                    <div className="text-2xl font-bold text-orange-600 mt-2">
+                                        Total: Rs. {total.toFixed(2)}
+                                    </div>
                                 </div>
                             </div>
                         </>
@@ -702,7 +687,7 @@ export default function Cart() {
 
                         {cart.length > 0 && !cartLoading && (
                             <button
-                                onClick={handleOrderSubmission}
+                                onClick={handlePlaceOrderClick}
                                 disabled={loading}
                                 className={`px-8 py-3 rounded-lg font-semibold transition-colors ${loading
                                         ? 'bg-gray-400 cursor-not-allowed'
