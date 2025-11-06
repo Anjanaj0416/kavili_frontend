@@ -12,6 +12,7 @@ import ContactPage from './contactPage';
 import MyOrders from './myOrders';
 import CustomerProfile from './customerProfile';
 import FAQ from './faq';
+import FeaturedReviews from '../components/FeaturedReviews';
 
 
 import Register from './register';
@@ -63,6 +64,8 @@ export default function HomePage() {
 
               {/* Home Body Component */}
               <HomeBody />
+              
+              <FeaturedReviews />
             </div>
           } />
 
@@ -116,6 +119,7 @@ export default function HomePage() {
           } />
         </Routes>
       </main>
+      
 
       {/* Footer - Added here to show on all customer pages */}
       <Footer />

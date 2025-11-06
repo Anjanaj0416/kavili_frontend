@@ -12,6 +12,8 @@ import AdminCustomerManagement from "./adminCustomerManagement";
 import AdminContactManagement from "./adminContactManagement";
 import AdminAboutManagement from "./adminAboutManagement";
 import toast from "react-hot-toast";
+import AdminReviewManagement from './AdminReviewManagement';
+import { MessageSquare } from 'lucide-react';
 
 export default function AdminHomePage() {
   const navigate = useNavigate();
@@ -68,6 +70,14 @@ export default function AdminHomePage() {
             <MdInfo size={24} />
             <span>About Info</span>
           </Link>
+          <Link
+            to="/admin/reviews"
+            className="flex items-center space-x-2 hover:text-gray-300 transition-colors"
+          >
+            <MessageSquare size={24} />
+            <span>Reviews</span>
+          </Link>
+
 
         </div>
 
@@ -91,8 +101,9 @@ export default function AdminHomePage() {
           <Route path="/orders" element={<AdminOrdersPage />} />
           <Route path="/customers" element={<AdminCustomerManagement />} />
           <Route path="/contact" element={<AdminContactManagement />} />
-          <Route path="/about" element={<AdminAboutManagement/>}/>
+          <Route path="/about" element={<AdminAboutManagement />} />
           <Route path="/users" element={<AdminUserManagement />} />
+          <Route path="/reviews" element={<AdminReviewManagement />} />
         </Routes>
       </div>
     </div>
