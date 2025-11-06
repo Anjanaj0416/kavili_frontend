@@ -71,34 +71,38 @@ export default function AdminContactManagement() {
     };
 
     const handleSave = async () => {
-        // Validation
-        if (!contactInfo.shopName.trim()) {
-            toast.error("Shop name is required");
-            return;
-        }
-        if (!contactInfo.address.trim()) {
-            toast.error("Address is required");
-            return;
-        }
-        if (!contactInfo.email.trim()) {
-            toast.error("Email is required");
-            return;
-        }
-        if (contactInfo.phoneNumbers.length === 0) {
-            toast.error("At least one phone number is required");
-            return;
-        }
-        
-        // Check if all phone numbers are filled
-        const hasEmptyPhone = contactInfo.phoneNumbers.some(phone => !phone.number.trim());
-        if (hasEmptyPhone) {
-            toast.error("Please fill in all phone numbers or remove empty ones");
-            return;
-        }
-
         setSaving(true);
         try {
+            // Validation
+            if (!contactInfo.shopName || !contactInfo.address || !contactInfo.email) {
+                toast.error("Please fill in all required fields");
+                setSaving(false);
+                return;
+            }
+
+            if (contactInfo.phoneNumbers.length === 0) {
+                toast.error("At least one phone number is required");
+                setSaving(false);
+                return;
+            }
+
+            // Check if any phone number is empty
+            const hasEmptyPhone = contactInfo.phoneNumbers.some(phone => !phone.number);
+            if (hasEmptyPhone) {
+                toast.error("Please fill in all phone numbers");
+                setSaving(false);
+                return;
+            }
+
+            // Get auth token from localStorage
             const token = localStorage.getItem("authToken");
+            
+            if (!token) {
+                toast.error("Authentication required. Please login again.");
+                setSaving(false);
+                return;
+            }
+
             const response = await axios.put(
                 import.meta.env.VITE_BACKEND_URL + "/api/contact",
                 contactInfo,
@@ -112,11 +116,20 @@ export default function AdminContactManagement() {
 
             if (response.data.success) {
                 toast.success("Contact information updated successfully");
-                fetchContactInfo(); // Refresh data
+            } else {
+                toast.error("Failed to update contact information");
             }
         } catch (error) {
-            console.error("Error updating contact info:", error);
-            toast.error(error.response?.data?.message || "Failed to update contact information");
+            console.error("Error saving contact info:", error);
+            
+            // Handle specific error cases
+            if (error.response?.status === 403) {
+                toast.error("Access denied. Admin privileges required.");
+            } else if (error.response?.status === 401) {
+                toast.error("Session expired. Please login again.");
+            } else {
+                toast.error(error.response?.data?.message || "Failed to update contact information");
+            }
         } finally {
             setSaving(false);
         }
@@ -124,17 +137,14 @@ export default function AdminContactManagement() {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center h-full">
-                <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-                    <p className="mt-4 text-gray-600">Loading contact information...</p>
-                </div>
+            <div className="flex items-center justify-center min-h-screen">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
             </div>
         );
     }
 
     return (
-        <div className="p-8 bg-gray-50 min-h-full">
+        <div className="min-h-screen bg-gray-50 p-6 w-full">
             <div className="max-w-4xl mx-auto">
                 {/* Header */}
                 <div className="bg-white rounded-lg shadow-md p-6 mb-6">
@@ -188,16 +198,15 @@ export default function AdminContactManagement() {
                             </label>
                             <div className="space-y-3">
                                 {contactInfo.phoneNumbers.map((phone, index) => (
-                                    <div key={index} className="flex items-center gap-3">
+                                    <div key={index} className="flex gap-3">
                                         <select
                                             value={phone.type}
                                             onChange={(e) => handlePhoneNumberChange(index, "type", e.target.value)}
-                                            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                         >
                                             <option value="mobile">Mobile</option>
                                             <option value="landline">Landline</option>
                                         </select>
-                                        
                                         <input
                                             type="text"
                                             value={phone.number}
@@ -205,7 +214,6 @@ export default function AdminContactManagement() {
                                             className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                             placeholder="Enter phone number"
                                         />
-                                        
                                         <button
                                             onClick={() => removePhoneNumber(index)}
                                             className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
@@ -241,7 +249,7 @@ export default function AdminContactManagement() {
                             />
                         </div>
 
-                        {/* Map Embed Code */}
+                        {/* Map Embed Code - Updated with better instructions */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                                 <Map size={18} className="inline mr-2" />
@@ -254,16 +262,26 @@ export default function AdminContactManagement() {
                                 placeholder='<iframe src="https://www.google.com/maps/embed?pb=..." width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy"></iframe>'
                                 rows="6"
                             />
-                            <div className="mt-3 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                                <p className="text-sm text-gray-700 font-semibold mb-2">📍 How to get the embed code:</p>
-                                <ol className="text-sm text-gray-600 space-y-1 list-decimal list-inside">
-                                    <li>Go to <a href="https://www.google.com/maps" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Google Maps</a></li>
-                                    <li>Search for your location</li>
-                                    <li>Click the "Share" button</li>
-                                    <li>Click "Embed a map" tab</li>
-                                    <li>Copy the entire <code className="bg-gray-200 px-1 rounded">&lt;iframe&gt;...&lt;/iframe&gt;</code> code</li>
-                                    <li>Paste it here</li>
+                            <div className="mt-3 p-4 bg-orange-50 border border-orange-200 rounded-lg">
+                                <p className="text-sm text-gray-800 font-bold mb-3 flex items-center">
+                                    <Map size={16} className="mr-2 text-orange-600" />
+                                    📍 How to get Google Maps embed code with RED PIN marker:
+                                </p>
+                                <ol className="text-sm text-gray-700 space-y-2 list-decimal list-inside ml-2">
+                                    <li>Go to <a href="https://www.google.com/maps" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline font-semibold">Google Maps</a></li>
+                                    <li><strong>Search for your exact location/address</strong> in the search bar</li>
+                                    <li>Once the red pin appears on your location, click the <strong>"Share"</strong> button on the left panel</li>
+                                    <li>In the popup, click the <strong>"Embed a map"</strong> tab</li>
+                                    <li>Select map size (Medium or Large recommended)</li>
+                                    <li>Copy the entire <code className="bg-gray-200 px-2 py-1 rounded text-xs">&lt;iframe src="..."&gt;&lt;/iframe&gt;</code> code</li>
+                                    <li>Paste it in the text box above</li>
                                 </ol>
+                                <div className="mt-3 p-3 bg-white border border-orange-300 rounded">
+                                    <p className="text-xs text-gray-600">
+                                        <strong className="text-orange-600">💡 Tip:</strong> Make sure the red pin marker is visible on your exact location before copying the embed code. 
+                                        This will ensure customers see your location with the red marker on the contact page!
+                                    </p>
+                                </div>
                             </div>
                         </div>
 
@@ -285,7 +303,8 @@ export default function AdminContactManagement() {
                 <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                     <p className="text-sm text-blue-800">
                         <strong>Note:</strong> These contact details will be displayed on the public Contact Us page.
-                        Make sure all information is accurate and up-to-date.
+                        Make sure all information is accurate and up-to-date. The map will display with a red pin marker
+                        showing your location, and customers can click "Get Directions" to open in Google Maps.
                     </p>
                 </div>
             </div>

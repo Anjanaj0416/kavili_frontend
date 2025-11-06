@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 import NotFound from "../components/notFound";
 import { addToCart, clearCart } from "../utils/cartFunction";
 import ProductReviews from "../components/ProductReviews";
+import AddToCartModal from "../components/AddToCartModal";
 
 export default function ProductOverView() {
     const params = useParams();
@@ -19,6 +20,9 @@ export default function ProductOverView() {
     const [relatedLoading, setRelatedLoading] = useState(false);
     const [quantity, setQuantity] = useState(1);
     const [selectedImage, setSelectedImage] = useState(0);
+    
+    // NEW: State for Add to Cart Modal
+    const [showModal, setShowModal] = useState(false);
 
     useEffect(() => {
         console.log("Category:", category, "Product ID:", productId);
@@ -75,17 +79,35 @@ export default function ProductOverView() {
         }
     };
 
+    // MODIFIED: Updated handleAddToCart to show modal
     const handleAddToCart = () => {
-    if (product.quantity === 0) {
-        toast.error("Product is out of stock");
-        return;
-    }
+        if (product.quantity === 0) {
+            toast.error("Product is out of stock");
+            return;
+        }
 
-    // FIXED: Call addToCart with productId and quantity as separate parameters
-    addToCart(product.productId, quantity);
+        // Add to cart
+        addToCart(product.productId, quantity);
 
-    toast.success(`${quantity} ${product.productName} added to cart!`);
-};
+        // Show success toast
+        toast.success(`${quantity} ${product.productName} added to cart!`);
+        
+        // Show the modal
+        setShowModal(true);
+    };
+
+    // NEW: Handler for Keep Shopping button
+    const handleKeepShopping = () => {
+        setShowModal(false);
+        // Stay on the same page, just close the modal
+    };
+
+    // NEW: Handler for Pay Now button
+    const handlePayNow = () => {
+        setShowModal(false);
+        // Navigate to cart page
+        navigate('/cart');
+    };
 
     const calculateDiscount = () => {
         if (product.price && product.lastPrice && product.price > product.lastPrice) {
@@ -138,7 +160,7 @@ export default function ProductOverView() {
                                     <img
                                         src={product.images[selectedImage]}
                                         alt={product.productName}
-                                        className="w-full h-full object-contain p-4"
+                                        className="w-full h-full object-contain"
                                     />
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center">
@@ -146,8 +168,8 @@ export default function ProductOverView() {
                                     </div>
                                 )}
                                 {discount > 0 && (
-                                    <div className="absolute top-4 left-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold">
-                                        {discount}% OFF
+                                    <div className="absolute top-4 left-4 bg-red-500 text-white px-3 py-1 rounded-full font-bold text-sm">
+                                        -{discount}%
                                     </div>
                                 )}
                             </div>
@@ -155,20 +177,20 @@ export default function ProductOverView() {
                             {/* Thumbnail Images */}
                             {product.images && product.images.length > 1 && (
                                 <div className="grid grid-cols-4 gap-2">
-                                    {product.images.map((img, index) => (
+                                    {product.images.map((image, index) => (
                                         <button
                                             key={index}
                                             onClick={() => setSelectedImage(index)}
                                             className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${
                                                 selectedImage === index
-                                                    ? 'border-orange-600 ring-2 ring-orange-200'
-                                                    : 'border-gray-200 hover:border-orange-300'
+                                                    ? 'border-orange-600'
+                                                    : 'border-gray-200 hover:border-gray-300'
                                             }`}
                                         >
                                             <img
-                                                src={img}
+                                                src={image}
                                                 alt={`${product.productName} ${index + 1}`}
-                                                className="w-full h-full object-contain p-2"
+                                                className="w-full h-full object-cover"
                                             />
                                         </button>
                                     ))}
@@ -178,33 +200,27 @@ export default function ProductOverView() {
 
                         {/* Product Info */}
                         <div className="space-y-6">
-                            {/* Title and Category */}
-                            <div>
-                                <div className="flex items-center gap-2 mb-2">
-                                    <span className="px-3 py-1 bg-orange-100 text-orange-600 rounded-full text-xs font-semibold uppercase">
-                                        {category}
-                                    </span>
-                                    {product.quantity === 0 && (
-                                        <span className="px-3 py-1 bg-red-100 text-red-600 rounded-full text-xs font-semibold">
-                                            Out of Stock
-                                        </span>
-                                    )}
-                                    {product.quantity > 0 && product.quantity < 10 && (
-                                        <span className="px-3 py-1 bg-yellow-100 text-yellow-600 rounded-full text-xs font-semibold">
-                                            Only {product.quantity} left!
-                                        </span>
-                                    )}
-                                </div>
-                                <h1 className="text-3xl font-bold text-gray-800">{product.productName}</h1>
-                                {product.altNames && product.altNames.length > 0 && (
-                                    <p className="text-sm text-gray-500 mt-1">
-                                        Also known as: {product.altNames.join(', ')}
-                                    </p>
-                                )}
+                            {/* Category Badge */}
+                            <div className="inline-block">
+                                <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm font-semibold uppercase">
+                                    {category}
+                                </span>
                             </div>
 
+                            {/* Product Name */}
+                            <h1 className="text-3xl lg:text-4xl font-bold text-gray-800">
+                                {product.productName}
+                            </h1>
+
+                            {/* Alternative Names */}
+                            {product.altNames && product.altNames.length > 0 && (
+                                <p className="text-gray-600 italic">
+                                    Also known as: {product.altNames.join(', ')}
+                                </p>
+                            )}
+
                             {/* Price */}
-                            <div className="flex items-baseline gap-3">
+                            <div className="flex items-center gap-4">
                                 <span className="text-4xl font-bold text-orange-600">
                                     Rs. {product.lastPrice?.toFixed(2)}
                                 </span>
@@ -324,7 +340,7 @@ export default function ProductOverView() {
                                             <img
                                                 src={relatedProduct.images[0]}
                                                 alt={relatedProduct.productName}
-                                                className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform"
+                                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                                             />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center">
@@ -336,12 +352,12 @@ export default function ProductOverView() {
                                         <h3 className="font-semibold text-gray-800 mb-2 line-clamp-2">
                                             {relatedProduct.productName}
                                         </h3>
-                                        <div className="flex items-baseline gap-2">
-                                            <span className="text-lg font-bold text-orange-600">
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-orange-600 font-bold">
                                                 Rs. {relatedProduct.lastPrice?.toFixed(2)}
                                             </span>
                                             {relatedProduct.price && relatedProduct.price > relatedProduct.lastPrice && (
-                                                <span className="text-sm text-gray-400 line-through">
+                                                <span className="text-gray-400 text-sm line-through">
                                                     Rs. {relatedProduct.price.toFixed(2)}
                                                 </span>
                                             )}
@@ -353,6 +369,16 @@ export default function ProductOverView() {
                     </div>
                 )}
             </div>
+
+            {/* NEW: Add to Cart Modal */}
+            <AddToCartModal
+                isOpen={showModal}
+                onClose={() => setShowModal(false)}
+                onKeepShopping={handleKeepShopping}
+                onPayNow={handlePayNow}
+                productName={product.productName}
+                quantity={quantity}
+            />
         </div>
     );
 }
