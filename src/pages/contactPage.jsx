@@ -14,7 +14,8 @@ export default function ContactPage() {
             { type: "landline", number: "+94 77 123 456" },
             { type: "landline", number: "+94 77 123 456" }
         ],
-        email: "anjan@.com"
+        email: "anjan@.com",
+        mapLink: ""
     });
     const [loading, setLoading] = useState(true);
 
@@ -50,19 +51,20 @@ export default function ContactPage() {
                         <div className="absolute right-48 top-1/2 transform -translate-y-1/2 w-80 h-80 bg-gradient-to-br from-orange-600 to-red-600 rounded-full opacity-90"></div>
                         <div className="absolute right-16 top-1/2 transform -translate-y-1/2 w-72 h-72 bg-gradient-to-br from-orange-500 to-red-500 rounded-full opacity-80"></div>
 
-                        {/* Additional spice piles */}
-                        <div className="absolute left-50 top-1/3 w-48 h-48 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-full opacity-60"></div>
-                        <div className="absolute left-70 top-2/3 w-40 h-40 bg-gradient-to-br from-red-500 to-orange-600 rounded-full opacity-50"></div>
-                        <div className="absolute left-[300px] top-1/2 w-56 h-56 bg-gradient-to-br from-orange-600 to-red-600 rounded-full opacity-40"></div>
+                        {/* Additional decorative elements */}
+                        <div className="absolute left-20 top-1/3 w-60 h-60 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-full opacity-70"></div>
+                        <div className="absolute left-40 bottom-10 w-52 h-52 bg-gradient-to-br from-red-500 to-orange-700 rounded-full opacity-60"></div>
+
+                        <h1 className="absolute inset-0 flex items-center justify-center text-6xl font-extrabold text-white z-10">
+                            Contact Us
+                        </h1>
                     </div>
                 </div>
-                <div className="w-full h-full flex items-center justify-center my-9">
-                    <span className="text-6xl font-bold text-white flex text-center">Contact Us</span>
-                </div>
             </div>
-            
-            <div className="bg-[url(https://iso.500px.com/wp-content/uploads/2019/07/stock-photo-maderas-312058103.jpg)] bg-cover w-full h-[600px] flex">
-                <div className="w-[700px] h-[500px] flex items-center justify-center bg-white my-20 mx-20">
+
+            <div className="w-full flex flex-col items-center justify-center py-10 gap-10">
+                {/* Contact Information Box */}
+                <div className="w-[600px]">
                     {loading ? (
                         <div className="flex items-center justify-center h-full">
                             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600"></div>
@@ -107,6 +109,28 @@ export default function ContactPage() {
                         </div>
                     )}
                 </div>
+
+                {/* Google Map Section */}
+                {contactInfo.mapLink && contactInfo.mapLink.trim() !== "" && (
+                    <div className="w-full max-w-[900px] px-4">
+                        <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                            <div className="bg-orange-600 px-6 py-4">
+                                <h2 className="text-2xl font-bold text-white flex items-center">
+                                    <FaLocationDot className="mr-3" size={28} />
+                                    Find Us on the Map
+                                </h2>
+                                <p className="text-orange-100 mt-1">Visit our store or use the map below to get directions</p>
+                            </div>
+                            
+                            <div className="p-4 sm:p-6">
+                                <div 
+                                    className="w-full overflow-hidden rounded-lg"
+                                    dangerouslySetInnerHTML={{ __html: contactInfo.mapLink }}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

@@ -1,14 +1,15 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { Mail, MapPin, Phone, Building2, Plus, Trash2, Save } from "lucide-react";
+import { Mail, MapPin, Phone, Building2, Plus, Trash2, Save, Map } from "lucide-react";
 
 export default function AdminContactManagement() {
     const [contactInfo, setContactInfo] = useState({
         shopName: "",
         address: "",
         phoneNumbers: [],
-        email: ""
+        email: "",
+        mapLink: ""
     });
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -181,27 +182,17 @@ export default function AdminContactManagement() {
 
                         {/* Phone Numbers */}
                         <div>
-                            <div className="flex items-center justify-between mb-3">
-                                <label className="block text-sm font-medium text-gray-700">
-                                    <Phone size={18} className="inline mr-2" />
-                                    Phone Numbers *
-                                </label>
-                                <button
-                                    onClick={addPhoneNumber}
-                                    className="flex items-center px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm"
-                                >
-                                    <Plus size={16} className="mr-1" />
-                                    Add Phone
-                                </button>
-                            </div>
-                            
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                <Phone size={18} className="inline mr-2" />
+                                Phone Numbers *
+                            </label>
                             <div className="space-y-3">
                                 {contactInfo.phoneNumbers.map((phone, index) => (
-                                    <div key={index} className="flex gap-3 items-center">
+                                    <div key={index} className="flex items-center gap-3">
                                         <select
                                             value={phone.type}
                                             onChange={(e) => handlePhoneNumberChange(index, "type", e.target.value)}
-                                            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                         >
                                             <option value="mobile">Mobile</option>
                                             <option value="landline">Landline</option>
@@ -224,6 +215,14 @@ export default function AdminContactManagement() {
                                         </button>
                                     </div>
                                 ))}
+                                
+                                <button
+                                    onClick={addPhoneNumber}
+                                    className="flex items-center px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                >
+                                    <Plus size={20} className="mr-2" />
+                                    Add Phone Number
+                                </button>
                             </div>
                         </div>
 
@@ -240,6 +239,32 @@ export default function AdminContactManagement() {
                                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 placeholder="Enter email address"
                             />
+                        </div>
+
+                        {/* Map Embed Code */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                <Map size={18} className="inline mr-2" />
+                                Google Maps Embed Code (iframe)
+                            </label>
+                            <textarea
+                                value={contactInfo.mapLink || ""}
+                                onChange={(e) => handleInputChange("mapLink", e.target.value)}
+                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
+                                placeholder='<iframe src="https://www.google.com/maps/embed?pb=..." width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy"></iframe>'
+                                rows="6"
+                            />
+                            <div className="mt-3 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                                <p className="text-sm text-gray-700 font-semibold mb-2">📍 How to get the embed code:</p>
+                                <ol className="text-sm text-gray-600 space-y-1 list-decimal list-inside">
+                                    <li>Go to <a href="https://www.google.com/maps" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Google Maps</a></li>
+                                    <li>Search for your location</li>
+                                    <li>Click the "Share" button</li>
+                                    <li>Click "Embed a map" tab</li>
+                                    <li>Copy the entire <code className="bg-gray-200 px-1 rounded">&lt;iframe&gt;...&lt;/iframe&gt;</code> code</li>
+                                    <li>Paste it here</li>
+                                </ol>
+                            </div>
                         </div>
 
                         {/* Save Button */}
