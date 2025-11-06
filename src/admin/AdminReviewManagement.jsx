@@ -1,3 +1,4 @@
+// src/admin/AdminReviewManagement.jsx
 import React, { useState, useEffect } from 'react';
 import { Trash2, Heart, Star, Shield, Eye } from 'lucide-react';
 import StarRating from '../components/StarRating';
@@ -15,7 +16,8 @@ export default function AdminReviewManagement() {
 
     useEffect(() => {
         // Verify admin is logged in on component mount
-        const adminToken = localStorage.getItem('adminToken');
+        // FIXED: Changed from 'adminToken' to 'authToken' to match admin login
+        const adminToken = localStorage.getItem('authToken');
         console.log('Admin token check:', adminToken ? 'Token exists' : 'No token');
         
         if (!adminToken) {
@@ -31,7 +33,8 @@ export default function AdminReviewManagement() {
         try {
             setLoading(true);
             setAuthError(false);
-            const adminToken = localStorage.getItem('adminToken');
+            // FIXED: Changed from 'adminToken' to 'authToken'
+            const adminToken = localStorage.getItem('authToken');
 
             console.log('Loading reviews with token:', adminToken?.substring(0, 20) + '...');
 
@@ -71,7 +74,8 @@ export default function AdminReviewManagement() {
 
         try {
             setDeleteLoading(reviewId);
-            const adminToken = localStorage.getItem('adminToken');
+            // FIXED: Changed from 'adminToken' to 'authToken'
+            const adminToken = localStorage.getItem('authToken');
 
             const response = await axios.delete(
                 `${import.meta.env.VITE_BACKEND_URL}/api/reviews/${reviewId}`,
@@ -97,7 +101,8 @@ export default function AdminReviewManagement() {
     const handleToggleLike = async (reviewId) => {
         try {
             setLikeLoading(reviewId);
-            const adminToken = localStorage.getItem('adminToken');
+            // FIXED: Changed from 'adminToken' to 'authToken'
+            const adminToken = localStorage.getItem('authToken');
 
             const response = await axios.put(
                 `${import.meta.env.VITE_BACKEND_URL}/api/reviews/${reviewId}/admin-like`,
@@ -136,6 +141,22 @@ export default function AdminReviewManagement() {
         return (
             <div className="flex justify-center items-center h-64">
                 <div className="text-xl">Loading reviews...</div>
+            </div>
+        );
+    }
+
+    if (authError) {
+        return (
+            <div className="flex flex-col justify-center items-center h-64 text-center p-6">
+                <Shield size={64} className="text-red-500 mb-4" />
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">Authentication Required</h2>
+                <p className="text-gray-600 mb-4">Please login as admin to access review management</p>
+                <button 
+                    onClick={() => window.location.href = '/admin/login'}
+                    className="bg-orange-500 hover:bg-orange-600 text-white font-medium px-6 py-2 rounded-lg transition-colors"
+                >
+                    Go to Admin Login
+                </button>
             </div>
         );
     }
