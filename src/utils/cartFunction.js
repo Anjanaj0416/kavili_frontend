@@ -1,13 +1,41 @@
+// utils/cartFunction.js
+// Enhanced cart utility functions with validation
+
 export function loadCart(){
     const cart = localStorage.getItem('cart');
     if(cart != null){
-        return JSON.parse(cart);
+        try {
+            const parsedCart = JSON.parse(cart);
+            // Validate that it's an array
+            if (Array.isArray(parsedCart)) {
+                return parsedCart;
+            } else {
+                console.error("Cart is not an array, resetting...");
+                localStorage.removeItem('cart');
+                return [];
+            }
+        } catch (error) {
+            console.error("Error parsing cart:", error);
+            localStorage.removeItem('cart');
+            return [];
+        }
     } else {
         return [];
     }
 }
 
 export function addToCart(productId, qty){
+    // Validate inputs
+    if (!productId || typeof productId === 'object') {
+        console.error("Invalid productId:", productId);
+        return;
+    }
+    
+    if (!qty || typeof qty !== 'number' || qty <= 0) {
+        console.error("Invalid quantity:", qty);
+        return;
+    }
+    
     const cart = loadCart();
     const index = cart.findIndex(
         (item) => {
@@ -30,7 +58,22 @@ export function addToCart(productId, qty){
 }
 
 export function saveCart(cart){
-    localStorage.setItem('cart', JSON.stringify(cart));
+    // Validate that cart is an array before saving
+    if (!Array.isArray(cart)) {
+        console.error("Attempted to save invalid cart (not an array):", cart);
+        return;
+    }
+    
+    // Clean the cart before saving - remove any invalid items
+    const validCart = cart.filter(item => {
+        return item.productId && 
+               typeof item.productId !== 'object' && 
+               item.qty && 
+               typeof item.qty === 'number' && 
+               item.qty > 0;
+    });
+    
+    localStorage.setItem('cart', JSON.stringify(validCart));
 }
 
 export function clearCart(){
