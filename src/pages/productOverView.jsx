@@ -76,21 +76,16 @@ export default function ProductOverView() {
     };
 
     const handleAddToCart = () => {
-        if (product.quantity === 0) {
-            toast.error("Product is out of stock");
-            return;
-        }
+    if (product.quantity === 0) {
+        toast.error("Product is out of stock");
+        return;
+    }
 
-        addToCart({
-            productId: product.productId,
-            qty: quantity,
-            name: product.productName,
-            price: product.lastPrice,
-            image: product.images && product.images.length > 0 ? product.images[0] : null
-        });
+    // FIXED: Call addToCart with productId and quantity as separate parameters
+    addToCart(product.productId, quantity);
 
-        toast.success(`${quantity} ${product.productName} added to cart!`);
-    };
+    toast.success(`${quantity} ${product.productName} added to cart!`);
+};
 
     const calculateDiscount = () => {
         if (product.price && product.lastPrice && product.price > product.lastPrice) {

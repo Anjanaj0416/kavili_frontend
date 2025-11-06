@@ -51,40 +51,40 @@ export default function Cart() {
                     'Authorization': `Bearer ${authToken}`
                 }
             })
-            .then((response) => {
-                if (response.data && response.data.success) {
-                    // Token is valid, auto-fill details
-                    try {
-                        const userDetails = JSON.parse(userDetailsString);
-                        
-                        // Auto-fill form fields with stored user data
-                        setFirstName(userDetails.firstName || "");
-                        setLastName(userDetails.lastName || "");
-                        setPhoneNumber(userDetails.phonenumber || "");
-                        setWhatsappNumber(userDetails.phonenumber || ""); // Default to same as phone
-                        setAddress(userDetails.homeaddress || "");
-                        
-                        console.log("Auto-filled customer details from logged-in user:", userDetails);
-                        toast.success(`Welcome back, ${userDetails.firstName}! Your details have been auto-filled.`);
-                    } catch (error) {
-                        console.error("Error parsing user details:", error);
+                .then((response) => {
+                    if (response.data && response.data.success) {
+                        // Token is valid, auto-fill details
+                        try {
+                            const userDetails = JSON.parse(userDetailsString);
+
+                            // Auto-fill form fields with stored user data
+                            setFirstName(userDetails.firstName || "");
+                            setLastName(userDetails.lastName || "");
+                            setPhoneNumber(userDetails.phonenumber || "");
+                            setWhatsappNumber(userDetails.phonenumber || ""); // Default to same as phone
+                            setAddress(userDetails.homeaddress || "");
+
+                            console.log("Auto-filled customer details from logged-in user:", userDetails);
+                            toast.success(`Welcome back, ${userDetails.firstName}! Your details have been auto-filled.`);
+                        } catch (error) {
+                            console.error("Error parsing user details:", error);
+                        }
+                    } else {
+                        // Token invalid, clear stale data
+                        localStorage.removeItem('authToken');
+                        localStorage.removeItem('userDetails');
+                        console.log("Invalid token detected, cleared auth data");
                     }
-                } else {
-                    // Token invalid, clear stale data
-                    localStorage.removeItem('authToken');
-                    localStorage.removeItem('userDetails');
-                    console.log("Invalid token detected, cleared auth data");
-                }
-            })
-            .catch((error) => {
-                console.error("Error verifying authentication:", error);
-                // If verification fails (401/403), clear potentially stale data
-                if (error.response && (error.response.status === 401 || error.response.status === 403)) {
-                    localStorage.removeItem('authToken');
-                    localStorage.removeItem('userDetails');
-                    console.log("Invalid/expired token, cleared auth data");
-                }
-            });
+                })
+                .catch((error) => {
+                    console.error("Error verifying authentication:", error);
+                    // If verification fails (401/403), clear potentially stale data
+                    if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+                        localStorage.removeItem('authToken');
+                        localStorage.removeItem('userDetails');
+                        console.log("Invalid/expired token, cleared auth data");
+                    }
+                });
         }
     }, []); // Run once on component mount
 
@@ -113,7 +113,7 @@ export default function Cart() {
                         console.warn(`Duplicate productId found: ${item.productId}, skipping...`);
                         continue;
                     }
-                    
+
                     seenProductIds.add(item.productId);
 
                     const response = await axios.get(
@@ -148,7 +148,7 @@ export default function Cart() {
     // FIXED: Load cart on component mount with validation
     useEffect(() => {
         const currentCart = loadCart();
-        
+
         // Validate and clean the cart data
         const cleanedCart = currentCart.filter((item) => {
             // Remove items with invalid productId
@@ -163,11 +163,11 @@ export default function Cart() {
             }
             return true;
         });
-        
+
         // Remove duplicates based on productId
         const uniqueCart = [];
         const seenIds = new Set();
-        
+
         for (const item of cleanedCart) {
             if (!seenIds.has(item.productId)) {
                 seenIds.add(item.productId);
@@ -176,13 +176,13 @@ export default function Cart() {
                 console.warn("Removing duplicate cart item:", item);
             }
         }
-        
+
         // If cart was cleaned, save the cleaned version
         if (uniqueCart.length !== currentCart.length) {
             saveCart(uniqueCart);
             console.log("Cart was cleaned and saved");
         }
-        
+
         setCart(uniqueCart);
         console.log("Loaded cart:", uniqueCart);
 
@@ -279,7 +279,7 @@ export default function Cart() {
     const validateCartItems = (items) => {
         for (let i = 0; i < items.length; i++) {
             const item = items[i];
-            
+
             // Check price
             const itemPrice = item.lastPrice || item.price;
             if (!itemPrice || typeof itemPrice !== 'number' || itemPrice <= 0) {
@@ -297,28 +297,89 @@ export default function Cart() {
     // Function to create order in backend
     const createOrderInBackend = async (orderData) => {
         try {
+            // STEP 1: Get the authentication token from localStorage
+            const authToken = localStorage.getItem('authToken');
+
+            // STEP 2: Check if user is logged in
+            if (!authToken) {
+                console.error('No authentication token found');
+                toast.error('Please login to place an order');
+
+                // Redirect to login after a short delay
+                setTimeout(() => {
+                    navigate('/login');
+                }, 1500);
+
+                return {
+                    success: false,
+                    error: 'Authentication required. Please login to place orders.'
+                };
+            }
+
+            // STEP 3: Prepare headers with authentication
+            const headers = {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`  // ← THIS IS CRITICAL
+            };
+
+            // Log for debugging
+            console.log('Creating order with authentication...');
+            console.log('Auth token present:', authToken ? 'Yes' : 'No');
+            console.log('Order data:', orderData);
+
+            // STEP 4: Make the API request with headers
             const response = await axios.post(
                 import.meta.env.VITE_BACKEND_URL + '/api/orders',
-                orderData
+                orderData,
+                { headers }  // ← Include headers here
             );
 
+            console.log('Order creation response:', response.data);
+
+            // STEP 5: Handle successful response
             if (response.data) {
                 return { success: true, data: response.data };
             } else {
                 return { success: false, error: 'No data received from server' };
             }
+
         } catch (error) {
             console.error("Order creation error:", error);
 
             let errorMessage = 'Failed to place order. Please try again.';
 
+            // Handle different error types
             if (error.response) {
+                // Server responded with an error
                 console.error("Server error:", error.response.data);
+                console.error("Status code:", error.response.status);
+
                 errorMessage = error.response.data.message || `Server error (${error.response.status})`;
+
+                // Special handling for authentication errors
+                if (error.response.status === 401 || error.response.status === 403) {
+                    errorMessage = 'Session expired. Please login again.';
+
+                    // Clear invalid token
+                    localStorage.removeItem('authToken');
+                    localStorage.removeItem('userDetails');
+
+                    // Redirect to login
+                    toast.error(errorMessage);
+                    setTimeout(() => {
+                        navigate('/login');
+                    }, 1500);
+
+                    return { success: false, error: errorMessage };
+                }
+
             } else if (error.request) {
+                // Request was made but no response received
                 console.error("Network error:", error.request);
-                errorMessage = 'Network error. Please check your connection.';
+                errorMessage = 'Network error. Please check your internet connection.';
+
             } else {
+                // Something else happened
                 console.error("Request error:", error.message);
                 errorMessage = error.message;
             }
@@ -393,19 +454,26 @@ export default function Cart() {
             // Prepare ordered items
             const orderedItems = cartWithDetails.map(item => ({
                 productId: item.productId,
-                productName: item.productName || item.name,
-                qty: item.quantity || item.qty,
-                price: item.lastPrice || item.price
+                name: item.productName || item.name,        // ✅ 'name' not 'productName'
+                quantity: item.quantity || item.qty,        // ✅ 'quantity' not 'qty'
+                price: item.lastPrice || item.price,
+                image: item.images && item.images[0] ? item.images[0] : null
             }));
 
             console.log("Ordered items being sent:", orderedItems);
 
-            // Create order object
             const orderData = {
-                orderedItems,
-                customerData,
+                name: `${firstName.trim()} ${lastName.trim()}`,  // ✅ Combined name
+                phone: phoneNumber.trim(),                        // ✅ 'phone' not 'phoneNumber'
+                address: `${address.trim()}${nearestCity.trim() ? `, ${nearestCity.trim()}` : ''}`,
+                whatsappNumber: whatsappNumber.trim(),
+                preferredTime,
+                preferredDay,
+                nearestTownOrCity: nearestCity.trim() || '',
+                notes: notes.trim(),
                 deliveryOption,
-                paymentMethod: 'COD' // Default to Cash on Delivery
+                paymentMethod: 'COD',
+                orderedItems
             };
 
             console.log("Complete order data:", JSON.stringify(orderData, null, 2));
@@ -431,8 +499,9 @@ export default function Cart() {
                     navigate('/myOrders');
                 }, 2000);
             } else {
-                setError('Order creation failed: ' + orderResponse.data.message);
-                toast.error('Order creation failed: ' + orderResponse.data.message);
+                const errorMsg = orderResponse.error || 'Failed to place order';
+                setError('Order creation failed: ' + errorMsg);
+                toast.error('Order creation failed: ' + errorMsg);
             }
 
         } catch (error) {
@@ -491,7 +560,7 @@ export default function Cart() {
                                         cart.map((item, index) => {
                                             // FIXED: Use a combination of productId and index for key to ensure uniqueness
                                             const uniqueKey = `${item.productId}-${index}`;
-                                            
+
                                             return (
                                                 <CartCard
                                                     key={uniqueKey}
@@ -645,17 +714,34 @@ export default function Cart() {
                                         </select>
                                     </div>
                                     <div>
-                                        <label className="block mb-2 font-medium">Preferred Day *</label>
-                                        <select
+                                        <label className="block mb-2 font-medium text-gray-700">
+                                            Preferred Delivery Date *
+                                        </label>
+                                        <input
+                                            type="date"
                                             value={preferredDay}
                                             onChange={(e) => setPreferredDay(e.target.value)}
-                                            className="w-full p-2 border rounded-lg"
+                                            min={new Date().toISOString().split('T')[0]}
+                                            className="w-full p-3 border-2 border-gray-300 rounded-lg 
+                   focus:ring-2 focus:ring-orange-400 focus:border-orange-400 
+                   focus:outline-none transition-all cursor-pointer"
                                             required
-                                        >
-                                            <option value="">Select day</option>
-                                            <option value="weekday">Weekday</option>
-                                            <option value="weekend">Weekend</option>
-                                        </select>
+                                        />
+                                        {preferredDay && (
+                                            <div className="mt-2 p-2 bg-orange-50 rounded-md border border-orange-200">
+                                                <p className="text-sm text-orange-700">
+                                                    📅 Delivery scheduled for:{' '}
+                                                    <span className="font-semibold">
+                                                        {new Date(preferredDay).toLocaleDateString('en-US', {
+                                                            weekday: 'long',
+                                                            year: 'numeric',
+                                                            month: 'long',
+                                                            day: 'numeric'
+                                                        })}
+                                                    </span>
+                                                </p>
+                                            </div>
+                                        )}
                                     </div>
                                     <div className="md:col-span-2">
                                         <label className="block mb-2 font-medium">Additional Notes</label>
@@ -709,8 +795,8 @@ export default function Cart() {
                                 onClick={handlePlaceOrderClick}
                                 disabled={loading}
                                 className={`px-8 py-3 rounded-lg font-semibold transition-colors ${loading
-                                        ? 'bg-gray-400 cursor-not-allowed'
-                                        : 'bg-orange-600 hover:bg-orange-700 text-white'
+                                    ? 'bg-gray-400 cursor-not-allowed'
+                                    : 'bg-orange-600 hover:bg-orange-700 text-white'
                                     }`}
                             >
                                 {loading ? 'Processing...' : 'Place Order'}
