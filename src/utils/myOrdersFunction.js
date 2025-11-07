@@ -257,10 +257,10 @@ export function storeAuthData(token, user) {
     try {
         // Store token
         localStorage.setItem('authToken', token);
-        
+
         // Store user data
         localStorage.setItem('userData', JSON.stringify(user));
-        
+
         console.log('Auth data stored successfully');
         console.log('Token:', token ? 'Present' : 'Missing');
         console.log('User:', user);
@@ -273,13 +273,13 @@ export function getAuthData() {
     try {
         const token = localStorage.getItem('authToken');
         const userDataString = localStorage.getItem('userData');
-        
+
         if (!token || !userDataString) {
             return null;
         }
-        
+
         const userData = JSON.parse(userDataString);
-        
+
         return {
             token,
             user: userData
@@ -308,7 +308,7 @@ export function isAuthenticated() {
 // Function to validate token (you can add more validation logic here)
 export const validateToken = (token) => {
     if (!token) return false;
-    
+
     try {
         // Basic token format check (you can add more validation)
         const parts = token.split('.');
@@ -318,4 +318,8 @@ export const validateToken = (token) => {
         return false;
     }
 };
+
+
+
+
 

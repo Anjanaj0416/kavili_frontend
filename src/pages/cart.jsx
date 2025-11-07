@@ -188,58 +188,42 @@ export default function Cart() {
 
         // Fetch product details for cart items
         fetchCartDetails(uniqueCart);
-
-        if (uniqueCart.length > 0) {
-            // Get quote for cart items
-            axios.post(import.meta.env.VITE_BACKEND_URL + "/api/orders/quote", {
-                orderedItems: uniqueCart
-            }).then((res) => {
-                console.log("Quote response:", res.data);
-                if (res.data.total != null) {
-                    setTotal(res.data.total);
-                    setLabelTotal(res.data.labelTotal);
-                }
-            }).catch((err) => {
-                console.error("Error getting quote:", err);
-            });
-        }
     }, []);
 
-    // Handle cart refresh
+    // Calculate totals when cartWithDetails changes
+    useEffect(() => {
+        let tempTotal = 0;
+        let tempLabelTotal = 0;
+
+        cartWithDetails.forEach((item) => {
+            const itemPrice = item.lastPrice || item.price || 0;
+            const itemOriginalPrice = item.price || item.lastPrice || 0;
+            const itemQty = item.quantity || item.qty || 0;
+
+            tempTotal += itemPrice * itemQty;
+            tempLabelTotal += itemOriginalPrice * itemQty;
+        });
+
+        setTotal(tempTotal);
+        setLabelTotal(tempLabelTotal);
+    }, [cartWithDetails]);
+
+    // Handle cart update (when item is removed)
     const handleCartUpdate = () => {
         const updatedCart = loadCart();
         setCart(updatedCart);
-
-        // Fetch product details for updated cart
         fetchCartDetails(updatedCart);
-
-        if (updatedCart.length > 0) {
-            axios.post(import.meta.env.VITE_BACKEND_URL + "/api/orders/quote", {
-                orderedItems: updatedCart
-            }).then((res) => {
-                if (res.data.total != null) {
-                    setTotal(res.data.total);
-                    setLabelTotal(res.data.labelTotal);
-                }
-            }).catch((err) => {
-                console.error("Error updating quote:", err);
-            });
-        } else {
-            setTotal(0);
-            setLabelTotal(0);
-        }
     };
 
-    const handleDeliveryOptionChange = (option) => {
-        setDeliveryOption(option);
-    };
-
+    // Navigate to home/products
     const onGoBackClick = () => {
-        navigate("/products");
+        navigate('/products');
     };
 
+    // Clear the cart
     const onCloseOrdersClick = () => {
-        if (window.confirm("Are you sure you want to clear your cart?")) {
+        const confirmed = window.confirm("Are you sure you want to clear your cart?");
+        if (confirmed) {
             clearCart();
             setCart([]);
             setCartWithDetails([]);
@@ -250,6 +234,7 @@ export default function Cart() {
     };
 
     // Handle account checking when user types phone number
+    // ✅ CORRECT - Use new endpoint
     const handlePhoneNumberChange = async (e) => {
         const phone = e.target.value;
         setPhoneNumber(phone);
@@ -257,7 +242,7 @@ export default function Cart() {
         if (phone.length === 10 && /^\d{10}$/.test(phone)) {
             try {
                 const response = await axios.post(
-                    import.meta.env.VITE_BACKEND_URL + '/api/users/check-account',
+                    import.meta.env.VITE_BACKEND_URL + '/api/users/check-user-by-phone',  // ← FIXED!
                     { phonenumber: phone }
                 );
 
@@ -426,9 +411,119 @@ export default function Cart() {
             return;
         }
 
-        // Show confirmation modal
-        setShowConfirmationModal(true);
+        // NEW CHECKOUT FLOW: Check authentication status
+        setIsCheckingOut(true);
+
+        try {
+            const authToken = localStorage.getItem('authToken');
+
+            // Case 1: User is already logged in
+            if (authToken) {
+                console.log("User is already logged in, proceeding with order...");
+                setShowConfirmationModal(true);
+                setIsCheckingOut(false);
+                return;
+            }
+
+            // Case 2: User is not logged in - Check if account exists by phone number
+            console.log("User not logged in, checking if account exists by phone number...");
+
+            // ✅ FIXED: Use the correct endpoint
+            const checkResponse = await axios.post(
+                import.meta.env.VITE_BACKEND_URL + '/api/users/check-user-by-phone',
+                {
+                    phonenumber: phoneNumber.trim()
+                }
+            );
+
+            if (checkResponse.data.exists) {
+                // Case 2a: User exists - Auto-login
+                console.log("User exists, attempting auto-login...");
+                const userFirstName = checkResponse.data.user.firstName;
+                toast.success("Account found! Logging you in...");
+
+                try {
+                    const loginResponse = await axios.post(
+                        import.meta.env.VITE_BACKEND_URL + '/api/users/login',
+                        {
+                            firstName: userFirstName,
+                            phonenumber: phoneNumber.trim()
+                        }
+                    );
+
+                    if (loginResponse.data.success && loginResponse.data.token) {
+                        // Store auth token and user details
+                        localStorage.setItem('authToken', loginResponse.data.token);
+                        localStorage.setItem('userDetails', JSON.stringify(loginResponse.data.user));
+
+                        toast.success(`Welcome back, ${userFirstName}!`);
+                        console.log("Auto-login successful, proceeding with order...");
+
+                        // Proceed with order
+                        setShowConfirmationModal(true);
+                    } else {
+                        throw new Error("Login failed");
+                    }
+                } catch (loginError) {
+                    console.error("Auto-login failed:", loginError);
+                    toast.error("Account exists but login failed. Please check your details or login manually.");
+                    setIsCheckingOut(false);
+                    return;
+                }
+            } else {
+                // Case 2b: User doesn't exist - Navigate to registration
+                console.log("User doesn't exist, redirecting to registration...");
+                toast.success("Please complete registration to place your order");
+
+                // Store checkout data in localStorage to use after registration
+                const checkoutData = {
+                    firstName: firstName.trim(),
+                    lastName: lastName.trim(),
+                    phoneNumber: phoneNumber.trim(),
+                    address: address.trim(),
+                    whatsappNumber: whatsappNumber.trim(),
+                    preferredTime,
+                    preferredDay,
+                    nearestCity: nearestCity.trim(),
+                    notes: notes.trim(),
+                    deliveryOption
+                };
+
+                localStorage.setItem('pendingCheckoutData', JSON.stringify(checkoutData));
+
+                // Navigate to registration page with pre-filled data
+                navigate('/register', {
+                    state: {
+                        fromCheckout: true,
+                        firstName: firstName.trim(),
+                        phonenumber: phoneNumber.trim(),
+                        homeaddress: address.trim()
+                    }
+                });
+
+                setIsCheckingOut(false);
+                return;
+            }
+        } catch (error) {
+            console.error("Error during checkout flow:", error);
+            if (error.response && error.response.status === 400) {
+                toast.error("Please check your phone number and try again.");
+            } else {
+                toast.error("An error occurred. Please try again.");
+            }
+            setIsCheckingOut(false);
+            return;
+        }
+
+        setIsCheckingOut(false);
     };
+
+
+
+
+
+
+
 
     // NEW: Function to handle order confirmation (called when user clicks "Confirm" in modal)
     const handleOrderConfirmation = async () => {
@@ -574,10 +669,10 @@ export default function Cart() {
                                         <tr>
                                             <td colSpan="6" className="text-center p-8">
                                                 <div className="flex flex-col items-center gap-4">
-                                                    <p className="text-gray-500 text-lg">Your cart is empty. Start shopping to add items!</p>
+                                                    <p className="text-gray-500 text-lg">Your cart is empty.</p>
                                                     <button
-                                                        onClick={() => navigate('/products')}
-                                                        className="px-8 py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-semibold transition-colors"
+                                                        onClick={onGoBackClick}
+                                                        className="px-6 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700"
                                                     >
                                                         Start Shopping
                                                     </button>
@@ -590,122 +685,123 @@ export default function Cart() {
                         </div>
                     </div>
 
-                    {/* Only show form if cart has items */}
+                    {/* Form and Summary Section - Only show when cart has items */}
                     {cart.length > 0 && (
                         <>
-                            {/* Delivery Option */}
-                            <div className="mb-6 p-6 bg-white rounded-lg shadow-md">
-                                <h3 className="text-xl font-semibold mb-4">Delivery Option</h3>
-                                <div className="flex gap-4">
+                            {/* Delivery Option Section */}
+                            <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+                                <h2 className="text-xl font-semibold mb-4">Delivery Option</h2>
+                                <div className="flex gap-6">
                                     <label className="flex items-center gap-2 cursor-pointer">
                                         <input
                                             type="radio"
-                                            name="delivery"
+                                            name="deliveryOption"
                                             value="pickup"
                                             checked={deliveryOption === "pickup"}
-                                            onChange={() => handleDeliveryOptionChange("pickup")}
-                                            className="w-4 h-4"
+                                            onChange={(e) => setDeliveryOption(e.target.value)}
+                                            className="w-4 h-4 text-orange-600"
                                         />
                                         <span>Pickup from Store</span>
                                     </label>
                                     <label className="flex items-center gap-2 cursor-pointer">
                                         <input
                                             type="radio"
-                                            name="delivery"
+                                            name="deliveryOption"
                                             value="delivery"
                                             checked={deliveryOption === "delivery"}
-                                            onChange={() => handleDeliveryOptionChange("delivery")}
-                                            className="w-4 h-4"
+                                            onChange={(e) => setDeliveryOption(e.target.value)}
+                                            className="w-4 h-4 text-orange-600"
                                         />
                                         <span>Home Delivery</span>
                                     </label>
                                 </div>
                             </div>
 
-                            {/* Customer Details Form */}
-                            <div className="mb-6 p-6 bg-white rounded-lg shadow-md">
-                                <h3 className="text-xl font-semibold mb-4">Customer Details</h3>
+                            {/* Customer Details Section */}
+                            <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+                                <h2 className="text-xl font-semibold mb-4">Customer Details</h2>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {/* First Name */}
                                     <div>
-                                        <label className="block mb-2 font-medium">First Name *</label>
+                                        <label className="block text-sm font-medium mb-2">
+                                            First Name <span className="text-red-500">*</span>
+                                        </label>
                                         <input
                                             type="text"
                                             value={firstName}
                                             onChange={(e) => setFirstName(e.target.value)}
-                                            className="w-full p-2 border rounded-lg"
                                             placeholder="Enter your first name"
-                                            required
+                                            className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                                         />
                                     </div>
+
+                                    {/* Last Name */}
                                     <div>
-                                        <label className="block mb-2 font-medium">Last Name</label>
+                                        <label className="block text-sm font-medium mb-2">
+                                            Last Name
+                                        </label>
                                         <input
                                             type="text"
                                             value={lastName}
                                             onChange={(e) => setLastName(e.target.value)}
-                                            className="w-full p-2 border rounded-lg"
                                             placeholder="Enter your last name"
+                                            className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                                         />
                                     </div>
+
+                                    {/* Phone Number */}
                                     <div>
-                                        <label className="block mb-2 font-medium">Phone Number *</label>
+                                        <label className="block text-sm font-medium mb-2">
+                                            Phone Number <span className="text-red-500">*</span>
+                                        </label>
                                         <input
                                             type="tel"
                                             value={phoneNumber}
                                             onChange={handlePhoneNumberChange}
-                                            className="w-full p-2 border rounded-lg"
                                             placeholder="0771234567"
-                                            required
+                                            maxLength="10"
+                                            className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                                         />
-                                        {accountStatus === 'existing' && (
-                                            <p className="text-sm text-green-600 mt-1">✓ Account found</p>
-                                        )}
-                                        {accountStatus === 'new' && (
-                                            <p className="text-sm text-blue-600 mt-1">New account will be created</p>
-                                        )}
                                     </div>
+
+                                    {/* WhatsApp Number */}
                                     <div>
-                                        <label className="block mb-2 font-medium">WhatsApp Number *</label>
+                                        <label className="block text-sm font-medium mb-2">
+                                            WhatsApp Number <span className="text-red-500">*</span>
+                                        </label>
                                         <input
                                             type="tel"
                                             value={whatsappNumber}
                                             onChange={(e) => setWhatsappNumber(e.target.value)}
-                                            className="w-full p-2 border rounded-lg"
                                             placeholder="0771234567"
-                                            required
+                                            maxLength="10"
+                                            className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                                         />
                                     </div>
+
+                                    {/* Address */}
                                     <div className="md:col-span-2">
-                                        <label className="block mb-2 font-medium">Address *</label>
+                                        <label className="block text-sm font-medium mb-2">
+                                            Address <span className="text-red-500">*</span>
+                                        </label>
                                         <textarea
                                             value={address}
                                             onChange={(e) => setAddress(e.target.value)}
-                                            className="w-full p-2 border rounded-lg"
-                                            rows="3"
                                             placeholder="Enter your complete address"
-                                            required
+                                            rows="3"
+                                            className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none"
                                         />
                                     </div>
-                                    {deliveryOption === "delivery" && (
-                                        <div>
-                                            <label className="block mb-2 font-medium">Nearest City *</label>
-                                            <input
-                                                type="text"
-                                                value={nearestCity}
-                                                onChange={(e) => setNearestCity(e.target.value)}
-                                                className="w-full p-2 border rounded-lg"
-                                                placeholder="Enter your nearest city"
-                                                required
-                                            />
-                                        </div>
-                                    )}
+
+                                    {/* Preferred Time */}
                                     <div>
-                                        <label className="block mb-2 font-medium">Preferred Time *</label>
+                                        <label className="block text-sm font-medium mb-2">
+                                            Preferred Time <span className="text-red-500">*</span>
+                                        </label>
                                         <select
                                             value={preferredTime}
                                             onChange={(e) => setPreferredTime(e.target.value)}
-                                            className="w-full p-2 border rounded-lg"
-                                            required
+                                            className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                                         >
                                             <option value="">Select time</option>
                                             <option value="morning">Morning (8AM - 12PM)</option>
@@ -713,56 +809,59 @@ export default function Cart() {
                                             <option value="evening">Evening (4PM - 8PM)</option>
                                         </select>
                                     </div>
+
+                                    {/* Preferred Delivery Date */}
                                     <div>
-                                        <label className="block mb-2 font-medium text-gray-700">
-                                            Preferred Delivery Date *
+                                        <label className="block text-sm font-medium mb-2">
+                                            Preferred Delivery Date <span className="text-red-500">*</span>
                                         </label>
                                         <input
                                             type="date"
                                             value={preferredDay}
                                             onChange={(e) => setPreferredDay(e.target.value)}
-                                            min={new Date().toISOString().split('T')[0]}
-                                            className="w-full p-3 border-2 border-gray-300 rounded-lg 
-                   focus:ring-2 focus:ring-orange-400 focus:border-orange-400 
-                   focus:outline-none transition-all cursor-pointer"
-                                            required
+                                            className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                                         />
-                                        {preferredDay && (
-                                            <div className="mt-2 p-2 bg-orange-50 rounded-md border border-orange-200">
-                                                <p className="text-sm text-orange-700">
-                                                    📅 Delivery scheduled for:{' '}
-                                                    <span className="font-semibold">
-                                                        {new Date(preferredDay).toLocaleDateString('en-US', {
-                                                            weekday: 'long',
-                                                            year: 'numeric',
-                                                            month: 'long',
-                                                            day: 'numeric'
-                                                        })}
-                                                    </span>
-                                                </p>
-                                            </div>
-                                        )}
                                     </div>
+
+                                    {/* Nearest City (for delivery only) */}
+                                    {deliveryOption === "delivery" && (
+                                        <div className="md:col-span-2">
+                                            <label className="block text-sm font-medium mb-2">
+                                                Nearest City <span className="text-red-500">*</span>
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={nearestCity}
+                                                onChange={(e) => setNearestCity(e.target.value)}
+                                                placeholder="Enter your nearest city"
+                                                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                            />
+                                        </div>
+                                    )}
+
+                                    {/* Additional Notes */}
                                     <div className="md:col-span-2">
-                                        <label className="block mb-2 font-medium">Additional Notes</label>
+                                        <label className="block text-sm font-medium mb-2">
+                                            Additional Notes
+                                        </label>
                                         <textarea
                                             value={notes}
                                             onChange={(e) => setNotes(e.target.value)}
-                                            className="w-full p-2 border rounded-lg"
-                                            rows="2"
                                             placeholder="Any special instructions or notes"
+                                            rows="3"
+                                            className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none"
                                         />
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Order Summary */}
-                            <div className="mb-6 p-6 bg-white rounded-lg shadow-md">
-                                <h3 className="text-xl font-semibold mb-4">Order Summary</h3>
+                            {/* Order Summary Section */}
+                            <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+                                <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
                                 <div className="space-y-2">
                                     <div className="flex justify-between">
-                                        <span>Subtotal:</span>
-                                        <span>Rs. {labelTotal.toFixed(2)}</span>
+                                        <span className="text-gray-600">Subtotal:</span>
+                                        <span className="font-medium">Rs. {labelTotal.toFixed(2)}</span>
                                     </div>
                                     <div className="text-2xl font-bold text-orange-600 mt-2">
                                         Total: Rs. {total.toFixed(2)}
@@ -793,13 +892,13 @@ export default function Cart() {
                         {cart.length > 0 && !cartLoading && (
                             <button
                                 onClick={handlePlaceOrderClick}
-                                disabled={loading}
-                                className={`px-8 py-3 rounded-lg font-semibold transition-colors ${loading
+                                disabled={loading || isCheckingOut}
+                                className={`px-8 py-3 rounded-lg font-semibold transition-colors ${loading || isCheckingOut
                                     ? 'bg-gray-400 cursor-not-allowed'
                                     : 'bg-orange-600 hover:bg-orange-700 text-white'
                                     }`}
                             >
-                                {loading ? 'Processing...' : 'Place Order'}
+                                {isCheckingOut ? 'Checking...' : loading ? 'Processing...' : 'Place Order'}
                             </button>
                         )}
                     </div>
