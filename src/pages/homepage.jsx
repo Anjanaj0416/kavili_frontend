@@ -43,8 +43,9 @@ export default function HomePage() {
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="relative w-full h-full">
                     {/* Main spice pile */}
-                    <div className="absolute right-20 top-1/2 transform -translate-y-1/2 w-80 h-80 bg-gradient-to-br from-orange-600 to-red-600 rounded-full opacity-90"></div>
-                    <div className="absolute right-24 top-1/2 transform -translate-y-1/2 w-72 h-72 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-full opacity-80"></div>
+                    <div className="absolute right-[300px] top-1/2 transform -translate-y-1/2 w-[550px] h-[550px] bg-gradient-to-br from-orange-600 to-red-600 rounded-full opacity-90"></div>
+                    <div className="absolute right-24 top-[200px] transform -translate-y-1/2 w-[300px] h-[300px] bg-gradient-to-br from-yellow-500 to-orange-500 rounded-full opacity-80"></div>
+                    <div className="absolute right-[750px] top-[550px] transform -translate-y-1/2 w-[200px] h-[200px] bg-gradient-to-br from-yellow-500 to-orange-500 rounded-full opacity-80"></div>
 
                     {/* Text content */}
                     <div className="absolute left-20 top-1/2 transform -translate-y-1/2 z-10 max-w-2xl">
