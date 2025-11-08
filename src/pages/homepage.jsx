@@ -1,4 +1,5 @@
 import { Route, Routes } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import Header from '../components/header';
 import Footer from '../components/footer';
 import ProductPage from './products';
@@ -13,12 +14,61 @@ import MyOrders from './myOrders';
 import CustomerProfile from './customerProfile';
 import FAQ from './faq';
 import FeaturedReviews from '../components/FeaturedReviews';
-
-
 import Register from './register';
 import Login from './login';
 
+// Hero Circle Image Carousel Component
+const HeroImageCarousel = () => {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  
+  // Add your hero circle images here
+  // Place your images in: public/images/hero/
+  const heroImages = [
+    '/images/hero/circle1.jpg',
+    '/images/hero/circle2.jpg',
+    '/images/hero/circle3.jpg',
+    '/images/hero/circle4.jpg'
+  ];
 
+  // Auto-rotate images every 3 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prevIndex) => 
+        (prevIndex + 1) % heroImages.length
+      );
+    }, 3000); // Change image every 3 seconds
+
+    return () => clearInterval(interval);
+  }, [heroImages.length]);
+
+  return (
+    <>
+      {/* Smaller decorative circles - BEHIND the big circle */}
+      <div className="absolute right-24 top-[200px] transform -translate-y-1/2 w-[300px] h-[300px] bg-gradient-to-br from-yellow-500 to-orange-500 rounded-full opacity-80 z-0"></div>
+      <div className="absolute right-[750px] top-[550px] transform -translate-y-1/2 w-[200px] h-[200px] bg-gradient-to-br from-yellow-500 to-orange-500 rounded-full opacity-80 z-0"></div>
+
+      {/* Main Circle with Rotating Images - IN FRONT */}
+      <div className="absolute right-[300px] top-1/2 transform -translate-y-1/2 w-[550px] h-[550px] rounded-full overflow-hidden shadow-2xl z-10">
+        {heroImages.map((image, index) => (
+          <div
+            key={index}
+            className={`absolute inset-0 transition-opacity duration-1000 ${
+              index === currentImageIndex ? 'opacity-100' : 'opacity-0'
+            }`}
+          >
+            <img
+              src={image}
+              alt={`Hero ${index + 1}`}
+              className="w-full h-full object-cover"
+            />
+            {/* Optional: Add a subtle overlay for better visual effect */}
+            <div className="absolute inset-0 bg-gradient-to-br from-orange-500/20 to-red-500/20"></div>
+          </div>
+        ))}
+      </div>
+    </>
+  );
+};
 
 export default function HomePage() {
   
@@ -37,18 +87,16 @@ export default function HomePage() {
               {/* Hero Background */}
               <div className="h-[750px] bg-gradient-to-br from-orange-500 via-orange-500 to-orange-300 overflow-hidden relative">
                 {/* Background overlay */}
-                <div className="absolute inset-0   bg-opacity-20"></div>
+                <div className="absolute inset-0 bg-opacity-20"></div>
 
-                {/* Spice pile visual effects */}
+                {/* Spice pile visual effects with Image Carousel */}
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="relative w-full h-full">
-                    {/* Main spice pile */}
-                    <div className="absolute right-[300px] top-1/2 transform -translate-y-1/2 w-[550px] h-[550px] bg-gradient-to-br from-orange-600 to-red-600 rounded-full opacity-90"></div>
-                    <div className="absolute right-24 top-[200px] transform -translate-y-1/2 w-[300px] h-[300px] bg-gradient-to-br from-yellow-500 to-orange-500 rounded-full opacity-80"></div>
-                    <div className="absolute right-[750px] top-[550px] transform -translate-y-1/2 w-[200px] h-[200px] bg-gradient-to-br from-yellow-500 to-orange-500 rounded-full opacity-80"></div>
+                    {/* Hero Circle with Rotating Images */}
+                    <HeroImageCarousel />
 
                     {/* Text content */}
-                    <div className="absolute left-20 top-1/2 transform -translate-y-1/2 z-10 max-w-2xl">
+                    <div className="absolute left-20 top-1/2 transform -translate-y-1/2 z-20 max-w-2xl">
                       <h1 className="text-7xl font-bold text-white mb-6 drop-shadow-lg">
                         We bring unique flavors
                       </h1>
@@ -72,9 +120,7 @@ export default function HomePage() {
 
           {/* Other Routes - Changed from bg-gray-50 to bg-orange-100 */}
           <Route path="/products" element={
-
             <ProductPage />
-
           } />
 
           <Route path="/about" element={
@@ -87,19 +133,13 @@ export default function HomePage() {
           } />
 
           <Route path="/cart" element={
-
             <Cart />
-
           } />
           <Route path="/myOrders" element={
-
             <MyOrders />
-
           } />
           <Route path="/profile" element={
-
             <CustomerProfile />
-
           } />
           <Route path="/category/:category/productInfo/:productId" element={
               <ProductOverView />
