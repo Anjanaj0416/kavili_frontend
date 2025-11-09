@@ -45,10 +45,13 @@ const HeroImageCarousel = () => {
     <>
       {/* Smaller decorative circles - BEHIND the big circle */}
       <div className="absolute right-24 top-[200px] transform -translate-y-1/2 w-[300px] h-[300px] bg-gradient-to-br from-yellow-500 to-orange-500 rounded-full opacity-80 z-0"></div>
-      <div className="absolute right-[750px] top-[550px] transform -translate-y-1/2 w-[200px] h-[200px] bg-gradient-to-br from-yellow-500 to-orange-500 rounded-full opacity-80 z-0"></div>
+      <div className="absolute right-[750px] top-[550px] transform -translate-y-1/2 w-[200px] h-[200px] bg-gradient-to-br from-yellow-400 to-orange-400 rounded-full opacity-80 z-0"></div>      
+      <div className="absolute right-[10px] top-[420px] transform -translate-y-1/2 w-[200px] h-[200px] bg-gradient-to-br from-yellow-300 to-orange-300 rounded-full opacity-80 z-0"></div>
+      <div className="absolute right-[180px] top-[560px] transform -translate-y-1/2 w-[150px] h-[150px] bg-gradient-to-br from-yellow-200 to-orange-200 rounded-full opacity-80 z-0 "></div>
+      <div className="absolute right-[830px] top-[250px] transform -translate-y-1/2 w-[100px] h-[100px] bg-gradient-to-br from-yellow-100 to-orange-100 rounded-full opacity-80 z-0"></div>
 
       {/* Main Circle with Rotating Images - IN FRONT */}
-      <div className="absolute right-[300px] top-1/2 transform -translate-y-1/2 w-[550px] h-[550px] rounded-full overflow-hidden shadow-2xl z-10">
+      <div className="absolute right-[260px] top-1/2 transform -translate-y-1/2 w-[580px] h-[580px] rounded-full overflow-hidden shadow-2xl z-10">
         {heroImages.map((image, index) => (
           <div
             key={index}

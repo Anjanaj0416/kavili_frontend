@@ -228,11 +228,11 @@ const Login = ({ onLoginSuccess, onBack }) => {
     return (
         <div className="min-h-screen flex">
             {/* Left Side - Decorative */}
-            <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-orange-400 via-red-500 to-pink-500 relative overflow-hidden">
+            <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-orange-500 via-orange-500 to-orange-300 relative overflow-hidden">
                 <div className="absolute inset-0">
                     <div className="absolute inset-0 bg-black opacity-10"></div>
                     <div className="absolute top-20 left-10 w-64 h-64 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full opacity-70"></div>
-                    <div className="absolute bottom-20 right-10 w-80 h-80 bg-gradient-to-br from-pink-400 to-red-500 rounded-full opacity-60"></div>
+                    <div className="absolute bottom-20 right-10 w-80 h-80 bg-gradient-to-br from-yellow-400 to-red-500 rounded-full opacity-60"></div>
                 </div>
                 <div className="w-full h-full flex items-center justify-center">
                     <span className="text-6xl font-bold text-white">Login</span>

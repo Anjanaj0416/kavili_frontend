@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from 'react-router-dom';
+
 import axios from "axios";
 import { loadCart, clearCart, saveCart, deleteItem } from "../utils/cartFunction";
 import CartCard from "../components/cartCard";
 import OrderConfirmationModal from "../components/OrderConfirmationModal";
 import toast from "react-hot-toast";
+import { useNavigate, useLocation } from 'react-router-dom';
 
 export default function Cart() {
     const navigate = useNavigate();
+    const location = useLocation();
 
     // Cart state
     const [cart, setCart] = useState([]);
@@ -87,6 +89,50 @@ export default function Cart() {
                 });
         }
     }, []); // Run once on component mount
+
+    useEffect(() => {
+        // Check if user just completed registration and has pending checkout data
+        const locationState = location.state;
+        const pendingCheckoutData = localStorage.getItem('pendingCheckoutData');
+
+        if (locationState && locationState.fromCheckout && pendingCheckoutData) {
+            try {
+                const checkoutData = JSON.parse(pendingCheckoutData);
+
+                // Restore checkout form data
+                setFirstName(checkoutData.firstName || "");
+                setLastName(checkoutData.lastName || "");
+                setPhoneNumber(checkoutData.phoneNumber || "");
+                setAddress(checkoutData.address || "");
+                setWhatsappNumber(checkoutData.whatsappNumber || "");
+                setPreferredTime(checkoutData.preferredTime || "");
+                setPreferredDay(checkoutData.preferredDay || "");
+                setNearestCity(checkoutData.nearestCity || "");
+                setNotes(checkoutData.notes || "");
+                setDeliveryOption(checkoutData.deliveryOption || "pickup");
+
+                // Clear the pending checkout data
+                localStorage.removeItem('pendingCheckoutData');
+
+                // Show success message and prompt to complete order
+                toast.success('Welcome! Your checkout details have been restored. Please review and place your order.');
+
+                // Automatically show the confirmation modal after a short delay
+                setTimeout(() => {
+                    setShowConfirmationModal(true);
+                }, 1500);
+
+            } catch (error) {
+                console.error('Error restoring checkout data:', error);
+                localStorage.removeItem('pendingCheckoutData');
+            }
+        }
+    }, [location]);
+
+
+
+
+
 
     // FIXED: Function to fetch product details for cart items
     const fetchCartDetails = async (cartItems) => {
@@ -375,6 +421,7 @@ export default function Cart() {
     };
 
     // NEW: Function to handle "Place Order" button click (shows modal)
+    // UPDATED: Function to handle "Place Order" button click with AUTO-LOGIN
     const handlePlaceOrderClick = async () => {
         // Wait for cart details to load
         if (cartLoading) {
@@ -428,7 +475,6 @@ export default function Cart() {
             // Case 2: User is not logged in - Check if account exists by phone number
             console.log("User not logged in, checking if account exists by phone number...");
 
-            // ✅ FIXED: Use the correct endpoint
             const checkResponse = await axios.post(
                 import.meta.env.VITE_BACKEND_URL + '/api/users/check-user-by-phone',
                 {
@@ -440,9 +486,11 @@ export default function Cart() {
                 // Case 2a: User exists - Auto-login
                 console.log("User exists, attempting auto-login...");
                 const userFirstName = checkResponse.data.user.firstName;
+
                 toast.success("Account found! Logging you in...");
 
                 try {
+                    // Perform auto-login by calling the login endpoint
                     const loginResponse = await axios.post(
                         import.meta.env.VITE_BACKEND_URL + '/api/users/login',
                         {
@@ -452,21 +500,23 @@ export default function Cart() {
                     );
 
                     if (loginResponse.data.success && loginResponse.data.token) {
-                        // Store auth token and user details
+                        // Store authentication data
                         localStorage.setItem('authToken', loginResponse.data.token);
                         localStorage.setItem('userDetails', JSON.stringify(loginResponse.data.user));
 
-                        toast.success(`Welcome back, ${userFirstName}!`);
-                        console.log("Auto-login successful, proceeding with order...");
+                        console.log("Auto-login successful!");
+                        toast.success(`Welcome back, ${userFirstName}! Proceeding with your order...`);
 
-                        // Proceed with order
+                        // Show confirmation modal to proceed with order
                         setShowConfirmationModal(true);
+                        setIsCheckingOut(false);
+                        return;
                     } else {
                         throw new Error("Login failed");
                     }
                 } catch (loginError) {
-                    console.error("Auto-login failed:", loginError);
-                    toast.error("Account exists but login failed. Please check your details or login manually.");
+                    console.error("Auto-login error:", loginError);
+                    toast.error("Failed to login automatically. Please check your details or login manually.");
                     setIsCheckingOut(false);
                     return;
                 }
