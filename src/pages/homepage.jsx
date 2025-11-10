@@ -1,4 +1,4 @@
-import { Route, Routes } from 'react-router-dom';
+import { Link, Route, Routes } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import Header from '../components/header';
 import Footer from '../components/footer';
@@ -20,7 +20,7 @@ import Login from './login';
 // Hero Circle Image Carousel Component
 const HeroImageCarousel = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  
+
   // Add your hero circle images here
   // Place your images in: public/images/hero/
   const heroImages = [
@@ -33,7 +33,7 @@ const HeroImageCarousel = () => {
   // Auto-rotate images every 3 seconds
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentImageIndex((prevIndex) => 
+      setCurrentImageIndex((prevIndex) =>
         (prevIndex + 1) % heroImages.length
       );
     }, 3000); // Change image every 3 seconds
@@ -45,19 +45,18 @@ const HeroImageCarousel = () => {
     <>
       {/* Smaller decorative circles - BEHIND the big circle */}
       <div className="absolute right-24 top-[200px] transform -translate-y-1/2 w-[300px] h-[300px] bg-gradient-to-br from-[#4a3728] to-[#d4b876] rounded-full opacity-80 z-0"></div>
-      <div className="absolute right-[750px] top-[550px] transform -translate-y-1/2 w-[200px] h-[200px] bg-gradient-to-br from-[#645430] to-[#c9a961] rounded-full opacity-80 z-0"></div>      
+      <div className="absolute right-[700px] top-[550px] transform -translate-y-1/2 w-[200px] h-[200px] bg-gradient-to-br from-[#645430] to-[#c9a961] rounded-full opacity-80 z-0"></div>
       <div className="absolute right-[10px] top-[420px] transform -translate-y-1/2 w-[200px] h-[200px] bg-gradient-to-br from-[#c9a961] to-[#b89551] rounded-full opacity-80 z-0"></div>
       <div className="absolute right-[180px] top-[560px] transform -translate-y-1/2 w-[150px] h-[150px] bg-gradient-to-br from-[#c9a961] to-[#d4b876] rounded-full opacity-80 z-0 "></div>
-      <div className="absolute right-[830px] top-[250px] transform -translate-y-1/2 w-[100px] h-[100px] bg-gradient-to-br from-[#f0e3bb] to-[#e0c589] rounded-full opacity-80 z-0"></div>
+      <div className="absolute right-[750px] top-[250px] transform -translate-y-1/2 w-[100px] h-[100px] bg-gradient-to-br from-[#f0e3bb] to-[#e0c589] rounded-full opacity-80 z-0"></div>
 
       {/* Main Circle with Rotating Images - IN FRONT */}
-      <div className="absolute right-[260px] top-[400px] transform -translate-y-1/2 w-[580px] h-[580px] rounded-full overflow-hidden shadow-2xl z-10 ">
+      <div className="absolute right-[200px] top-[400px] transform -translate-y-1/2 w-[580px] h-[580px] rounded-full overflow-hidden shadow-2xl z-10 ">
         {heroImages.map((image, index) => (
           <div
             key={index}
-            className={`absolute inset-0 transition-opacity duration-1000 ${
-              index === currentImageIndex ? 'opacity-100' : 'opacity-0'
-            }`}
+            className={`absolute inset-0 transition-opacity duration-1000 ${index === currentImageIndex ? 'opacity-100' : 'opacity-0'
+              }`}
           >
             <img
               src={image}
@@ -74,10 +73,10 @@ const HeroImageCarousel = () => {
 };
 
 export default function HomePage() {
-  
+
   return (
     <div className="min-h-screen w-full relative flex flex-col">
-      
+
       {/* Header */}
       <Header />
 
@@ -99,16 +98,28 @@ export default function HomePage() {
                     <HeroImageCarousel />
 
                     {/* Text content */}
-                    <div className="absolute left-20 top-1/2 transform -translate-y-1/2 z-20 max-w-2xl">
-                      <h1 className="text-7xl font-bold text-white mb-6 drop-shadow-lg">
-                        We bring unique flavors
+                    {/* Text content */}
+                    <div className="absolute left-20 top-1/2 transform -translate-y-1/2 z-20 max-w-3xl w-[600px]">
+                      <h1 className="text-6xl font-bold text-[#4a3728] mb-4 drop-shadow-lg">
+                        AUTHENTIC
                       </h1>
-                      <p className="text-2xl text-white mb-8 drop-shadow-md">
-                        Authentic, Fresh and Direct from the Farms
+                      <h2 className="text-5xl font-bold text-[#c9a961] mb-6 drop-shadow-lg">
+                        HEALTHY FOOD
+                      </h2>
+                      <p className="text-xl text-white mb-3 drop-shadow-md leading-relaxed">
+                        <span className="font-semibold">REAL FOOD</span> is your Trusted Food Supplier of Sri Lankan Traditional Sweet & Authentic Ready Made Curry Bottles since 1996..
                       </p>
-                      <button className="bg-[#4a3728] hover:bg-[#3a2818] text-white px-8 py-3 rounded-lg font-semibold transition-colors duration-300">
-                        SHOP NOW
-                      </button>
+                      <p className="text-xl text-white mb-6 drop-shadow-md">
+                        Get delivered a wide range of Vegen Food products to your doorstep.
+                      </p>
+                      <p className="text-lg text-[#4a3728] font-bold mb-8 drop-shadow-md">
+                        NO ADDED ARTIFICIAL INGREDIENTS & PRESERVATIVES
+                      </p>
+                      <Link to="/products">
+                        <button className="bg-[#4a3728] hover:bg-[#3a2818] text-white px-10 py-4 rounded-lg font-semibold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
+                          SHOP NOW
+                        </button>
+                      </Link>
                     </div>
                   </div>
                 </div>
@@ -116,7 +127,7 @@ export default function HomePage() {
 
               {/* Home Body Component */}
               <HomeBody />
-              
+
               <FeaturedReviews />
             </div>
           } />
@@ -145,14 +156,14 @@ export default function HomePage() {
             <CustomerProfile />
           } />
           <Route path="/category/:category/productInfo/:productId" element={
-              <ProductOverView />
+            <ProductOverView />
           } />
           <Route path="/checkout" element={
             <div className="pt-24 min-h-screen bg-gray-50">
               <CheckoutForm />
             </div>
           } />
-          <Route path="/login" element={<Login/>} />
+          <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/products" element={<ProductPage />} />
           <Route path="/products/:category" element={<ProductPage />} />
@@ -163,7 +174,7 @@ export default function HomePage() {
           } />
         </Routes>
       </main>
-      
+
 
       {/* Footer - Added here to show on all customer pages */}
       <Footer />

@@ -236,7 +236,7 @@ const CategoryDisplay = ({ onCategoryClick }) => {
 
   return (
     <>
-      <div className="w-full min-h-screen bg-gradient-to-br from-[#d4b876] via-[#e0c589] to-white py-16 px-4 relative overflow-hidden">
+      <div className="w-full h-[700px] bg-gradient-to-br from-[#d4b876] via-[#e0c589] to-white py-16 px-4 relative overflow-hidden">
         {/* Animated Background Elements */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-20 left-10 w-72 h-72 bg-[#c9a961] rounded-full opacity-20 blur-3xl animate-blob"></div>
@@ -257,7 +257,6 @@ const CategoryDisplay = ({ onCategoryClick }) => {
                   </h1>
                   <Sparkles className="w-8 h-8 text-[#c9a961] animate-pulse animation-delay-500" />
                 </div>
-                <p className="text-center text-gray-600 mt-2 text-lg">Explore our wide range of products</p>
               </div>
             </div>
           </div>
@@ -353,7 +352,7 @@ const CategoryDisplay = ({ onCategoryClick }) => {
               )}
             </div>
 
-            {/* Animated Dots Indicator */}
+            {/* Animated Dots Indicator 
             <div className="flex justify-center mt-12 space-x-3">
               {Array.from({ length: totalSlides }).map((_, index) => (
                 <button
@@ -366,15 +365,15 @@ const CategoryDisplay = ({ onCategoryClick }) => {
                   aria-label={`Go to slide ${index + 1}`}
                 />
               ))}
-            </div>
+            </div>*/}
           </div>
 
-          {/* Enhanced Call to Action */}
+          {/* Enhanced Call to Action 
           <div className={`text-center mt-16 transition-all duration-1000 delay-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
             <button className="bg-gradient-to-r from-[#c9a961] to-[#4a3728] hover:from-[#b89551] hover:to-[#3a2818] text-white px-12 py-4 rounded-full font-bold text-lg shadow-2xl transform hover:scale-105 transition-all duration-300 hover:shadow-3xl">
               Explore All Products
             </button>
-          </div>
+          </div>*/}
         </div>
 
         {/* Animation Keyframes */}

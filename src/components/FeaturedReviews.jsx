@@ -19,20 +19,20 @@ export default function FeaturedReviews() {
     const loadFeaturedReviews = async () => {
         try {
             setLoading(true);
-            
+
             const productsResponse = await axios.get(
                 `${import.meta.env.VITE_BACKEND_URL}/api/products`
             );
             const products = productsResponse.data;
 
             const allReviews = [];
-            
+
             for (const product of products.slice(0, 10)) {
                 try {
                     const reviewsResponse = await axios.get(
                         `${import.meta.env.VITE_BACKEND_URL}/api/reviews/product/${product.productId}`
                     );
-                    
+
                     if (reviewsResponse.data.success && reviewsResponse.data.reviews.length > 0) {
                         const topReviews = reviewsResponse.data.reviews
                             .filter(review => review.rating === 5 || review.adminLiked)
@@ -43,7 +43,7 @@ export default function FeaturedReviews() {
                                 productCategory: product.category,
                                 productId: product.productId
                             }));
-                        
+
                         allReviews.push(...topReviews);
                     }
                 } catch (error) {
@@ -67,7 +67,7 @@ export default function FeaturedReviews() {
     };
 
     const totalPages = Math.ceil(reviews.length / REVIEWS_PER_PAGE);
-    
+
     const nextPage = () => {
         setCurrentPage((prev) => (prev + 1) % totalPages);
     };
@@ -238,11 +238,10 @@ export default function FeaturedReviews() {
                             <button
                                 key={index}
                                 onClick={() => setCurrentPage(index)}
-                                className={`w-3 h-3 rounded-full transition-all ${
-                                    index === currentPage
+                                className={`w-3 h-3 rounded-full transition-all ${index === currentPage
                                         ? 'bg-[#c9a961] w-8'
                                         : 'bg-gray-300 hover:bg-gray-400'
-                                }`}
+                                    }`}
                                 aria-label={`Go to page ${index + 1}`}
                             />
                         ))}
@@ -250,15 +249,16 @@ export default function FeaturedReviews() {
                 )}
 
                 {/* CTA */}
+                {/* CTA */}
                 <div className="text-center mt-12">
                     <p className="text-gray-700 mb-4">
                         Join thousands of happy customers!
                     </p>
                     <button
-                        onClick={() => navigate('/products')}
+                        onClick={() => navigate('/register')}
                         className="bg-[#4a3728] text-white px-8 py-3 rounded-lg hover:bg-[#3a2818] transition-colors font-semibold"
                     >
-                        Shop Now
+                        Register Now
                     </button>
                 </div>
             </div>
