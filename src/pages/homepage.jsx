@@ -44,10 +44,10 @@ const HeroImageCarousel = () => {
   return (
     <>
       {/* Smaller decorative circles - BEHIND the big circle */}
-      <div className="absolute right-24 top-[200px] transform -translate-y-1/2 w-[300px] h-[300px] bg-gradient-to-br from-[#c9a961] to-[#d4b876] rounded-full opacity-80 z-0"></div>
-      <div className="absolute right-[750px] top-[550px] transform -translate-y-1/2 w-[200px] h-[200px] bg-gradient-to-br from-[#d4b876] to-[#c9a961] rounded-full opacity-80 z-0"></div>      
-      <div className="absolute right-[10px] top-[420px] transform -translate-y-1/2 w-[200px] h-[200px] bg-gradient-to-br from-[#e0c589] to-[#d4b876] rounded-full opacity-80 z-0"></div>
-      <div className="absolute right-[180px] top-[560px] transform -translate-y-1/2 w-[150px] h-[150px] bg-gradient-to-br from-[#e8d5a0] to-[#d4b876] rounded-full opacity-80 z-0 "></div>
+      <div className="absolute right-24 top-[200px] transform -translate-y-1/2 w-[300px] h-[300px] bg-gradient-to-br from-[#4a3728] to-[#d4b876] rounded-full opacity-80 z-0"></div>
+      <div className="absolute right-[750px] top-[550px] transform -translate-y-1/2 w-[200px] h-[200px] bg-gradient-to-br from-[#645430] to-[#c9a961] rounded-full opacity-80 z-0"></div>      
+      <div className="absolute right-[10px] top-[420px] transform -translate-y-1/2 w-[200px] h-[200px] bg-gradient-to-br from-[#c9a961] to-[#b89551] rounded-full opacity-80 z-0"></div>
+      <div className="absolute right-[180px] top-[560px] transform -translate-y-1/2 w-[150px] h-[150px] bg-gradient-to-br from-[#c9a961] to-[#d4b876] rounded-full opacity-80 z-0 "></div>
       <div className="absolute right-[830px] top-[250px] transform -translate-y-1/2 w-[100px] h-[100px] bg-gradient-to-br from-[#f0e3bb] to-[#e0c589] rounded-full opacity-80 z-0"></div>
 
       {/* Main Circle with Rotating Images - IN FRONT */}
