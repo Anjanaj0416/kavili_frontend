@@ -722,7 +722,7 @@ export default function Cart() {
                                                     <p className="text-gray-500 text-lg">Your cart is empty.</p>
                                                     <button
                                                         onClick={onGoBackClick}
-                                                        className="px-6 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700"
+                                                        className="px-6 py-2 bg-[#c9a961] text-white rounded-lg hover:bg-[#b89551]"
                                                     >
                                                         Start Shopping
                                                     </button>
@@ -749,7 +749,7 @@ export default function Cart() {
                                             value="pickup"
                                             checked={deliveryOption === "pickup"}
                                             onChange={(e) => setDeliveryOption(e.target.value)}
-                                            className="w-4 h-4 text-orange-600"
+                                            className="w-4 h-4 text-[#c9a961]"
                                         />
                                         <span>Pickup from Store</span>
                                     </label>
@@ -760,7 +760,7 @@ export default function Cart() {
                                             value="delivery"
                                             checked={deliveryOption === "delivery"}
                                             onChange={(e) => setDeliveryOption(e.target.value)}
-                                            className="w-4 h-4 text-orange-600"
+                                            className="w-4 h-4 text-[#c9a961]"
                                         />
                                         <span>Home Delivery</span>
                                     </label>
@@ -781,7 +781,7 @@ export default function Cart() {
                                             value={firstName}
                                             onChange={(e) => setFirstName(e.target.value)}
                                             placeholder="Enter your first name"
-                                            className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                            className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#c9a961] focus:border-transparent"
                                         />
                                     </div>
 
@@ -795,7 +795,7 @@ export default function Cart() {
                                             value={lastName}
                                             onChange={(e) => setLastName(e.target.value)}
                                             placeholder="Enter your last name"
-                                            className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                            className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#c9a961] focus:border-transparent"
                                         />
                                     </div>
 
@@ -810,7 +810,7 @@ export default function Cart() {
                                             onChange={handlePhoneNumberChange}
                                             placeholder="0771234567"
                                             maxLength="10"
-                                            className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                            className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#c9a961] focus:border-transparent"
                                         />
                                     </div>
 
@@ -825,7 +825,7 @@ export default function Cart() {
                                             onChange={(e) => setWhatsappNumber(e.target.value)}
                                             placeholder="0771234567"
                                             maxLength="10"
-                                            className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                            className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#c9a961] focus:border-transparent"
                                         />
                                     </div>
 
@@ -839,7 +839,7 @@ export default function Cart() {
                                             onChange={(e) => setAddress(e.target.value)}
                                             placeholder="Enter your complete address"
                                             rows="3"
-                                            className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none"
+                                            className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#c9a961] focus:border-transparent resize-none"
                                         />
                                     </div>
 
@@ -851,7 +851,7 @@ export default function Cart() {
                                         <select
                                             value={preferredTime}
                                             onChange={(e) => setPreferredTime(e.target.value)}
-                                            className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                            className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#c9a961] focus:border-transparent"
                                         >
                                             <option value="">Select time</option>
                                             <option value="morning">Morning (8AM - 12PM)</option>
@@ -869,7 +869,7 @@ export default function Cart() {
                                             type="date"
                                             value={preferredDay}
                                             onChange={(e) => setPreferredDay(e.target.value)}
-                                            className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                            className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#c9a961] focus:border-transparent"
                                         />
                                     </div>
 
@@ -884,7 +884,7 @@ export default function Cart() {
                                                 value={nearestCity}
                                                 onChange={(e) => setNearestCity(e.target.value)}
                                                 placeholder="Enter your nearest city"
-                                                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#c9a961] focus:border-transparent"
                                             />
                                         </div>
                                     )}
@@ -899,7 +899,7 @@ export default function Cart() {
                                             onChange={(e) => setNotes(e.target.value)}
                                             placeholder="Any special instructions or notes"
                                             rows="3"
-                                            className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none"
+                                            className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#c9a961] focus:border-transparent resize-none"
                                         />
                                     </div>
                                 </div>
@@ -913,7 +913,7 @@ export default function Cart() {
                                         <span className="text-gray-600">Subtotal:</span>
                                         <span className="font-medium">Rs. {labelTotal.toFixed(2)}</span>
                                     </div>
-                                    <div className="text-2xl font-bold text-orange-600 mt-2">
+                                    <div className="text-2xl font-bold text-[#c9a961] mt-2">
                                         Total: Rs. {total.toFixed(2)}
                                     </div>
                                 </div>
@@ -945,7 +945,7 @@ export default function Cart() {
                                 disabled={loading || isCheckingOut}
                                 className={`px-8 py-3 rounded-lg font-semibold transition-colors ${loading || isCheckingOut
                                     ? 'bg-gray-400 cursor-not-allowed'
-                                    : 'bg-orange-600 hover:bg-orange-700 text-white'
+                                    : 'bg-[#c9a961] hover:bg-[#b89551] text-white'
                                     }`}
                             >
                                 {isCheckingOut ? 'Checking...' : loading ? 'Processing...' : 'Place Order'}

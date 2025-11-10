@@ -226,7 +226,7 @@ const Login = ({ onLoginSuccess, onBack }) => {
     };
 
     return (
-        <div className="min-h-screen flex">
+        <div className="min-h-screen flex mt-2">
             {/* Left Side - Decorative */}
             <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-[#c9a961] via-[#d4b876] to-[#e0c589] relative overflow-hidden">
                 <div className="absolute inset-0">

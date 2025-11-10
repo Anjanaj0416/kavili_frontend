@@ -59,13 +59,13 @@ export default function About() {
 
             {loading ? (
                 <div className="flex items-center justify-center py-20">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600"></div>
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#c9a961]"></div>
                 </div>
             ) : (
                 <div className="w-full max-w-7xl mx-auto px-4 py-12 space-y-16">
                     {/* Company Overview Section */}
                     <section className="bg-white rounded-xl shadow-lg p-8">
-                        <h2 className="text-4xl font-bold text-orange-600 mb-6">
+                        <h2 className="text-4xl font-bold text-[#c9a961] mb-6">
                             {aboutInfo.companyOverview.title}
                         </h2>
                         <p className="text-lg text-gray-700 leading-relaxed mb-8">
@@ -90,7 +90,7 @@ export default function About() {
 
                     {/* Story Section */}
                     <section className="bg-white rounded-xl shadow-lg p-8">
-                        <h2 className="text-4xl font-bold text-orange-600 mb-6">
+                        <h2 className="text-4xl font-bold text-[#c9a961] mb-6">
                             {aboutInfo.story.title}
                         </h2>
                         <div className="text-lg text-gray-700 leading-relaxed whitespace-pre-line">
@@ -101,7 +101,7 @@ export default function About() {
                     {/* Team Section */}
                     {aboutInfo.teamMembers.length > 0 && (
                         <section className="bg-white rounded-xl shadow-lg p-8">
-                            <h2 className="text-4xl font-bold text-orange-600 mb-8 text-center">
+                            <h2 className="text-4xl font-bold text-[#c9a961] mb-8 text-center">
                                 Meet Our Team
                             </h2>
                             
@@ -118,7 +118,7 @@ export default function About() {
                                                 />
                                             </div>
                                         ) : (
-                                            <div className="w-full h-64 bg-gradient-to-br from-orange-300 to-orange-500 flex items-center justify-center">
+                                            <div className="w-full h-64 bg-gradient-to-br from-[#c9a961] bg-opacity-20 to-[#c9a961] flex items-center justify-center">
                                                 <span className="text-6xl font-bold text-white">
                                                     {member.name.charAt(0)}
                                                 </span>
@@ -130,7 +130,7 @@ export default function About() {
                                             <h3 className="text-2xl font-bold text-gray-800 mb-2">
                                                 {member.name}
                                             </h3>
-                                            <p className="text-orange-600 font-semibold mb-3">
+                                            <p className="text-[#c9a961] font-semibold mb-3">
                                                 {member.position}
                                             </p>
                                             <p className="text-gray-700 leading-relaxed">

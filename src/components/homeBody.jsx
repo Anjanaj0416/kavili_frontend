@@ -252,7 +252,7 @@ const CategoryDisplay = ({ onCategoryClick }) => {
               <div className="relative bg-white rounded-2xl shadow-2xl px-12 py-6 transform group-hover:scale-105 transition-all duration-300">
                 <div className="flex items-center space-x-3">
                   <Sparkles className="w-8 h-8 text-[#c9a961] animate-pulse" />
-                  <h1 className="text-5xl font-bold bg-gradient-to-r from-[#c9a961] to-[#4a3728] bg-clip-text text-transparent">
+                  <h1 className="text-5xl font-bold bg-gradient-to-r from-[#c9a961] to-[#4a3728] bg-clip-text text-transparent h-[60px]">
                     Discover Our Categories
                   </h1>
                   <Sparkles className="w-8 h-8 text-[#c9a961] animate-pulse animation-delay-500" />

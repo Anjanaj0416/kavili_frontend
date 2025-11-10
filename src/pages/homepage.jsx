@@ -51,7 +51,7 @@ const HeroImageCarousel = () => {
       <div className="absolute right-[830px] top-[250px] transform -translate-y-1/2 w-[100px] h-[100px] bg-gradient-to-br from-[#f0e3bb] to-[#e0c589] rounded-full opacity-80 z-0"></div>
 
       {/* Main Circle with Rotating Images - IN FRONT */}
-      <div className="absolute right-[260px] top-1/2 transform -translate-y-1/2 w-[580px] h-[580px] rounded-full overflow-hidden shadow-2xl z-10">
+      <div className="absolute right-[260px] top-[400px] transform -translate-y-1/2 w-[580px] h-[580px] rounded-full overflow-hidden shadow-2xl z-10 ">
         {heroImages.map((image, index) => (
           <div
             key={index}

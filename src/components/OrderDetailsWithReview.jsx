@@ -143,7 +143,7 @@ export default function OrderDetailsWithReview({ order, userDetails }) {
                                 {order.status === 'delivered' && (
                                     <button
                                         onClick={() => handleWriteReview(item)}
-                                        className="mt-2 flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors text-sm"
+                                        className="mt-2 flex items-center gap-2 px-4 py-2 bg-[#c9a961] text-white rounded-lg hover:bg-[#645430] transition-colors text-sm"
                                     >
                                         <Star size={16} />
                                         Write Review
@@ -159,7 +159,7 @@ export default function OrderDetailsWithReview({ order, userDetails }) {
             <div className="pt-4 border-t border-gray-200">
                 <div className="flex justify-between items-center">
                     <span className="text-lg font-semibold text-gray-800">Order Total:</span>
-                    <span className="text-2xl font-bold text-orange-600">
+                    <span className="text-2xl font-bold text-[#c9a961]">
                         Rs. {calculateTotal().toFixed(2)}
                     </span>
                 </div>

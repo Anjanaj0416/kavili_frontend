@@ -99,8 +99,8 @@ export default function ContactPage() {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                     {/* Address Section */}
                                     <div className={`group transition-all duration-500 delay-300 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-10'}`}>
-                                        <div className="flex items-start space-x-4 p-6 rounded-2xl bg-gradient-to-br from-orange-50 to-orange-100 hover:from-orange-100 hover:to-orange-200 transition-all duration-300 hover:scale-105 hover:shadow-lg">
-                                            <div className="p-4 bg-orange-500 rounded-full group-hover:rotate-12 transition-transform duration-300">
+                                        <div className="flex items-start space-x-4 p-6 rounded-2xl bg-gradient-to-br from-[#f5f0e8] to-[#ede4d4] hover:from-[#ede4d4] hover:to-[#e5dac5] transition-all duration-300 hover:scale-105 hover:shadow-lg">
+                                            <div className="p-4 bg-[#c9a961] rounded-full group-hover:rotate-12 transition-transform duration-300">
                                                 <FaLocationDot size={28} className="text-white" />
                                             </div>
                                             <div className="flex-1">
@@ -112,13 +112,13 @@ export default function ContactPage() {
 
                                     {/* Email Section */}
                                     <div className={`group transition-all duration-500 delay-400 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-10'}`}>
-                                        <div className="flex items-start space-x-4 p-6 rounded-2xl bg-gradient-to-br from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 transition-all duration-300 hover:scale-105 hover:shadow-lg">
-                                            <div className="p-4 bg-blue-500 rounded-full group-hover:rotate-12 transition-transform duration-300">
+                                        <div className="flex items-start space-x-4 p-6 rounded-2xl bg-gradient-to-br from-[#f5f0e8] to-[#ede4d4] hover:from-[#ede4d4] hover:to-[#e5dac5] transition-all duration-300 hover:scale-105 hover:shadow-lg">
+                                            <div className="p-4 bg-[#4a3728] rounded-full group-hover:rotate-12 transition-transform duration-300">
                                                 <MdEmail size={28} className="text-white" />
                                             </div>
                                             <div className="flex-1">
                                                 <h3 className="text-lg font-bold text-gray-800 mb-2">Email Us</h3>
-                                                <a href={`mailto:${contactInfo.email}`} className="text-blue-600 hover:text-blue-700 hover:underline transition-all duration-200">
+                                                <a href={`mailto:${contactInfo.email}`} className="text-[#c9a961] hover:text-[#b89551] hover:underline transition-all duration-200">
                                                     {contactInfo.email}
                                                 </a>
                                             </div>
@@ -127,22 +127,22 @@ export default function ContactPage() {
 
                                     {/* Mobile Phones Section */}
                                     <div className={`md:col-span-2 transition-all duration-500 delay-500 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-                                        <div className="p-6 rounded-2xl bg-gradient-to-br from-green-50 to-green-100 hover:from-green-100 hover:to-green-200 transition-all duration-300">
+                                        <div className="bg-gradient-to-br from-[#c9a961]/10 to-[#4a3728]/10 rounded-2xl p-6 border-2 border-[#c9a961]/20">
                                             <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
-                                                <FaPhoneVolume size={24} className="text-green-600 mr-3" />
+                                                <FaPhoneVolume size={24} className="mr-3 text-[#c9a961]" />
                                                 Mobile Phones
                                             </h3>
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                 {mobilePhones.map((phone, index) => (
                                                     <div
                                                         key={`mobile-${index}`}
-                                                        className="group flex items-center space-x-3 p-4 bg-white rounded-xl hover:bg-green-50 transition-all duration-300 hover:scale-105 hover:shadow-md"
+                                                        className="flex items-center space-x-3 p-4 bg-white rounded-xl hover:bg-[#f5f0e8] transition-all duration-300 hover:shadow-md group"
                                                         style={{ animationDelay: `${600 + index * 100}ms` }}
                                                     >
-                                                        <div className="p-3 bg-green-500 rounded-full group-hover:scale-110 transition-transform duration-300">
+                                                        <div className="bg-[#c9a961] p-3 rounded-full group-hover:scale-110 transition-transform duration-300">
                                                             <FaPhoneVolume size={20} className="text-white" />
                                                         </div>
-                                                        <a href={`tel:${phone.number}`} className="text-gray-700 hover:text-green-600 font-medium transition-colors duration-200">
+                                                        <a href={`tel:${phone.number}`} className="text-gray-700 font-medium group-hover:text-[#c9a961] transition-colors">
                                                             {phone.number}
                                                         </a>
                                                     </div>
@@ -154,21 +154,21 @@ export default function ContactPage() {
                                     {/* Landline Phones Section */}
                                     {landlinePhones.length > 0 && (
                                         <div className={`md:col-span-2 transition-all duration-500 delay-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-                                            <div className="p-6 rounded-2xl bg-gradient-to-br from-purple-50 to-purple-100 hover:from-purple-100 hover:to-purple-200 transition-all duration-300">
+                                            <div className="bg-gradient-to-br from-[#4a3728]/10 to-[#645430]/10 rounded-2xl p-6 border-2 border-[#4a3728]/20">
                                                 <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
-                                                    <GiRotaryPhone size={24} className="text-purple-600 mr-3" />
+                                                    <GiRotaryPhone size={24} className="mr-3 text-[#4a3728]" />
                                                     Landline Phones
                                                 </h3>
                                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                     {landlinePhones.map((phone, index) => (
                                                         <div
                                                             key={`landline-${index}`}
-                                                            className="group flex items-center space-x-3 p-4 bg-white rounded-xl hover:bg-purple-50 transition-all duration-300 hover:scale-105 hover:shadow-md"
+                                                            className="flex items-center space-x-3 p-4 bg-white rounded-xl hover:bg-[#f5f0e8] transition-all duration-300 hover:shadow-md group"
                                                         >
-                                                            <div className="p-3 bg-purple-500 rounded-full group-hover:scale-110 transition-transform duration-300">
+                                                            <div className="bg-[#4a3728] p-3 rounded-full group-hover:scale-110 transition-transform duration-300">
                                                                 <GiRotaryPhone size={20} className="text-white" />
                                                             </div>
-                                                            <a href={`tel:${phone.number}`} className="text-gray-700 hover:text-purple-600 font-medium transition-colors duration-200">
+                                                            <a href={`tel:${phone.number}`} className="text-gray-700 font-medium group-hover:text-[#4a3728] transition-colors">
                                                                 {phone.number}
                                                             </a>
                                                         </div>
@@ -204,14 +204,14 @@ export default function ContactPage() {
                     <div className="flex flex-wrap justify-center gap-4">
                         <a
                             href={`mailto:${contactInfo.email}`}
-                            className="px-8 py-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-semibold rounded-full hover:from-orange-600 hover:to-orange-700 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
+                            className="px-8 py-4 bg-gradient-to-r from-[#c9a961] to-[#b89551] text-white font-semibold rounded-full hover:from-[#b89551] hover:to-[#a88442] transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
                         >
                             Send us an Email
                         </a>
                         {mobilePhones.length > 0 && (
                             <a
                                 href={`tel:${mobilePhones[0].number}`}
-                                className="px-8 py-4 bg-gradient-to-r from-green-500 to-green-600 text-white font-semibold rounded-full hover:from-green-600 hover:to-green-700 transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
+                                className="px-8 py-4 bg-gradient-to-r from-[#4a3728] to-[#645430] text-white font-semibold rounded-full hover:from-[#3a2818] hover:to-[#543620] transform hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
                             >
                                 Call Us Now
                             </a>

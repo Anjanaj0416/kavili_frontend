@@ -19,7 +19,7 @@ export default function OrderConfirmationModal({ isOpen, onClose, onConfirm, loa
                 {/* Icon */}
                 <div className="flex justify-center mb-4">
                     <div className="bg-orange-100 rounded-full p-3">
-                        <AlertCircle className="w-8 h-8 text-orange-600" />
+                        <AlertCircle className="w-8 h-8 text-[#c9a961]" />
                     </div>
                 </div>
 
