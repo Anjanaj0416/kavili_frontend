@@ -1,7 +1,7 @@
 
 export default function NotFound() {
   return (
-    <div className="flex flex-col items-center justify-center h-screen bg-gray-100">
+    <div className="flex flex-col items-center justify-center h-screen bg-[#f5f0e8]">
       <div className="text-center">
         <h1 className="text-6xl font-extrabold text-gray-800">404</h1>
         <p className="text-xl text-gray-600 mt-2">Oops! Page Not Found</p>

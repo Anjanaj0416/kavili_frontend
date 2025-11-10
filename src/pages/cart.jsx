@@ -669,7 +669,7 @@ export default function Cart() {
                 loading={loading}
             />
 
-            <div className="pt-24 min-h-screen bg-orange-100 flex flex-col">
+            <div className="pt-24 min-h-screen bg-[#f5f0e8] flex flex-col">
                 <div className="w-[90%] max-w-7xl h-full mx-auto flex flex-col py-8">
 
                     {/* Error Display */}

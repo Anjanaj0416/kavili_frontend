@@ -249,26 +249,23 @@ export default function Register() {
     return (
         <div className="min-h-screen flex">
             {/* Left Side - Decorative */}
-            <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-orange-500 via-orange-500 to-orange-300 relative overflow-hidden">
+            <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-[#c9a961] via-[#d4b876] to-[#e0c589] relative overflow-hidden">
                 <div className="absolute inset-0">
                     <div className="absolute inset-0 bg-black opacity-10"></div>
-                    <div className="absolute top-20 left-10 w-64 h-64 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full opacity-70"></div>
-                    <div className="absolute bottom-20 right-10 w-80 h-80 bg-gradient-to-br from-yellow-400 to-red-500 rounded-full opacity-60"></div>
-                    <div className="absolute left-50 top-1/3 w-48 h-48 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-full opacity-60"></div>
-                    <div className="absolute left-70 top-2/3 w-40 h-40 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-full opacity-50"></div>
-                    <div className="absolute left-[300px] top-1/2 w-56 h-56 bg-gradient-to-br from-yellow-600 to-red-600 rounded-full opacity-40"></div>
+                    <div className="absolute top-20 left-10 w-64 h-64 bg-gradient-to-br from-[#e0c589] to-[#b89551] rounded-full opacity-70"></div>
+                    <div className="absolute bottom-20 right-10 w-80 h-80 bg-gradient-to-br from-[#e0c589] to-[#b89551] rounded-full opacity-60"></div>
                 </div>
-                <div className="w-full h-full flex items-center justify-center my-9">
-                    <span className="text-6xl font-bold text-white flex text-center">Register</span>
+                <div className="w-full h-full flex items-center justify-center">
+                    <span className="text-6xl font-bold text-white">Register</span>
                 </div>
             </div>
 
             {/* Right Side - Registration Form */}
-            <div className="flex items-center justify-center p-4 w-full lg:w-1/2 overflow-y-auto mt-10">
+            <div className="flex items-center justify-center p-4 w-full lg:w-1/2 overflow-y-auto mt-10 bg-[#f5f0e8]">
                 <div className="w-full max-w-md my-8">
-                    <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
+                    <div className="bg-white rounded-2xl shadow-2xl overflow-hidden mt-4">
                         {/* Header */}
-                        <div className="bg-gradient-to-r from-orange-500 to-red-500 p-6">
+                        <div className="bg-gradient-to-r from-[#c9a961] to-[#4a3728] p-6">
                             <h2 className="text-3xl font-bold text-white text-center">Create Account</h2>
                             <p className="text-white text-center mt-2 text-sm">Choose your preferred sign-in method</p>
                         </div>
@@ -359,7 +356,7 @@ export default function Register() {
                                                 name="firstName"
                                                 value={formData.firstName}
                                                 onChange={handleInputChange}
-                                                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
+                                                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#c9a961] focus:border-transparent transition-all"
                                                 placeholder="Enter your first name"
                                                 disabled={loading || googleLoading || facebookLoading}
                                             />
@@ -378,7 +375,7 @@ export default function Register() {
                                                 name="lastName"
                                                 value={formData.lastName}
                                                 onChange={handleInputChange}
-                                                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
+                                                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#c9a961] focus:border-transparent transition-all"
                                                 placeholder="Enter your last name"
                                                 disabled={loading || googleLoading || facebookLoading}
                                             />
@@ -397,7 +394,7 @@ export default function Register() {
                                                 name="phonenumber"
                                                 value={formData.phonenumber}
                                                 onChange={handleInputChange}
-                                                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
+                                                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#c9a961] focus:border-transparent transition-all"
                                                 placeholder="0771234567"
                                                 maxLength="10"
                                                 disabled={loading || googleLoading || facebookLoading}
@@ -417,7 +414,7 @@ export default function Register() {
                                                 name="homeaddress"
                                                 value={formData.homeaddress}
                                                 onChange={handleInputChange}
-                                                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all resize-none"
+                                                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#c9a961] focus:border-transparent transition-all resize-none"
                                                 placeholder="Enter your home address"
                                                 rows="2"
                                                 disabled={loading || googleLoading || facebookLoading}
@@ -437,7 +434,7 @@ export default function Register() {
                                                 name="email"
                                                 value={formData.email}
                                                 onChange={handleInputChange}
-                                                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
+                                                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#c9a961] focus:border-transparent transition-all"
                                                 placeholder="your@email.com"
                                                 disabled={loading || googleLoading || facebookLoading}
                                             />
@@ -449,7 +446,7 @@ export default function Register() {
                                         <button
                                             type="submit"
                                             disabled={loading || googleLoading || facebookLoading}
-                                            className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white py-3 px-4 rounded-lg font-semibold transition-all duration-200 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                                            className="w-full bg-gradient-to-r from-[#c9a961] to-[#4a3728] text-white py-3 px-4 rounded-lg font-semibold transition-all duration-200 hover:from-[#b89551] hover:to-[#3a2818] disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed shadow-lg hover:shadow-xl "
                                         >
                                             {loading ? (
                                                 <div className="flex items-center justify-center gap-2">
@@ -479,7 +476,7 @@ export default function Register() {
                                         Already have an account?{' '}
                                         <button
                                             onClick={() => navigate('/login')}
-                                            className="font-semibold text-orange-600 hover:text-orange-700 transition-colors"
+                                            className="font-semibold text-[#c9a961] hover:text-[#b89551] transition-colors"
                                         >
                                             Sign in here
                                         </button>
@@ -498,7 +495,7 @@ export default function Register() {
                     </div>
                 </div>
             </div>
-            <FacebookAuthDiagnostic />
+            {/*<FacebookAuthDiagnostic />*/}
         </div>
     );
 }

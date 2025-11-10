@@ -16,7 +16,7 @@ export default function ProductCard(props) {
     
     return (
         <Link to={getProductPath()}>
-            <div className="w-[300px] h-[450px] m-[30px] bg-white rounded-lg shadow-lg shadow-orange-100 hover:shadow-orange-600 hover:border-[10px] transition-shadow duration-200">
+            <div className="w-[300px] h-[450px] m-[30px] bg-white rounded-lg shadow-lg shadow-[#f5f0e8] hover:shadow-[#c9a961] hover:border-[10px] transition-shadow duration-200">
                 <img 
                     src={product.images[0]} 
                     alt={product.productName}
@@ -24,13 +24,13 @@ export default function ProductCard(props) {
                 />
                 <div className="h-[40%] p-4 flex flex-col justify-between">
                     <div className="flex-1">
-                        <h1 className="text-center text-2xl font-semibold mb-2">{product.productName}</h1>
+                        <h1 className="text-center text-2xl font-semibold mb-2 text-[#4a3728]">{product.productName}</h1>
                         <h2 className="text-center text-lg text-black-500 line-clamp-2">{product.description}</h2>
                     </div>
                     <div className="flex flex-col mt-2">
-                        <p className="text-left text-orange-600  text-lg font-bold">LKR.{product.lastPrice.toFixed(2)}</p>
+                        <p className="text-left text-[#c9a961]  text-lg font-bold">LKR.{product.lastPrice.toFixed(2)}</p>
                         {(product.lastPrice < product.price) && (
-                            <p className="text-left text-sm text-orange-600 line-through">LKR.{product.price.toFixed(2)}</p>
+                            <p className="text-left text-sm text-[#c9a961] line-through">LKR.{product.price.toFixed(2)}</p>
                         )}
                     </div>
                 </div>

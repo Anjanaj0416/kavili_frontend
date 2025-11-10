@@ -115,7 +115,7 @@ export default function ProductReviews({ productId }) {
             {/* Statistics Section */}
             {statistics && (
                 <div className="mb-8 pb-6 border-b border-gray-200">
-                    <h2 className="text-2xl font-bold text-gray-800 mb-6">
+                    <h2 className="text-2xl font-bold text-[#645430] mb-6">
                         Customer Reviews
                     </h2>
                     
@@ -123,11 +123,11 @@ export default function ProductReviews({ productId }) {
                         {/* Average Rating */}
                         <div className="flex items-center gap-6">
                             <div className="text-center">
-                                <div className="text-5xl font-bold text-gray-800">
+                                <div className="text-5xl font-bold text-[#645430]">
                                     {statistics.averageRating}
                                 </div>
                                 <StarRating rating={statistics.averageRating} size={24} />
-                                <p className="text-sm text-gray-600 mt-2">
+                                <p className="text-sm text-[#c9a961] mt-2">
                                     {statistics.totalReviews} {statistics.totalReviews === 1 ? 'review' : 'reviews'}
                                 </p>
                             </div>
@@ -165,13 +165,13 @@ export default function ProductReviews({ productId }) {
 
             {/* Sort Controls */}
             <div className="mb-6 flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-800">
+                <h3 className="text-lg font-semibold text-[#645430]">
                     {reviews.length} {reviews.length === 1 ? 'Review' : 'Reviews'}
                 </h3>
                 <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value)}
-                    className="border border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    className="border border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-[#c9a961] focus:border-transparent"
                 >
                     <option value="recent">Most Recent</option>
                     <option value="helpful">Most Helpful</option>
@@ -198,7 +198,7 @@ export default function ProductReviews({ productId }) {
                                     className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 md:-translate-x-12 bg-white shadow-lg rounded-full p-3 hover:bg-orange-50 transition-colors z-10 disabled:opacity-50 disabled:cursor-not-allowed"
                                     aria-label="Previous reviews"
                                 >
-                                    <ChevronLeft size={24} className="text-orange-600" />
+                                    <ChevronLeft size={24} className="text-[#c9a961]" />
                                 </button>
                                 <button
                                     onClick={nextPage}
@@ -206,7 +206,7 @@ export default function ProductReviews({ productId }) {
                                     className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 md:translate-x-12 bg-white shadow-lg rounded-full p-3 hover:bg-orange-50 transition-colors z-10 disabled:opacity-50 disabled:cursor-not-allowed"
                                     aria-label="Next reviews"
                                 >
-                                    <ChevronRight size={24} className="text-orange-600" />
+                                    <ChevronRight size={24} className="text-[#c9a961]" />
                                 </button>
                             </>
                         )}
@@ -326,7 +326,7 @@ export default function ProductReviews({ productId }) {
                                         onClick={() => setCurrentPage(index)}
                                         className={`w-3 h-3 rounded-full transition-all ${
                                             index === currentPage
-                                                ? 'bg-orange-600 w-8'
+                                                ? 'bg-[#c9a961] w-8'
                                                 : 'bg-gray-300 hover:bg-gray-400'
                                         }`}
                                         aria-label={`Go to page ${index + 1}`}

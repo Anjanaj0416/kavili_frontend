@@ -148,7 +148,7 @@ export default function CompleteProfile() {
         return (
             <div className="min-h-screen flex items-center justify-center">
                 <div className="text-center">
-                    <div className="w-16 h-16 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                    <div className="w-16 h-16 border-4 border-[#c9a961] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
                     <p className="text-gray-600">Loading...</p>
                 </div>
             </div>
@@ -161,14 +161,14 @@ export default function CompleteProfile() {
     return (
         <div className="min-h-screen flex">
             {/* Left Side - Decorative */}
-            <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-orange-400 via-red-500 to-pink-500 relative overflow-hidden">
+            <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-[#c9a961] via-[#d4b876] to-[#e0c589] relative overflow-hidden">
                 <div className="absolute inset-0">
                     <div className="absolute inset-0 bg-black opacity-10"></div>
-                    <div className="absolute top-20 left-10 w-64 h-64 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full opacity-70"></div>
-                    <div className="absolute bottom-20 right-10 w-80 h-80 bg-gradient-to-br from-pink-400 to-red-500 rounded-full opacity-60"></div>
+                    <div className="absolute top-20 left-10 w-64 h-64 bg-gradient-to-br from-[#e0c589] to-[#b89551] rounded-full opacity-70"></div>
+                    <div className="absolute bottom-20 right-10 w-80 h-80 bg-gradient-to-br from-[#e0c589] to-[#b89551] rounded-full opacity-60"></div>
                 </div>
                 <div className="w-full h-full flex items-center justify-center">
-                    <span className="text-6xl font-bold text-white text-center px-4">Complete Profile</span>
+                    <span className="text-6xl font-bold text-white">Complete Register</span>
                 </div>
             </div>
 
@@ -177,7 +177,7 @@ export default function CompleteProfile() {
                 <div className="w-full max-w-md">
                     <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
                         {/* Header */}
-                        <div className="bg-gradient-to-r from-orange-500 to-red-500 p-6">
+                        <div className="bg-gradient-to-r from-[#e0c589] to-[#b89551] p-6">
                             <h2 className="text-3xl font-bold text-white text-center">Complete Your Profile</h2>
                             <p className="text-white text-center mt-2 text-sm">
                                 Signed in with {providerDisplayName}
@@ -188,8 +188,8 @@ export default function CompleteProfile() {
                         <div className="p-8">
                             <form onSubmit={handleSubmit} className="space-y-4">
                                 {/* Info Message */}
-                                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                                    <p className="text-sm text-blue-800">
+                                <div className="bg-[#f5f1e8] border border-[#4a3728] rounded-lg p-4">
+                                    <p className="text-sm text-[#645430]">
                                         <strong>📝 Almost there!</strong><br />
                                         Please provide your phone number and address to complete registration.
                                     </p>
@@ -207,7 +207,7 @@ export default function CompleteProfile() {
                                             name="firstName"
                                             value={formData.firstName}
                                             onChange={handleInputChange}
-                                            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#c9a961] focus:border-transparent"
                                             placeholder="Enter your first name"
                                             required
                                         />
@@ -226,7 +226,7 @@ export default function CompleteProfile() {
                                             name="lastName"
                                             value={formData.lastName}
                                             onChange={handleInputChange}
-                                            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#c9a961] focus:border-transparent"
                                             placeholder="Enter your last name"
                                         />
                                     </div>
@@ -247,7 +247,7 @@ export default function CompleteProfile() {
                                             readOnly
                                         />
                                     </div>
-                                    <p className="mt-1 text-xs text-gray-500">
+                                    <p className="mt-1 text-xs text-[#c9a961]">
                                         From your {providerDisplayName} account
                                     </p>
                                 </div>
@@ -264,13 +264,13 @@ export default function CompleteProfile() {
                                             name="phonenumber"
                                             value={formData.phonenumber}
                                             onChange={handleInputChange}
-                                            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#c9a961] focus:border-transparent"
                                             placeholder="0771234567"
                                             maxLength="10"
                                             required
                                         />
                                     </div>
-                                    <p className="mt-1 text-xs text-gray-500">
+                                    <p className="mt-1 text-xs text-[#c9a961]">
                                         10 digits, no spaces or dashes
                                     </p>
                                 </div>
@@ -286,7 +286,7 @@ export default function CompleteProfile() {
                                             name="homeaddress"
                                             value={formData.homeaddress}
                                             onChange={handleInputChange}
-                                            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none"
+                                            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#c9a961] focus:border-transparent resize-none"
                                             placeholder="Enter your full address"
                                             rows="3"
                                             required
@@ -309,7 +309,7 @@ export default function CompleteProfile() {
                                 <button
                                     type="submit"
                                     disabled={loading}
-                                    className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white py-3 px-4 rounded-lg font-semibold transition-all duration-200 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
+                                    className="w-full bg-gradient-to-r from-[#c9a961] to-[#4a3728] text-white py-3 px-4 rounded-lg font-semibold transition-all duration-200 hover:from-[#b89551] hover:to-[#3a2818] disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
                                 >
                                     {loading ? (
                                         <div className="flex items-center justify-center gap-2">

@@ -43,7 +43,7 @@ const WhatsAppWidget = () => {
         {isOpen && (
           <div className="absolute bottom-20 right-0 mb-2 bg-white rounded-lg shadow-2xl p-4 w-72 animate-slide-up">
             <div className="flex justify-between items-start mb-3">
-              <h3 className="text-orange-600 font-bold text-lg">HELLO!</h3>
+              <h3 className="text-[#c9a961] font-bold text-lg">HELLO!</h3>
               <button
                 onClick={() => setIsOpen(false)}
                 className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -62,7 +62,7 @@ const WhatsAppWidget = () => {
               className="w-full bg-gray-50 hover:bg-gray-100 rounded-lg p-3 flex items-center gap-3 transition-colors border border-gray-200"
             >
               <div className="relative">
-                <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center text-white font-semibold text-lg">
+                <div className="w-12 h-12 bg-[#c9a961] rounded-full flex items-center justify-center text-white font-semibold text-lg">
                   {adminName.charAt(0)}
                 </div>
                 <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
@@ -83,7 +83,7 @@ const WhatsAppWidget = () => {
         {/* Main Button */}
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-3 rounded-full shadow-lg flex items-center gap-2 transition-all duration-300 transform hover:scale-105 group"
+          className="bg-[#4a3728] hover:bg-[#3a2818] text-white px-6 py-3 rounded-full shadow-lg flex items-center gap-2 transition-all duration-300 transform hover:scale-105 group"
         >
           <MessageCircle size={24} className="animate-pulse" />
           <span className="font-medium">How can I help you?</span>

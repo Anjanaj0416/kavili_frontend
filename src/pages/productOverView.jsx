@@ -20,7 +20,7 @@ export default function ProductOverView() {
     const [relatedLoading, setRelatedLoading] = useState(false);
     const [quantity, setQuantity] = useState(1);
     const [selectedImage, setSelectedImage] = useState(0);
-    
+
     // NEW: State for Add to Cart Modal
     const [showModal, setShowModal] = useState(false);
 
@@ -91,7 +91,7 @@ export default function ProductOverView() {
 
         // Show success toast
         toast.success(`${quantity} ${product.productName} added to cart!`);
-        
+
         // Show the modal
         setShowModal(true);
     };
@@ -118,9 +118,9 @@ export default function ProductOverView() {
 
     if (states === "Loading") {
         return (
-            <div className="min-h-screen bg-orange-50 flex items-center justify-center pt-24">
+            <div className="min-h-screen bg-[#f5f1e8] flex items-center justify-center pt-24">
                 <div className="text-center">
-                    <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-orange-600 mx-auto"></div>
+                    <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-[#c9a961] mx-auto"></div>
                     <p className="mt-4 text-gray-600">Loading product...</p>
                 </div>
             </div>
@@ -134,15 +134,15 @@ export default function ProductOverView() {
     const discount = calculateDiscount();
 
     return (
-        <div className="min-h-screen bg-orange-50 pt-24 pb-16">
+        <div className="min-h-screen bg-[#f5f0e8] pt-24 pb-16">
             {/* Breadcrumb */}
             <div className="max-w-7xl mx-auto px-4 py-4">
                 <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <Link to="/" className="hover:text-orange-600">Home</Link>
+                    <Link to="/" className="hover:text-[#c9a961]">Home</Link>
                     <span>/</span>
-                    <Link to="/products" className="hover:text-orange-600">Products</Link>
+                    <Link to="/products" className="hover:text-[#c9a961]">Products</Link>
                     <span>/</span>
-                    <Link to={`/products/${category}`} className="hover:text-orange-600 capitalize">{category}</Link>
+                    <Link to={`/products/${category}`} className="hover:text-[#c9a961] capitalize">{category}</Link>
                     <span>/</span>
                     <span className="text-gray-800">{product.productName}</span>
                 </div>
@@ -181,11 +181,10 @@ export default function ProductOverView() {
                                         <button
                                             key={index}
                                             onClick={() => setSelectedImage(index)}
-                                            className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${
-                                                selectedImage === index
-                                                    ? 'border-orange-600'
+                                            className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${selectedImage === index
+                                                    ? 'border-[#c9a961]'
                                                     : 'border-gray-200 hover:border-gray-300'
-                                            }`}
+                                                }`}
                                         >
                                             <img
                                                 src={image}
@@ -202,13 +201,13 @@ export default function ProductOverView() {
                         <div className="space-y-6">
                             {/* Category Badge */}
                             <div className="inline-block">
-                                <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm font-semibold uppercase">
+                                <span className="px-3 py-1 bg-[#c9a961] bg-opacity-20 text-[#4a3728] rounded-full text-sm font-semibold uppercase">
                                     {category}
                                 </span>
                             </div>
 
                             {/* Product Name */}
-                            <h1 className="text-3xl lg:text-4xl font-bold text-gray-800">
+                            <h1 className="text-3xl lg:text-4xl font-bold text-[#645430]">
                                 {product.productName}
                             </h1>
 
@@ -221,7 +220,7 @@ export default function ProductOverView() {
 
                             {/* Price */}
                             <div className="flex items-center gap-4">
-                                <span className="text-4xl font-bold text-orange-600">
+                                <span className="text-4xl font-bold text-[#c9a961]">
                                     Rs. {product.lastPrice?.toFixed(2)}
                                 </span>
                                 {product.price && product.price > product.lastPrice && (
@@ -284,7 +283,10 @@ export default function ProductOverView() {
                                 <button
                                     onClick={handleAddToCart}
                                     disabled={product.quantity === 0}
-                                    className="w-full flex items-center justify-center gap-2 bg-orange-600 text-white py-4 px-6 rounded-lg font-semibold text-lg hover:bg-orange-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+                                    className={`w-full py-4 rounded-xl font-semibold text-lg transition-all duration-300 flex items-center justify-center gap-3 shadow-lg ${product.quantity > 0
+                                            ? 'bg-[#c9a961] hover:bg-[#b8915a] text-white hover:shadow-xl'
+                                            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                        }`}
                                 >
                                     <ShoppingCart size={24} />
                                     {product.quantity === 0 ? 'Out of Stock' : 'Add to Cart'}
@@ -293,22 +295,22 @@ export default function ProductOverView() {
 
                             {/* Features */}
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
-                                <div className="flex items-center gap-3 p-3 bg-orange-50 rounded-lg">
-                                    <Truck className="w-6 h-6 text-orange-600" />
+                                <div className="flex items-center gap-3 p-3 bg-[#c9a961] bg-opacity-10 rounded-lg">
+                                    <Truck className="w-6 h-6 text-[#c9a961]" />
                                     <div>
                                         <p className="text-xs text-gray-600">Fast</p>
                                         <p className="font-semibold text-sm">Delivery</p>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-3 p-3 bg-orange-50 rounded-lg">
-                                    <Shield className="w-6 h-6 text-orange-600" />
+                                <div className="flex items-center gap-3 p-3 bg-[#c9a961] bg-opacity-10 rounded-lg">
+                                    <Shield className="w-6 h-6 text-[#c9a961]" />
                                     <div>
                                         <p className="text-xs text-gray-600">Quality</p>
                                         <p className="font-semibold text-sm">Guaranteed</p>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-3 p-3 bg-orange-50 rounded-lg">
-                                    <Package className="w-6 h-6 text-orange-600" />
+                                <div className="flex items-center gap-3 p-3 bg-[#c9a961] bg-opacity-10 rounded-lg">
+                                    <Package className="w-6 h-6 text-[#c9a961]" />
                                     <div>
                                         <p className="text-xs text-gray-600">Secure</p>
                                         <p className="font-semibold text-sm">Packaging</p>
@@ -327,7 +329,7 @@ export default function ProductOverView() {
                 {/* Related Products */}
                 {relatedProducts.length > 0 && (
                     <div className="mt-12">
-                        <h2 className="text-2xl font-bold text-gray-800 mb-6">You May Also Like</h2>
+                        <h2 className="text-2xl font-bold text-[#645430] mb-6">You May Also Like</h2>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                             {relatedProducts.map((relatedProduct) => (
                                 <Link
@@ -349,11 +351,11 @@ export default function ProductOverView() {
                                         )}
                                     </div>
                                     <div className="p-4">
-                                        <h3 className="font-semibold text-gray-800 mb-2 line-clamp-2">
+                                        <h3 className="font-semibold text-[#4A3728] mb-2 line-clamp-2">
                                             {relatedProduct.productName}
                                         </h3>
                                         <div className="flex items-center gap-2">
-                                            <span className="text-orange-600 font-bold">
+                                            <span className="text-[#c9a961] font-bold">
                                                 Rs. {relatedProduct.lastPrice?.toFixed(2)}
                                             </span>
                                             {relatedProduct.price && relatedProduct.price > relatedProduct.lastPrice && (

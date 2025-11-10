@@ -78,27 +78,27 @@ export default function ProductPage() {
         const baseClass = "h-[25px] flex items-center justify-center mt-5 rounded-full p-4 ml-2 transition-colors duration-200";
 
         if (selectedCategory === categoryValue) {
-            return `${baseClass} bg-orange-600 text-white`;
+            return `${baseClass} bg-[#c9a961] text-white`;
         }
-        return `${baseClass} bg-white text-orange-600 hover:bg-orange-600 hover:text-white`;
+        return `${baseClass} bg-white text-[#4a3728] hover:bg-[#c9a961] hover:text-white`;
     };
 
     return (
         <>
-            <div className=" w-full min-h-screen bg-orange-100 ">
-                <div className="w-full h-[300px]  bg-gradient-to-br from-orange-500 via-orange-500 to-orange-300 overflow-hidden relative">
+            <div className=" w-full min-h-screen bg-[#f5f0e8] ">
+                <div className="w-full h-[300px]  bg-gradient-to-br from-[#c9a961] via-[#d4b876] to-[#e0c589] overflow-hidden relative">
                     <div className="absolute inset-0 flex items-center justify-center">
                         <div className="relative w-full h-full">
                             {/* Main spice pile */}
-                            <div className="absolute right-50 top-1/2 transform -translate-y-1/2 w-80 h-80 bg-gradient-to-br from-orange-600 to-red-600 rounded-full opacity-90"></div>
-                            <div className="absolute right-48 top-1/2 transform -translate-y-1/2 w-80 h-80 bg-gradient-to-br from-orange-600 to-red-600 rounded-full opacity-90"></div>
-                            <div className="absolute right-16 top-1/2 transform -translate-y-1/2 w-72 h-72 bg-gradient-to-br from-orange-500 to-red-500 rounded-full opacity-80"></div>
+                            <div className="absolute right-50 top-1/2 transform -translate-y-1/2 w-80 h-80 bg-gradient-to-br from-[#c9a961] to-[#b89551] rounded-full opacity-90"></div>
+                            <div className="absolute right-48 top-1/2 transform -translate-y-1/2 w-80 h-80 bg-gradient-to-br from-[#c9a961] to-[#b89551] rounded-full opacity-90"></div>
+                            <div className="absolute right-16 top-1/2 transform -translate-y-1/2 w-72 h-72 bg-gradient-to-br from-[#d4b876] to-[#c9a961] rounded-full opacity-80"></div>
 
 
                             {/* Additional spice piles */}
-                            <div className="absolute left-50 top-1/3 w-48 h-48 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-full opacity-60"></div>
-                            <div className="absolute left-70 top-2/3 w-40 h-40 bg-gradient-to-br from-red-500 to-orange-600 rounded-full opacity-50"></div>
-                            <div className="absolute left-[300px] top-1/2 w-56 h-56 bg-gradient-to-br from-orange-600 to-red-600 rounded-full opacity-40"></div>
+                            <div className="absolute left-50 top-1/3 w-48 h-48 bg-gradient-to-br from-[#e0c589] to-[#d4b876] rounded-full opacity-60"></div>
+                            <div className="absolute left-70 top-2/3 w-40 h-40 bg-gradient-to-br from-[#c9a961] to-[#b89551] rounded-full opacity-50"></div>
+                            <div className="absolute left-[300px] top-1/2 w-56 h-56 bg-gradient-to-br from-[#c9a961] to-[#b89551] rounded-full opacity-40"></div>
                         </div>
                     </div>
                     <div className="w-full h-full flex items-center justify-center my-9">

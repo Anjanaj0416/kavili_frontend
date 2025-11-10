@@ -102,8 +102,8 @@ export default function ReviewFormModal({ isOpen, onClose, productId, productNam
                 {/* Header */}
                 <div className="sticky top-0 bg-white border-b border-gray-200 p-4 flex justify-between items-center">
                     <div>
-                        <h2 className="text-xl font-bold text-gray-800">Write a Review</h2>
-                        <p className="text-sm text-gray-600">{productName}</p>
+                        <h2 className="text-xl font-bold text-[#4a3728]">Write a Review</h2>
+                        <p className="text-sm text-[#c9a961]">{productName}</p>
                     </div>
                     <button
                         onClick={onClose}
@@ -118,7 +118,7 @@ export default function ReviewFormModal({ isOpen, onClose, productId, productNam
                 <form onSubmit={handleSubmit} className="p-6 space-y-6">
                     {/* Rating */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-[#645430] mb-2">
                             Your Rating *
                         </label>
                         <div className="flex items-center gap-2">
@@ -138,34 +138,34 @@ export default function ReviewFormModal({ isOpen, onClose, productId, productNam
 
                     {/* Comment */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-[#645430] mb-2">
                             Your Review * (minimum 10 characters)
                         </label>
                         <textarea
                             value={comment}
                             onChange={(e) => setComment(e.target.value)}
                             rows={5}
-                            className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                            className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-[#c9a961] focus:border-transparent"
                             placeholder="Share your experience with this product..."
                             disabled={isSubmitting}
                             required
                         />
-                        <p className="text-xs text-gray-500 mt-1">
+                        <p className="text-xs text-[#c9a961] mt-1">
                             {comment.length} characters
                         </p>
                     </div>
 
                     {/* Image Upload */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-[#645430] mb-2">
                             Add Photos (Optional - Max 5, 5MB each)
                         </label>
                         
                         {images.length < 5 && (
-                            <label className="flex items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-orange-500 transition-colors">
+                            <label className="flex items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-[#c9a961] transition-colors">
                                 <div className="text-center">
-                                    <Upload className="mx-auto text-gray-400 mb-2" size={32} />
-                                    <p className="text-sm text-gray-600">
+                                    <Upload className="mx-auto text-[#c9a961] mb-2" size={32} />
+                                    <p className="text-sm text-[#c9a961]">
                                         Click to upload images
                                     </p>
                                 </div>
@@ -216,7 +216,7 @@ export default function ReviewFormModal({ isOpen, onClose, productId, productNam
                         </button>
                         <button
                             type="submit"
-                            className="px-6 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="px-6 py-2 bg-[#c9a961] text-white rounded-lg hover:bg-[#645430] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             disabled={isSubmitting || rating === 0 || comment.trim().length < 10}
                         >
                             {isSubmitting ? 'Submitting...' : 'Submit Review'}

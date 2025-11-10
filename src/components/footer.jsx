@@ -3,7 +3,7 @@ import { FaFacebookF, FaInstagram, FaTiktok, FaYoutube, FaWhatsapp } from 'react
 
 export default function Footer() {
   return (
-    <footer className="bg-orange-100">
+    <footer className="bg-[#f5f0e8]">
       {/* Main Footer Content */}
       <div className="max-w-7xl mx-auto px-6 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -31,13 +31,13 @@ export default function Footer() {
           <div>
             <h3 className="text-lg font-bold text-gray-900 mb-4">HELP</h3>
             <div className="space-y-2 text-sm">
-              <Link to="/contact" className="block hover:text-orange-600 transition-colors">
+              <Link to="/contact" className="block hover:text-[#c9a961] transition-colors">
                 Contact Us
               </Link>
-              <Link to="/faq" className="block hover:text-orange-600 transition-colors">
+              <Link to="/faq" className="block hover:text-[#c9a961] transition-colors">
                 FAQ
               </Link>
-              <Link to="/returns" className="block hover:text-orange-600 transition-colors">
+              <Link to="/returns" className="block hover:text-[#c9a961] transition-colors">
                 Returns & Refunds
               </Link>
             </div>
@@ -51,7 +51,7 @@ export default function Footer() {
                 href="https://facebook.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-10 h-10 bg-orange-500 hover:bg-orange-600 rounded flex items-center justify-center transition-colors"
+                className="w-10 h-10 bg-[#c9a961] hover:bg-[#b89551] rounded flex items-center justify-center transition-colors"
               >
                 <FaFacebookF className="text-white text-lg" />
               </a>
@@ -59,7 +59,7 @@ export default function Footer() {
                 href="https://instagram.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-10 h-10 bg-orange-500 hover:bg-orange-600 rounded flex items-center justify-center transition-colors"
+                className="w-10 h-10 bg-[#c9a961] hover:bg-[#b89551] rounded flex items-center justify-center transition-colors"
               >
                 <FaInstagram className="text-white text-lg" />
               </a>
@@ -67,7 +67,7 @@ export default function Footer() {
                 href="https://tiktok.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-10 h-10 bg-orange-500 hover:bg-orange-600 rounded flex items-center justify-center transition-colors"
+                className="w-10 h-10 bg-[#c9a961] hover:bg-[#b89551] rounded flex items-center justify-center transition-colors"
               >
                 <FaTiktok className="text-white text-lg" />
               </a>
@@ -75,7 +75,7 @@ export default function Footer() {
                 href="https://youtube.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-10 h-10 bg-orange-500 hover:bg-orange-600 rounded flex items-center justify-center transition-colors"
+                className="w-10 h-10 bg-[#c9a961] hover:bg-[#b89551] rounded flex items-center justify-center transition-colors"
               >
                 <FaYoutube className="text-white text-lg" />
               </a>
@@ -92,10 +92,10 @@ export default function Footer() {
             Copyright © 2025 Kavili.lk™. All rights reserved.
           </p>
           <div className="flex gap-6 mt-3 md:mt-0">
-            <Link to="/privacy-policy" className="text-gray-700 hover:text-orange-600 transition-colors font-medium">
+            <Link to="/privacy-policy" className="text-gray-700 hover:text-[#c9a961] transition-colors font-medium">
               PRIVACY POLICY
             </Link>
-            <Link to="/terms-of-use" className="text-gray-700 hover:text-orange-600 transition-colors font-medium">
+            <Link to="/terms-of-use" className="text-gray-700 hover:text-[#c9a961] transition-colors font-medium">
               TERMS OF USE
             </Link>
           </div>

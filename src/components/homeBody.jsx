@@ -55,7 +55,7 @@ const PromotionalBanner = () => {
 
                 {/* Content Overlay */}
                 <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-8">
-                  <h3 className="text-yellow-400 text-2xl md:text-3xl font-semibold mb-4 animate-fade-in">
+                  <h3 className="text-[#c9a961] text-2xl md:text-3xl font-semibold mb-4 animate-fade-in">
                     Sweeten Up Your Holidays!
                   </h3>
                   <h2 className="text-white text-5xl md:text-7xl font-bold mb-6 leading-tight animate-slide-up">
@@ -63,7 +63,7 @@ const PromotionalBanner = () => {
                     <br />
                     EXTRA SWEET
                   </h2>
-                  <button className="bg-orange-500 hover:bg-orange-600 text-white px-10 py-4 rounded-lg font-bold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg animate-fade-in-delay">
+                  <button className="bg-[#4a3728] hover:bg-[#3a2818] text-white px-10 py-4 rounded-lg font-bold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg animate-fade-in-delay">
                     SHOP NOW & SHARE THE SWEETNESS
                   </button>
                 </div>
@@ -79,7 +79,7 @@ const PromotionalBanner = () => {
                 onClick={() => goToImage(index)}
                 className={`transition-all duration-300 rounded-full ${
                   index === currentImageIndex
-                    ? 'w-12 h-3 bg-orange-500'
+                    ? 'w-12 h-3 bg-[#c9a961]'
                     : 'w-3 h-3 bg-white bg-opacity-50 hover:bg-opacity-75'
                 }`}
                 aria-label={`Go to image ${index + 1}`}
@@ -236,26 +236,26 @@ const CategoryDisplay = ({ onCategoryClick }) => {
 
   return (
     <>
-      <div className="w-full min-h-screen bg-gradient-to-br from-orange-500 via-orange-300 to-orange-100 py-16 px-4 relative overflow-hidden">
+      <div className="w-full min-h-screen bg-gradient-to-br from-[#d4b876] via-[#e0c589] to-white py-16 px-4 relative overflow-hidden">
         {/* Animated Background Elements */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-20 left-10 w-72 h-72 bg-orange-400 rounded-full opacity-20 blur-3xl animate-blob"></div>
-          <div className="absolute top-40 right-20 w-96 h-96 bg-red-400 rounded-full opacity-20 blur-3xl animate-blob animation-delay-2000"></div>
-          <div className="absolute bottom-20 left-1/3 w-80 h-80 bg-yellow-400 rounded-full opacity-20 blur-3xl animate-blob animation-delay-4000"></div>
+          <div className="absolute top-20 left-10 w-72 h-72 bg-[#c9a961] rounded-full opacity-20 blur-3xl animate-blob"></div>
+          <div className="absolute top-40 right-20 w-96 h-96 bg-[#4a3728] rounded-full opacity-20 blur-3xl animate-blob animation-delay-2000"></div>
+          <div className="absolute bottom-20 left-1/3 w-80 h-80 bg-[#c9a961] rounded-full opacity-20 blur-3xl animate-blob animation-delay-4000"></div>
         </div>
 
         <div className="max-w-7xl mx-auto relative z-10">
           {/* Animated Header */}
           <div className={`flex items-center justify-center mb-16 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-10'}`}>
             <div className="relative group">
-              <div className="absolute inset-0 bg-gradient-to-r from-orange-400 to-orange-600 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300 opacity-70"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-[#c9a961] to-[#4a3728] rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300 opacity-70"></div>
               <div className="relative bg-white rounded-2xl shadow-2xl px-12 py-6 transform group-hover:scale-105 transition-all duration-300">
                 <div className="flex items-center space-x-3">
-                  <Sparkles className="w-8 h-8 text-orange-600 animate-pulse" />
-                  <h1 className="text-5xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
+                  <Sparkles className="w-8 h-8 text-[#c9a961] animate-pulse" />
+                  <h1 className="text-5xl font-bold bg-gradient-to-r from-[#c9a961] to-[#4a3728] bg-clip-text text-transparent">
                     Discover Our Categories
                   </h1>
-                  <Sparkles className="w-8 h-8 text-orange-600 animate-pulse animation-delay-500" />
+                  <Sparkles className="w-8 h-8 text-[#c9a961] animate-pulse animation-delay-500" />
                 </div>
                 <p className="text-center text-gray-600 mt-2 text-lg">Explore our wide range of products</p>
               </div>
@@ -267,18 +267,18 @@ const CategoryDisplay = ({ onCategoryClick }) => {
             {/* Navigation Buttons */}
             <button
               onClick={prevSlide}
-              className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-4 z-20 bg-white hover:bg-orange-50 rounded-full p-4 shadow-2xl transition-all duration-300 hover:scale-110 group"
+              className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-4 z-20 bg-white hover:bg-[#f5f0e8] rounded-full p-4 shadow-2xl transition-all duration-300 hover:scale-110 group"
               aria-label="Previous slide"
             >
-              <ChevronLeft className="w-8 h-8 text-orange-600 group-hover:text-orange-700" />
+              <ChevronLeft className="w-8 h-8 text-[#4a3728] group-hover:text-[#3a2818]" />
             </button>
 
             <button
               onClick={nextSlide}
-              className="absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-4 z-20 bg-white hover:bg-orange-50 rounded-full p-4 shadow-2xl transition-all duration-300 hover:scale-110 group"
+              className="absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-4 z-20 bg-white hover:bg-[#f5f0e8] rounded-full p-4 shadow-2xl transition-all duration-300 hover:scale-110 group"
               aria-label="Next slide"
             >
-              <ChevronRight className="w-8 h-8 text-orange-600 group-hover:text-orange-700" />
+              <ChevronRight className="w-8 h-8 text-[#4a3728] group-hover:text-[#3a2818]" />
             </button>
 
             {/* Category Grid */}
@@ -325,7 +325,7 @@ const CategoryDisplay = ({ onCategoryClick }) => {
                       <div className={`absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent transition-opacity duration-500 ${hoveredCard === category.id ? 'opacity-100' : 'opacity-0'
                         }`}>
                         <div className="absolute bottom-4 left-4 right-4">
-                          <span className="inline-block px-4 py-2 bg-orange-500 text-white rounded-full text-sm font-semibold transform translate-y-10 group-hover:translate-y-0 transition-transform duration-500">
+                          <span className="inline-block px-4 py-2 bg-[#c9a961] text-white rounded-full text-sm font-semibold transform translate-y-10 group-hover:translate-y-0 transition-transform duration-500">
                             View Products →
                           </span>
                         </div>
@@ -337,8 +337,8 @@ const CategoryDisplay = ({ onCategoryClick }) => {
                     </div>
 
                     {/* Card Content */}
-                    <div className="p-6 bg-gradient-to-br from-white to-orange-50 group-hover:from-orange-50 group-hover:to-orange-100 transition-all duration-500">
-                      <h3 className="text-2xl font-bold text-gray-800 mb-2 group-hover:text-orange-600 transition-colors duration-300">
+                    <div className="p-6 bg-gradient-to-br from-white to-[#f5f0e8] group-hover:from-[#f5f0e8] group-hover:to-[#ede4d4] transition-all duration-500">
+                      <h3 className="text-2xl font-bold text-gray-800 mb-2 group-hover:text-[#4a3728] transition-colors duration-300">
                         {category.name}
                       </h3>
                       <p className="text-gray-600 text-sm leading-relaxed group-hover:text-gray-700 transition-colors duration-300">
@@ -346,7 +346,7 @@ const CategoryDisplay = ({ onCategoryClick }) => {
                       </p>
 
                       {/* Decorative Line */}
-                      <div className="mt-4 h-1 bg-gradient-to-r from-orange-500 to-red-500 rounded-full transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
+                      <div className="mt-4 h-1 bg-gradient-to-r from-[#c9a961] to-[#4a3728] rounded-full transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
                     </div>
                   </div>
                 ))
@@ -371,43 +371,13 @@ const CategoryDisplay = ({ onCategoryClick }) => {
 
           {/* Enhanced Call to Action */}
           <div className={`text-center mt-16 transition-all duration-1000 delay-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-            <div className="relative inline-block group">
-              <div className="absolute inset-0 bg-gradient-to-r from-orange-400 to-red-500 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-500 opacity-70 animate-pulse"></div>
-              <button
-                onClick={() => handleCategoryClick('ALL')}
-                className="relative bg-white text-orange-600 px-12 py-5 rounded-2xl font-bold text-lg hover:bg-gradient-to-r hover:from-orange-500 hover:to-red-500 hover:text-white transition-all duration-500 shadow-2xl transform hover:scale-110 hover:-translate-y-1"
-              >
-                <span className="flex items-center space-x-3">
-                  <span>Explore All Products</span>
-                  <ChevronRight className="w-5 h-5 group-hover:translate-x-2 transition-transform duration-300" />
-                </span>
-              </button>
-            </div>
-
-            {/* Floating Elements */}
-            <div className="mt-8 flex justify-center space-x-8">
-              <div className="text-center animate-float">
-                <div className="w-16 h-16 bg-white rounded-full shadow-lg flex items-center justify-center mx-auto mb-2 group-hover:shadow-xl transition-shadow duration-300">
-                  <Sparkles className="w-8 h-8 text-orange-500" />
-                </div>
-                <p className="text-white font-medium">Quality Products</p>
-              </div>
-              <div className="text-center animate-float animation-delay-1000">
-                <div className="w-16 h-16 bg-white rounded-full shadow-lg flex items-center justify-center mx-auto mb-2">
-                  <Sparkles className="w-8 h-8 text-red-500" />
-                </div>
-                <p className="text-white font-medium">Fast Delivery</p>
-              </div>
-              <div className="text-center animate-float animation-delay-2000">
-                <div className="w-16 h-16 bg-white rounded-full shadow-lg flex items-center justify-center mx-auto mb-2">
-                  <Sparkles className="w-8 h-8 text-yellow-500" />
-                </div>
-                <p className="text-white font-medium">Best Prices</p>
-              </div>
-            </div>
+            <button className="bg-gradient-to-r from-[#c9a961] to-[#4a3728] hover:from-[#b89551] hover:to-[#3a2818] text-white px-12 py-4 rounded-full font-bold text-lg shadow-2xl transform hover:scale-105 transition-all duration-300 hover:shadow-3xl">
+              Explore All Products
+            </button>
           </div>
         </div>
 
+        {/* Animation Keyframes */}
         <style jsx>{`
         @keyframes blob {
           0%, 100% { transform: translate(0, 0) scale(1); }

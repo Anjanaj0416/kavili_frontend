@@ -150,9 +150,9 @@ export default function CustomerProfile() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-orange-50 flex items-center justify-center">
+            <div className="min-h-screen bg-[#f5f1e8] flex items-center justify-center">
                 <div className="text-center">
-                    <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-orange-500 mx-auto"></div>
+                    <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-[#c9a961] mx-auto"></div>
                     <p className="mt-4 text-gray-600">Loading profile...</p>
                 </div>
             </div>
@@ -160,13 +160,13 @@ export default function CustomerProfile() {
     }
 
     return (
-        <div className="min-h-screen bg-orange-50 pt-24 pb-12">
+        <div className="min-h-screen bg-[#f5f1e8] pt-24 pb-12">
             <div className="max-w-4xl mx-auto px-4">
                 {/* Header */}
                 <div className="bg-white rounded-lg shadow-md p-6 mb-6">
                     <div className="flex justify-between items-center">
                         <div className="flex items-center space-x-3">
-                            <User className="text-orange-600" size={32} />
+                            <User className="text-[#c9a961]" size={32} />
                             <div>
                                 <h1 className="text-2xl font-bold text-gray-800">My Profile</h1>
                                 <p className="text-gray-600">Manage your account information</p>
@@ -174,7 +174,7 @@ export default function CustomerProfile() {
                         </div>
                         <button
                             onClick={handleLogout}
-                            className="flex items-center px-4 py-2 bg-orange-100 text-orange-600 rounded-lg hover:bg-orange-200 transition-colors"
+                            className="flex items-center px-4 py-2 bg-[#c9a961] bg-opacity-20 text-[#c9a961] rounded-lg hover:bg-opacity-30 transition-colors"
                         >
                             <LogOut className="w-4 h-4 mr-2" />
                             Logout
@@ -189,7 +189,7 @@ export default function CustomerProfile() {
                         {!isEditing && (
                             <button
                                 onClick={() => setIsEditing(true)}
-                                className="flex items-center px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
+                                className="flex items-center px-4 py-2 bg-[#c9a961] text-white rounded-lg hover:bg-[#b8915a] transition-colors"
                             >
                                 <Edit2 className="w-4 h-4 mr-2" />
                                 Edit Profile
@@ -210,8 +210,8 @@ export default function CustomerProfile() {
                                     value={formData.firstName}
                                     onChange={(e) => handleInputChange('firstName', e.target.value)}
                                     disabled={!isEditing}
-                                    className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent ${
-                                        isEditing ? 'bg-white border-gray-300' : 'bg-gray-50 border-gray-200'
+                                    className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#c9a961] focus:border-transparent ${
+                                        isEditing ? 'bg-white' : 'bg-gray-50 cursor-not-allowed'
                                     }`}
                                     placeholder="Enter your first name"
                                 />
@@ -230,8 +230,8 @@ export default function CustomerProfile() {
                                     value={formData.lastName}
                                     onChange={(e) => handleInputChange('lastName', e.target.value)}
                                     disabled={!isEditing}
-                                    className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent ${
-                                        isEditing ? 'bg-white border-gray-300' : 'bg-gray-50 border-gray-200'
+                                    className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#c9a961] focus:border-transparent ${
+                                        isEditing ? 'bg-white' : 'bg-gray-50 cursor-not-allowed'
                                     }`}
                                     placeholder="Enter your last name"
                                 />
@@ -252,7 +252,7 @@ export default function CustomerProfile() {
                                     className="w-full pl-10 pr-4 py-3 border border-gray-200 bg-gray-50 rounded-lg text-gray-500"
                                 />
                             </div>
-                            <p className="mt-1 text-xs text-gray-500">Phone number cannot be changed</p>
+                            <p className="mt-1 text-xs text-[#c9a961]">Phone number cannot be changed</p>
                         </div>
 
                         {/* Home Address */}
@@ -267,8 +267,8 @@ export default function CustomerProfile() {
                                     onChange={(e) => handleInputChange('homeAddress', e.target.value)}
                                     disabled={!isEditing}
                                     rows={3}
-                                    className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent ${
-                                        isEditing ? 'bg-white border-gray-300' : 'bg-gray-50 border-gray-200'
+                                    className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#c9a961] focus:border-transparent ${
+                                        isEditing ? 'bg-white' : 'bg-gray-50 cursor-not-allowed'
                                     }`}
                                     placeholder="Enter your home address"
                                 />
@@ -287,13 +287,13 @@ export default function CustomerProfile() {
                                     value={formData.email}
                                     onChange={(e) => handleInputChange('email', e.target.value)}
                                     disabled={!isEditing}
-                                    className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent ${
-                                        isEditing ? 'bg-white border-gray-300' : 'bg-gray-50 border-gray-200'
+                                    className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#c9a961] focus:border-transparent ${
+                                        isEditing ? 'bg-white' : 'bg-gray-50 cursor-not-allowed'
                                     }`}
                                     placeholder="Enter your email address"
                                 />
                             </div>
-                            <p className="mt-1 text-xs text-gray-500">
+                            <p className="mt-1 text-xs text-[#c9a961]">
                                 Add email to receive order status notifications
                             </p>
                         </div>
@@ -304,7 +304,7 @@ export default function CustomerProfile() {
                                 <button
                                     onClick={handleSaveProfile}
                                     disabled={saving}
-                                    className="flex-1 flex items-center justify-center px-6 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                                    className="flex-1 px-6 py-3 bg-[#c9a961] text-white rounded-lg hover:bg-[#b8915a] transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center"
                                 >
                                     {saving ? (
                                         <>
@@ -336,15 +336,15 @@ export default function CustomerProfile() {
                         onClick={() => navigate('/myOrders')}
                         className="p-4 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow text-left"
                     >
-                        <h3 className="font-semibold text-gray-800 mb-1">My Orders</h3>
-                        <p className="text-sm text-gray-600">View your order history and track deliveries</p>
+                        <h3 className="font-semibold text-[#4A3728] mb-1">My Orders</h3>
+                        <p className="text-sm text-[#c9a961]">View your order history and track deliveries</p>
                     </button>
                     <button
                         onClick={() => navigate('/products')}
                         className="p-4 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow text-left"
                     >
-                        <h3 className="font-semibold text-gray-800 mb-1">Continue Shopping</h3>
-                        <p className="text-sm text-gray-600">Browse our products and place new orders</p>
+                        <h3 className="font-semibold text-[#4A3728] mb-1">Continue Shopping</h3>
+                        <p className="text-sm text-[#c9a961]">Browse our products and place new orders</p>
                     </button>
                 </div>
             </div>

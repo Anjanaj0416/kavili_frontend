@@ -94,7 +94,7 @@ export default function FeaturedReviews() {
 
     if (loading) {
         return (
-            <div className="w-full py-12 bg-gradient-to-r from-orange-50 to-yellow-50">
+            <div className="w-full py-12 bg-gradient-to-r from-[#f5f0e8] to-white">
                 <div className="container mx-auto px-4 text-center">
                     <p className="text-gray-600">Loading reviews...</p>
                 </div>
@@ -112,7 +112,7 @@ export default function FeaturedReviews() {
     );
 
     return (
-        <div className="w-full py-16 bg-gradient-to-r from-orange-50 to-yellow-50">
+        <div className="w-full py-16 bg-gradient-to-r  from-[#d4b876] via-[#f5f0e8] to-white">
             <div className="container mx-auto px-4">
                 {/* Section Header */}
                 <div className="text-center mb-12">
@@ -131,17 +131,17 @@ export default function FeaturedReviews() {
                         <>
                             <button
                                 onClick={prevPage}
-                                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 md:-translate-x-12 bg-white shadow-lg rounded-full p-3 hover:bg-orange-50 transition-colors z-10"
+                                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 md:-translate-x-12 bg-white shadow-lg rounded-full p-3 hover:bg-[#f5f0e8] transition-colors z-10"
                                 aria-label="Previous reviews"
                             >
-                                <ChevronLeft size={24} className="text-orange-600" />
+                                <ChevronLeft size={24} className="text-[#4a3728]" />
                             </button>
                             <button
                                 onClick={nextPage}
-                                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 md:translate-x-12 bg-white shadow-lg rounded-full p-3 hover:bg-orange-50 transition-colors z-10"
+                                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 md:translate-x-12 bg-white shadow-lg rounded-full p-3 hover:bg-[#f5f0e8] transition-colors z-10"
                                 aria-label="Next reviews"
                             >
-                                <ChevronRight size={24} className="text-orange-600" />
+                                <ChevronRight size={24} className="text-[#4a3728]" />
                             </button>
                         </>
                     )}
@@ -196,7 +196,7 @@ export default function FeaturedReviews() {
                                                 </span>
                                             )}
                                             {review.adminLiked && (
-                                                <span className="text-xs bg-orange-100 text-orange-800 px-2 py-0.5 rounded-full">
+                                                <span className="text-xs bg-[#f5f0e8] text-[#4a3728] px-2 py-0.5 rounded-full">
                                                     ❤️ Staff Pick
                                                 </span>
                                             )}
@@ -210,7 +210,7 @@ export default function FeaturedReviews() {
                                 {/* Product Info */}
                                 <button
                                     onClick={() => goToProduct(review.productCategory, review.productId)}
-                                    className="mt-3 flex items-center gap-2 p-2 bg-orange-50 rounded-lg hover:bg-orange-100 transition-colors w-full"
+                                    className="mt-3 flex items-center gap-2 p-2 bg-[#f5f0e8] rounded-lg hover:bg-[#ede4d4] transition-colors w-full"
                                 >
                                     {review.productImage && (
                                         <img
@@ -240,7 +240,7 @@ export default function FeaturedReviews() {
                                 onClick={() => setCurrentPage(index)}
                                 className={`w-3 h-3 rounded-full transition-all ${
                                     index === currentPage
-                                        ? 'bg-orange-600 w-8'
+                                        ? 'bg-[#c9a961] w-8'
                                         : 'bg-gray-300 hover:bg-gray-400'
                                 }`}
                                 aria-label={`Go to page ${index + 1}`}
@@ -256,7 +256,7 @@ export default function FeaturedReviews() {
                     </p>
                     <button
                         onClick={() => navigate('/products')}
-                        className="bg-orange-600 text-white px-8 py-3 rounded-lg hover:bg-orange-700 transition-colors font-semibold"
+                        className="bg-[#4a3728] text-white px-8 py-3 rounded-lg hover:bg-[#3a2818] transition-colors font-semibold"
                     >
                         Shop Now
                     </button>

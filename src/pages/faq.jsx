@@ -56,11 +56,11 @@ export default function FAQ() {
     };
 
     return (
-        <div className="pt-24 min-h-screen bg-orange-100">
+        <div className="pt-24 min-h-screen bg-[#c9a961] bg-opacity-20">
             <div className="w-full max-w-5xl mx-auto px-4 py-12">
                 {/* Header */}
                 <div className="text-center mb-12">
-                    <h1 className="text-5xl font-bold text-orange-600 mb-4">
+                    <h1 className="text-5xl font-bold text-[#c9a961] mb-4">
                         Frequently Asked Questions
                     </h1>
                     <p className="text-xl text-gray-700">
@@ -80,10 +80,10 @@ export default function FAQ() {
                                 onClick={() => toggleAccordion(index)}
                                 className="w-full px-6 py-5 flex items-center justify-between text-left focus:outline-none group"
                             >
-                                <span className="text-lg font-semibold text-gray-800 group-hover:text-orange-600 transition-colors pr-4">
+                                <span className="text-lg font-semibold text-gray-800 group-hover:text-[#c9a961] transition-colors pr-4">
                                     {faq.question}
                                 </span>
-                                <span className="flex-shrink-0 text-orange-600">
+                                <span className="flex-shrink-0 text-[#c9a961]">
                                     {openIndex === index ? (
                                         <ChevronUp size={24} className="transition-transform duration-300" />
                                     ) : (
@@ -120,7 +120,7 @@ export default function FAQ() {
                     </p>
                     <a
                         href="/contact"
-                        className="inline-block bg-orange-600 hover:bg-orange-700 text-white px-8 py-3 rounded-lg font-semibold transition-colors duration-300"
+                        className="inline-block bg-[#c9a961] hover:bg-[#645430] text-white px-8 py-3 rounded-lg font-semibold transition-colors duration-300"
                     >
                         Contact Us
                     </a>

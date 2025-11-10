@@ -138,16 +138,16 @@ export default function MyOrders() {
 
     const getDeliveryBadge = (deliveryOption) => {
         return deliveryOption === "pickup" 
-            ? "bg-orange-100 text-orange-800" 
+            ? "bg-[#c9a961] bg-opacity-20 text-[#4a3728]" 
             : "bg-purple-100 text-purple-800";
     };
 
     // Loading state
     if (ordersLoading) {
         return (
-            <div className="min-h-screen bg-orange-50 flex items-center justify-center pt-24">
+            <div className="min-h-screen bg-[#f5f1e8] flex items-center justify-center pt-24">
                 <div className="text-center">
-                    <RefreshCw className="w-12 h-12 animate-spin text-orange-600 mx-auto mb-4" />
+                    <RefreshCw className="w-12 h-12 animate-spin text-[#c9a961]  mx-auto mb-4" />
                     <p className="text-gray-600">Loading your orders...</p>
                 </div>
             </div>
@@ -159,7 +159,7 @@ export default function MyOrders() {
         return (
             <div className="min-h-screen bg-orange-50 flex items-center justify-center pt-24 px-4">
                 <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full text-center">
-                    <Package className="w-16 h-16 text-orange-600 mx-auto mb-4" />
+                    <Package className="w-16 h-16 text-[#c9a961] mx-auto mb-4" />
                     <h2 className="text-2xl font-bold text-gray-800 mb-2">
                         Login Required
                     </h2>
@@ -170,7 +170,7 @@ export default function MyOrders() {
                     <div className="space-y-3">
                         <button
                             onClick={handleGoToLogin}
-                            className="w-full bg-orange-600 text-white py-2 px-4 rounded-md hover:bg-orange-700 transition-colors duration-200"
+                            className="w-full bg-[#c9a961] text-white py-2 px-4 rounded-md hover:bg-[#b8915a] transition-colors duration-200"
                         >
                             Login to View Orders
                         </button>
@@ -189,14 +189,14 @@ export default function MyOrders() {
 
     // Orders view
     return (
-        <div className="min-h-screen bg-orange-50 pt-24">
+        <div className="min-h-screen bg-[#f5f1e8] pt-24">
             {/* Header with user info and sign out */}
             <div className="bg-white border-b border-gray-200">
                 <div className="max-w-6xl mx-auto px-4 py-6">
                     <div className="flex justify-between items-center">
                         <div>
                             <h1 className="text-3xl font-bold text-gray-800 flex items-center">
-                                <Package className="w-8 h-8 mr-3 text-orange-500" />
+                                <Package className="w-8 h-8 mr-3 text-[#c9a961]" />
                                 My Orders
                             </h1>
                             {userDetails && (
@@ -208,14 +208,14 @@ export default function MyOrders() {
                         <div className="flex items-center space-x-4">
                             <button
                                 onClick={handleRefreshOrders}
-                                className="px-4 py-2 bg-orange-100 text-orange-600 rounded-md hover:bg-orange-200 transition-colors"
+                                className="px-4 py-2 bg-[#c9a961] bg-opacity-20 text-[#c9a961] rounded-md hover:bg-opacity-30 transition-colors"
                                 disabled={ordersLoading}
                             >
                                 {ordersLoading ? 'Refreshing...' : 'Refresh'}
                             </button>
                             <button
                                 onClick={handleLogout}
-                                className="flex items-center px-4 py-2 bg-red-100 text-red-600 rounded-md hover:bg-red-200 transition-colors"
+                                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors flex items-center"
                             >
                                 <LogOut className="w-4 h-4 mr-2" />
                                 Sign Out
@@ -233,9 +233,9 @@ export default function MyOrders() {
                             <h2 className="text-xl font-semibold text-gray-800">Account Information</h2>
                             <button
                                 onClick={() => navigate('/profile')}
-                                className="flex items-center px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
+                                className="bg-[#c9a961] text-white px-8 py-3 rounded-lg hover:bg-[#b8915a] transition-colors flex flex-row items-center"
                             >
-                                <Edit2 className="w-4 h-4 mr-2" />
+                                <Edit2 className="w-4 h-4 mr-2 " />
                                 Edit Details
                             </button>
                         </div>
@@ -277,7 +277,7 @@ export default function MyOrders() {
                         </p>
                         <button
                             onClick={handleBackToShopping}
-                            className="bg-orange-600 text-white px-6 py-2 rounded-md hover:bg-orange-700 transition-colors"
+                            className="bg-[#c9a961] text-white px-6 py-3 rounded-lg hover:bg-[#b8915a] transition-colors"
                         >
                             Start Shopping
                         </button>
@@ -357,7 +357,7 @@ export default function MyOrders() {
                                                                 {order.status === 'delivered' && (
                                                                     <button
                                                                         onClick={() => handleWriteReview(item, order.orderId)}
-                                                                        className="mt-2 flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors text-sm"
+                                                                        className="mt-2 flex items-center gap-1 text-xs text-[#c9a961] hover:text-[#b8915a] transition-colors"
                                                                     >
                                                                         <Star size={16} />
                                                                         Write Review
@@ -402,7 +402,7 @@ export default function MyOrders() {
                                             <div className="border-t border-gray-200 mt-4 pt-4">
                                                 <div className="flex justify-between items-center">
                                                     <span className="text-lg font-semibold text-gray-800">Order Total:</span>
-                                                    <span className="text-2xl font-bold text-orange-600">
+                                                    <span className="text-2xl font-bold text-[#c9a961]">
                                                         Rs. {calculateOrderTotal(order.orderedItems).toFixed(2)}
                                                     </span>
                                                 </div>
