@@ -2,16 +2,14 @@ import axios from "axios";
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import uploadMediaToSupabase from "../utils/mediaUpload";
+import uploadMediaToMongoDB from "../utils/mediaUpload";
 
 export default function EditProductForm() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { category, productId } = useParams(); // Get parameters from URL
+  const { category, productId } = useParams();
 
-  // Try to get product from location state first, otherwise we'll fetch it
   const [product, setProduct] = useState(location.state?.product || null);
-
   const [formProductId, setFormProductId] = useState("");
   const [productName, setProductName] = useState("");
   const [alternativeNames, setAlternativeNames] = useState("");
@@ -27,7 +25,6 @@ export default function EditProductForm() {
   const [isInitialized, setIsInitialized] = useState(false);
   const [isFetching, setIsFetching] = useState(false);
 
-  // Available categories from your model
   const categories = [
     { value: 'electronics', label: 'Electronics' },
     { value: 'clothing', label: 'Clothing' },
@@ -36,19 +33,24 @@ export default function EditProductForm() {
     { value: 'furniture', label: 'Furniture' }
   ];
 
-  // Fetch product data if not available in state
+  // Fetch product data if not available
   useEffect(() => {
     const fetchProduct = async () => {
       if (!product && productId && category) {
         setIsFetching(true);
         try {
-          const token = localStorage.getItem("token");
+          const token = localStorage.getItem("authToken") || localStorage.getItem("token");
+          
+          if (!token) {
+            toast.error("Authentication required. Please login again.");
+            navigate("/admin/products");
+            return;
+          }
+          
           const response = await axios.get(
             `${import.meta.env.VITE_BACKEND_URL}/api/products/category/${category}/${productId}`,
             {
-              headers: {
-                Authorization: `Bearer ${token}`
-              }
+              headers: { Authorization: `Bearer ${token}` }
             }
           );
           
@@ -70,7 +72,7 @@ export default function EditProductForm() {
     fetchProduct();
   }, [product, productId, category, navigate]);
 
-  // Initialize form data when product is available
+  // Initialize form data
   useEffect(() => {
     if (!product) return;
 
@@ -108,25 +110,27 @@ export default function EditProductForm() {
       const altNames = alternativeNames.split(",").map(name => name.trim()).filter(name => name);
       const productTags = tags.split(",").map(tag => tag.trim()).filter(tag => tag);
       
-      let imgUrls = existingImages;
+      let allImages = [...existingImages];
       
-      // Upload new images if any are selected
+      // Convert and add new images if any are selected
       if (imageFiles && imageFiles.length > 0) {
-        const promisesArray = [];
+        console.log(`📸 Converting ${imageFiles.length} new images...`);
+        const newImagePromises = [];
         
         for (let i = 0; i < imageFiles.length; i++) {
-          promisesArray.push(uploadMediaToSupabase(imageFiles[i]));
+          newImagePromises.push(uploadMediaToMongoDB(imageFiles[i]));
         }
         
-        const newImageUrls = await Promise.all(promisesArray);
-        imgUrls = [...existingImages, ...newImageUrls];
+        const newBase64Images = await Promise.all(newImagePromises);
+        allImages = [...existingImages, ...newBase64Images];
+        console.log('✅ New images converted successfully');
       }
 
       const productData = {
         productId: formProductId,
         productName: productName,
         altNames: altNames,
-        images: imgUrls,
+        images: allImages, // All images (existing + new) as Base64
         price: parseFloat(price) || 0,
         lastPrice: parseFloat(lastPrice) || 0,
         stock: parseInt(stock) || 0,
@@ -136,19 +140,22 @@ export default function EditProductForm() {
         tags: productTags
       };
 
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("authToken") || localStorage.getItem("token");
+      
+      if (!token) {
+        toast.error("Authentication required. Please login again.");
+        return;
+      }
       
       await axios.put(
         `${import.meta.env.VITE_BACKEND_URL}/api/products/${product.productId}`,
         productData,
         {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
+          headers: { Authorization: `Bearer ${token}` }
         }
       );
       
-      toast.success("Product updated successfully");
+      toast.success("Product updated successfully!");
       navigate("/admin/products");
       
     } catch (err) {
@@ -159,14 +166,19 @@ export default function EditProductForm() {
     }
   }
 
-  // Show loading while fetching or initializing
+  // Remove an existing image
+  const removeImage = (indexToRemove) => {
+    setExistingImages(existingImages.filter((_, index) => index !== indexToRemove));
+    toast.success("Image removed");
+  };
+
   if (isFetching || !isInitialized) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
           <p className="mt-4 text-gray-600">
-            {isFetching ? "Loading product data..." : "Initializing form..."}
+            {isFetching ? "Loading product..." : "Initializing..."}
           </p>
         </div>
       </div>
@@ -174,62 +186,60 @@ export default function EditProductForm() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center py-8">
-      <div className="bg-white w-full max-w-4xl p-8 rounded-lg shadow-lg">
-        <h1 className="text-2xl font-bold text-gray-800 text-center mb-6">
-          Edit Product Form
-        </h1>
+    <div className="min-h-screen bg-gray-100 py-8 px-4">
+      <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-6">
+        <h1 className="text-3xl font-bold text-gray-800 mb-6">Edit Product</h1>
+
         <div className="space-y-4">
-          <div className="flex flex-col">
-            <label className="text-gray-700 font-medium">Product ID</label>
-            <input
-              disabled
-              type="text"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring focus:ring-blue-200 focus:outline-none bg-gray-100"
-              placeholder="Product ID"
-              value={formProductId}
-            />
+          <div className="flex gap-4">
+            <div className="flex flex-col flex-1">
+              <label className="text-gray-700 font-medium">Product ID</label>
+              <input
+                type="text"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100"
+                value={formProductId}
+                disabled
+              />
+            </div>
           </div>
 
-          <div className="flex flex-col">
-            <label className="text-gray-700 font-medium">Product Name</label>
-            <input
-              type="text"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring focus:ring-blue-200 focus:outline-none"
-              placeholder="Enter Product Name"
-              value={productName}
-              onChange={(e) => setProductName(e.target.value)}
-            />
+          <div className="flex gap-4">
+            <div className="flex flex-col flex-1">
+              <label className="text-gray-700 font-medium">Product Name</label>
+              <input
+                type="text"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring focus:ring-blue-200 focus:outline-none"
+                placeholder="Enter Product Name"
+                value={productName}
+                onChange={(e) => setProductName(e.target.value)}
+              />
+            </div>
+            <div className="flex flex-col flex-1">
+              <label className="text-gray-700 font-medium">Alternative Names</label>
+              <input
+                type="text"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring focus:ring-blue-200 focus:outline-none"
+                placeholder="Comma-separated"
+                value={alternativeNames}
+                onChange={(e) => setAlternativeNames(e.target.value)}
+              />
+            </div>
           </div>
 
-          <div className="flex flex-col">
-            <label className="text-gray-700 font-medium">Alternative Names</label>
-            <input
-              type="text"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring focus:ring-blue-200 focus:outline-none"
-              placeholder="Enter Alternative Names (comma-separated)"
-              value={alternativeNames}
-              onChange={(e) => setAlternativeNames(e.target.value)}
-            />
-          </div>
-
-          {/* Category and Tags Row */}
-          <div className="flex flex-wrap gap-4">
-            <div className="flex flex-col flex-1 min-w-[200px]">
+          <div className="flex gap-4">
+            <div className="flex flex-col flex-1">
               <label className="text-gray-700 font-medium">Category</label>
               <select
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring focus:ring-blue-200 focus:outline-none"
                 value={productCategory}
                 onChange={(e) => setProductCategory(e.target.value)}
               >
-                {categories.map((cat) => (
-                  <option key={cat.value} value={cat.value}>
-                    {cat.label}
-                  </option>
+                {categories.map(cat => (
+                  <option key={cat.value} value={cat.value}>{cat.label}</option>
                 ))}
               </select>
             </div>
-            <div className="flex flex-col flex-1 min-w-[200px]">
+            <div className="flex flex-col flex-1">
               <label className="text-gray-700 font-medium">Tags</label>
               <input
                 type="text"
@@ -246,12 +256,19 @@ export default function EditProductForm() {
               <label className="text-gray-700 font-medium mb-2">Current Images</label>
               <div className="flex flex-wrap gap-2 mb-3">
                 {existingImages.map((img, index) => (
-                  <div key={index} className="relative">
+                  <div key={index} className="relative group">
                     <img 
                       src={img} 
                       alt={`Product ${index + 1}`} 
-                      className="w-16 h-16 object-cover rounded border"
+                      className="w-20 h-20 object-cover rounded border"
                     />
+                    <button
+                      onClick={() => removeImage(index)}
+                      className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                      type="button"
+                    >
+                      ✕
+                    </button>
                   </div>
                 ))}
               </div>
@@ -263,14 +280,12 @@ export default function EditProductForm() {
             <input
               type="file"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring focus:ring-blue-200 focus:outline-none"
-              onChange={(e) => {
-                setImageFiles(e.target.files);
-              }}
+              onChange={(e) => setImageFiles(Array.from(e.target.files))}
               multiple
-              accept="image/jpg,image/jpeg,image/png"
+              accept="image/*"
             />
             <small className="text-gray-500 mt-1">
-              Select JPG or PNG images. New images will be added to existing ones.
+              Select images to add. New images will be added to existing ones.
             </small>
           </div>
 
@@ -335,13 +350,13 @@ export default function EditProductForm() {
               type="button"
               className={`flex-1 px-4 py-2 font-medium rounded-md focus:ring focus:ring-blue-300 focus:outline-none ${
                 loading 
-                  ? 'bg-gray-400 cursor-not-allowed text-gray-600' 
+                  ? 'bg-gray-400 cursor-not-allowed text-white'
                   : 'bg-blue-600 hover:bg-blue-700 text-white'
               }`}
               onClick={handleSubmit}
               disabled={loading}
             >
-              {loading ? 'Updating...' : 'Update Product'}
+              {loading ? '⏳ Updating...' : 'Update Product'}
             </button>
           </div>
         </div>

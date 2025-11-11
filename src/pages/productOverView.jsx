@@ -153,36 +153,17 @@ export default function ProductOverView() {
                 <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 p-8">
                         {/* Product Images */}
-                        <div className="space-y-4">
-                            {/* Main Image */}
-                            <div className="relative aspect-square rounded-xl overflow-hidden bg-gray-100 border-2 border-gray-200">
-                                {product.images && product.images.length > 0 ? (
-                                    <img
-                                        src={product.images[selectedImage]}
-                                        alt={product.productName}
-                                        className="w-full h-full object-contain"
-                                    />
-                                ) : (
-                                    <div className="w-full h-full flex items-center justify-center">
-                                        <Package className="w-24 h-24 text-gray-300" />
-                                    </div>
-                                )}
-                                {discount > 0 && (
-                                    <div className="absolute top-4 left-4 bg-red-500 text-white px-3 py-1 rounded-full font-bold text-sm">
-                                        -{discount}%
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Thumbnail Images */}
+                        {/* Product Images */}
+                        <div className="flex gap-4">
+                            {/* Thumbnail Images - LEFT SIDE */}
                             {product.images && product.images.length > 1 && (
-                                <div className="grid grid-cols-4 gap-2">
+                                <div className="flex flex-col gap-2 w-20">
                                     {product.images.map((image, index) => (
                                         <button
                                             key={index}
                                             onClick={() => setSelectedImage(index)}
                                             className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${selectedImage === index
-                                                    ? 'border-[#c9a961]'
+                                                    ? 'border-[#c9a961] shadow-md'
                                                     : 'border-gray-200 hover:border-gray-300'
                                                 }`}
                                         >
@@ -195,6 +176,28 @@ export default function ProductOverView() {
                                     ))}
                                 </div>
                             )}
+
+                            {/* Main Image - RIGHT SIDE */}
+                            <div className="flex-1">
+                                <div className="relative aspect-square rounded-xl overflow-hidden bg-gray-100 border-2 border-gray-200">
+                                    {product.images && product.images.length > 0 ? (
+                                        <img
+                                            src={product.images[selectedImage]}
+                                            alt={product.productName}
+                                            className="w-full h-full object-contain"
+                                        />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center">
+                                            <Package className="w-24 h-24 text-gray-300" />
+                                        </div>
+                                    )}
+                                    {discount > 0 && (
+                                        <div className="absolute top-4 left-4 bg-red-500 text-white px-3 py-1 rounded-full font-bold text-sm">
+                                            -{discount}%
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
                         </div>
 
                         {/* Product Info */}
@@ -284,8 +287,8 @@ export default function ProductOverView() {
                                     onClick={handleAddToCart}
                                     disabled={product.quantity === 0}
                                     className={`w-full py-4 rounded-xl font-semibold text-lg transition-all duration-300 flex items-center justify-center gap-3 shadow-lg ${product.quantity > 0
-                                            ? 'bg-[#c9a961] hover:bg-[#b8915a] text-white hover:shadow-xl'
-                                            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                        ? 'bg-[#c9a961] hover:bg-[#b8915a] text-white hover:shadow-xl'
+                                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                                         }`}
                                 >
                                     <ShoppingCart size={24} />
