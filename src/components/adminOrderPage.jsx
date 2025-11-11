@@ -7,6 +7,7 @@ export default function AdminOrdersPage() {
     const [error, setError] = useState(null);
     const [deleteLoading, setDeleteLoading] = useState(null);
     const [acceptLoading, setAcceptLoading] = useState(null);
+    const [activeTab, setActiveTab] = useState("all"); // New state for active tab
 
     useEffect(() => {
         fetchOrders();
@@ -82,6 +83,8 @@ export default function AdminOrdersPage() {
                             : order
                     )
                 );
+                // Automatically switch to accepted tab
+                setActiveTab("accepted");
                 alert("Order accepted successfully!");
             }
         } catch (err) {
@@ -125,6 +128,8 @@ export default function AdminOrdersPage() {
                             : order
                     )
                 );
+                // Automatically switch to the new status tab
+                setActiveTab(newStatus);
                 alert("Order status updated successfully!");
             }
         } catch (err) {
@@ -162,6 +167,10 @@ export default function AdminOrdersPage() {
                     },
                 }
             );
+
+            if (response.status === 401) {
+                throw new Error("Authentication failed. Please login again.");
+            }
 
             if (!response.ok) {
                 if (response.status === 401) {
@@ -219,6 +228,33 @@ export default function AdminOrdersPage() {
         }
     };
 
+    // Filter orders based on active tab
+    const getFilteredOrders = () => {
+        if (activeTab === "all") {
+            return orders;
+        }
+        return orders.filter(order => order.status === activeTab);
+    };
+
+    // Count orders by status
+    const getOrderCountByStatus = (status) => {
+        if (status === "all") {
+            return orders.length;
+        }
+        return orders.filter(order => order.status === status).length;
+    };
+
+    // Status tabs configuration
+    const statusTabs = [
+        { key: "all", label: "All Orders", color: "bg-gray-600 hover:bg-gray-700" },
+        { key: "pending", label: "Pending", color: "bg-orange-600 hover:bg-orange-700" },
+        { key: "accepted", label: "Accepted", color: "bg-green-600 hover:bg-green-700" },
+        { key: "preparing", label: "Preparing", color: "bg-yellow-600 hover:bg-yellow-700" },
+        { key: "shipped", label: "Shipped", color: "bg-blue-600 hover:bg-blue-700" },
+        { key: "delivered", label: "Delivered", color: "bg-green-600 hover:bg-green-700" },
+        { key: "cancelled", label: "Cancelled", color: "bg-red-600 hover:bg-red-700" }
+    ];
+
     if (loading) {
         return (
             <div className="flex justify-center items-center h-64">
@@ -235,6 +271,8 @@ export default function AdminOrdersPage() {
         );
     }
 
+    const filteredOrders = getFilteredOrders();
+
     return (
         <div className="p-6 w-full h-full overflow-y-auto">
             <div className="mb-6">
@@ -242,37 +280,49 @@ export default function AdminOrdersPage() {
                 <p className="text-gray-600 mt-2">Total Orders: {orders.length}</p>
             </div>
 
-            {orders.length === 0 ? (
+            {/* Status Tabs */}
+            <div className="mb-6 flex flex-wrap gap-2">
+                {statusTabs.map(tab => (
+                    <button
+                        key={tab.key}
+                        onClick={() => setActiveTab(tab.key)}
+                        className={`px-4 py-2 rounded-lg font-semibold transition-all duration-200 ${
+                            activeTab === tab.key
+                                ? `${tab.color} text-white shadow-lg scale-105`
+                                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                        }`}
+                    >
+                        {tab.label} ({getOrderCountByStatus(tab.key)})
+                    </button>
+                ))}
+            </div>
+
+            {filteredOrders.length === 0 ? (
                 <div className="text-center py-8 text-gray-500">
-                    No orders found.
+                    No orders found in this category.
                 </div>
             ) : (
-                <div className="space-y-6">
-                    {orders.map((order) => (
-                        <div
-                            key={order._id}
-                            className="bg-white rounded-lg shadow-md p-6 border border-gray-200"
-                        >
+                <div className="space-y-4">
+                    {filteredOrders.map((order) => (
+                        <div key={order._id} className="bg-white rounded-lg shadow-md p-6">
                             {/* Order Header */}
                             <div className="flex justify-between items-start mb-4">
                                 <div>
-                                    <h3 className="text-xl font-semibold text-gray-800">
+                                    <h3 className="text-xl font-bold text-gray-800">
                                         Order #{order.orderId}
                                     </h3>
-                                    <p className="text-sm text-gray-600">
-                                        {formatDate(order.date)}
-                                    </p>
+                                    <p className="text-sm text-gray-600">{formatDate(order.date)}</p>
                                 </div>
                                 <div className="flex gap-2">
                                     <span
-                                        className={`px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(
+                                        className={`px-3 py-1 rounded-full text-sm font-semibold border ${getStatusColor(
                                             order.status
                                         )}`}
                                     >
                                         {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                                     </span>
                                     <span
-                                        className={`px-3 py-1 rounded-full text-sm font-medium border ${getDeliveryOptionBadge(
+                                        className={`px-3 py-1 rounded-full text-sm font-semibold border ${getDeliveryOptionBadge(
                                             order.deliveryOption
                                         )}`}
                                     >
