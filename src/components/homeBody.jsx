@@ -5,7 +5,7 @@ import { ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
 // Promotional Banner Component with Auto-Rotating Images
 const PromotionalBanner = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  
+
   // Add your promotional images here
   // Place your images in the public folder: public/images/promo/
   const promotionalImages = [
@@ -18,7 +18,7 @@ const PromotionalBanner = () => {
   // Auto-rotate images every 3 seconds
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentImageIndex((prevIndex) => 
+      setCurrentImageIndex((prevIndex) =>
         (prevIndex + 1) % promotionalImages.length
       );
     }, 5000); // Change image every 3 seconds
@@ -40,12 +40,11 @@ const PromotionalBanner = () => {
             {promotionalImages.map((image, index) => (
               <div
                 key={index}
-                className={`absolute inset-0 transition-opacity duration-1000 ${
-                  index === currentImageIndex ? 'opacity-100' : 'opacity-0'
-                }`}
+                className={`absolute inset-0 transition-opacity duration-1000 ${index === currentImageIndex ? 'opacity-100' : 'opacity-0'
+                  }`}
               >
                 {/* Background Image with Overlay */}
-                <div 
+                <div
                   className="absolute inset-0 bg-cover bg-center"
                   style={{ backgroundImage: `url(${image})` }}
                 >
@@ -77,11 +76,10 @@ const PromotionalBanner = () => {
               <button
                 key={index}
                 onClick={() => goToImage(index)}
-                className={`transition-all duration-300 rounded-full ${
-                  index === currentImageIndex
+                className={`transition-all duration-300 rounded-full ${index === currentImageIndex
                     ? 'w-12 h-3 bg-[#c9a961]'
                     : 'w-3 h-3 bg-white bg-opacity-50 hover:bg-opacity-75'
-                }`}
+                  }`}
                 aria-label={`Go to image ${index + 1}`}
               />
             ))}
@@ -90,7 +88,7 @@ const PromotionalBanner = () => {
       </div>
 
       {/* Animation Styles */}
-      <style jsx>{`
+      <style>{`
         @keyframes fade-in {
           from {
             opacity: 0;
@@ -176,7 +174,8 @@ const CategoryDisplay = ({ onCategoryClick }) => {
 
   const fetchCategories = async () => {
     try {
-      const response = await fetch('/api/products/categories');
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || '';
+      const response = await fetch(`${backendUrl}/api/products/categories`);
       const data = await response.json();
 
       const mappedCategories = data.categories?.map(cat => ({
@@ -377,7 +376,7 @@ const CategoryDisplay = ({ onCategoryClick }) => {
         </div>
 
         {/* Animation Keyframes */}
-        <style jsx>{`
+        <style>{`
         @keyframes blob {
           0%, 100% { transform: translate(0, 0) scale(1); }
           25% { transform: translate(20px, -50px) scale(1.1); }
