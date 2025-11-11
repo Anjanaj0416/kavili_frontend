@@ -8,15 +8,14 @@ export default function AddProductForm() {
     const [productId, setProductId] = useState("");
     const [productName, setProductName] = useState("");
     const [imageFiles, setImageFiles] = useState([]);
-    const [price, setPrice] = useState("");
-    const [lastPrice, setLastPrice] = useState("");
-    const [quantity, setQuantity] = useState("");
+    const [pricePerPiece, setPricePerPiece] = useState("");
+    const [stock, setStock] = useState("");
     const [description, setDescription] = useState("");
     const [category, setCategory] = useState("electronics");
-    const [packs, setPacks] = useState([]);
-    const [newPackName, setNewPackName] = useState("");
-    const [newPackQuantity, setNewPackQuantity] = useState("");
-    const [newPackPrice, setNewPackPrice] = useState("");
+    const [availabilityStatus, setAvailabilityStatus] = useState("available");
+    const [bulkOffers, setBulkOffers] = useState([]);
+    const [newOfferPieces, setNewOfferPieces] = useState("");
+    const [newOfferPrice, setNewOfferPrice] = useState("");
     const [loading, setLoading] = useState(false);
 
     const navigate = useNavigate();
@@ -29,298 +28,298 @@ export default function AddProductForm() {
         { value: 'furniture', label: 'Furniture' }
     ];
 
-    const handleAddPack = () => {
-        if (!newPackName || !newPackQuantity || !newPackPrice) {
-            toast.error("Please fill all pack fields");
+    const handleAddOffer = () => {
+        if (!newOfferPieces || !newOfferPrice) {
+            toast.error("Please fill all offer fields");
             return;
         }
 
-        const pack = {
-            packName: newPackName,
-            packQuantity: parseInt(newPackQuantity),
-            packPrice: parseFloat(newPackPrice)
+        if (parseInt(newOfferPieces) <= 0) {
+            toast.error("Pieces must be greater than 0");
+            return;
+        }
+
+        if (parseFloat(newOfferPrice) <= 0) {
+            toast.error("Offer price must be greater than 0");
+            return;
+        }
+
+        const offer = {
+            pieces: parseInt(newOfferPieces),
+            offerPrice: parseFloat(newOfferPrice)
         };
 
-        setPacks([...packs, pack]);
-        setNewPackName("");
-        setNewPackQuantity("");
-        setNewPackPrice("");
-        toast.success("Pack added");
+        setBulkOffers([...bulkOffers, offer]);
+        setNewOfferPieces("");
+        setNewOfferPrice("");
+        toast.success("Bulk offer added");
     };
 
-    const handleRemovePack = (index) => {
-        setPacks(packs.filter((_, i) => i !== index));
-        toast.success("Pack removed");
+    const handleRemoveOffer = (index) => {
+        setBulkOffers(bulkOffers.filter((_, i) => i !== index));
+        toast.success("Bulk offer removed");
     };
 
     async function handleSubmit(e) {
         e.preventDefault();
 
-        if (!productName || !price || !lastPrice || !quantity) {
-            toast.error("Please fill in all required fields");
+        if (!productName || !pricePerPiece || !stock) {
+            toast.error("Please fill all required fields");
             return;
         }
 
-        if (imageFiles.length === 0) {
-            toast.error("Please select at least one image");
+        if (parseFloat(pricePerPiece) <= 0) {
+            toast.error("Price per piece must be greater than 0");
+            return;
+        }
+
+        if (parseInt(stock) <= 0) {
+            toast.error("Stock must be greater than 0");
             return;
         }
 
         setLoading(true);
 
         try {
-            const imagePromises = [];
-            for (let i = 0; i < imageFiles.length; i++) {
-                imagePromises.push(uploadMediaToMongoDB(imageFiles[i]));
-            }
+            const imageUrls = await uploadMediaToMongoDB(imageFiles);
 
-            const base64Images = await Promise.all(imagePromises);
-
-            const newProduct = {
+            const productData = {
                 productId: productId || undefined,
                 productName,
-                images: base64Images,
-                price: parseFloat(price),
-                lastPrice: parseFloat(lastPrice),
-                quantity: parseInt(quantity),
+                images: imageUrls,
+                pricePerPiece: parseFloat(pricePerPiece),
+                stock: parseInt(stock),
                 description,
                 category,
-                packs: packs
+                availabilityStatus,
+                bulkOffers: bulkOffers.sort((a, b) => a.pieces - b.pieces)
             };
 
-            const token = localStorage.getItem("authToken") || localStorage.getItem("token");
-
-            if (!token) {
-                toast.error("Authentication required. Please login again.");
-                setLoading(false);
-                return;
-            }
-
-            const response = await axios.post(
-                import.meta.env.VITE_BACKEND_URL + "/api/products",
-                newProduct,
+            const token = localStorage.getItem("token");
+            await axios.post(
+                `${import.meta.env.VITE_BACKEND_URL}/api/products`,
+                productData,
                 {
                     headers: {
-                        Authorization: `Bearer ${token}`
-                    }
+                        Authorization: `Bearer ${token}`,
+                        "Content-Type": "application/json",
+                    },
                 }
             );
 
-            toast.success("Product added successfully!");
+            toast.success("Product created successfully!");
             navigate("/admin/products");
-
         } catch (error) {
-            console.error("Error adding product:", error);
-            toast.error(error.response?.data?.message || "Failed to add product");
+            console.error("Error creating product:", error);
+            toast.error(error.response?.data?.message || "Failed to create product");
         } finally {
             setLoading(false);
         }
     }
 
     return (
-        <div className="w-full h-screen bg-gradient-to-br from-red-400 via-red-500 to-red-600 flex items-center justify-center p-4">
-            <div className="w-full max-w-4xl bg-white rounded-2xl shadow-2xl p-8">
-                <h1 className="text-3xl font-bold text-center text-gray-800 mb-6">Add Product Form</h1>
-                
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    {/* Product ID */}
-                    <div className="flex flex-col">
-                        <label className="text-gray-700 font-medium">Product ID (Optional)</label>
-                        <input
-                            type="text"
-                            className="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-red-400 focus:outline-none"
-                            placeholder="Leave empty for auto-generation"
-                            value={productId}
-                            onChange={(e) => setProductId(e.target.value)}
-                        />
-                    </div>
+        <div className="w-full h-screen flex items-center justify-center bg-gray-100 px-4 overflow-y-auto py-8">
+            <form
+                onSubmit={handleSubmit}
+                className="w-full max-w-4xl bg-white shadow-lg rounded-lg p-8 space-y-6"
+            >
+                <h2 className="text-3xl font-bold text-gray-800 text-center">Add New Product</h2>
 
-                    {/* Product Name */}
+                {/* Product ID (Optional) */}
+                <div className="flex flex-col">
+                    <label className="text-gray-700 font-medium">Product ID (Optional)</label>
+                    <input
+                        type="text"
+                        className="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-red-400 focus:outline-none"
+                        placeholder="Leave empty for auto-generation"
+                        value={productId}
+                        onChange={(e) => setProductId(e.target.value)}
+                    />
+                </div>
+
+                {/* Product Name */}
+                <div className="flex flex-col">
+                    <label className="text-gray-700 font-medium">Product Name *</label>
+                    <input
+                        type="text"
+                        className="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-red-400 focus:outline-none"
+                        placeholder="Enter Product Name"
+                        value={productName}
+                        onChange={(e) => setProductName(e.target.value)}
+                        required
+                    />
+                </div>
+
+                {/* Category */}
+                <div className="flex flex-col">
+                    <label className="text-gray-700 font-medium">Category *</label>
+                    <select
+                        className="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-red-400 focus:outline-none"
+                        value={category}
+                        onChange={(e) => setCategory(e.target.value)}
+                        required
+                    >
+                        {categories.map((cat) => (
+                            <option key={cat.value} value={cat.value}>
+                                {cat.label}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+
+                {/* Images */}
+                <div className="flex flex-col">
+                    <label className="text-gray-700 font-medium">Product Images</label>
+                    <input
+                        type="file"
+                        multiple
+                        accept="image/*"
+                        className="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-red-400 focus:outline-none"
+                        onChange={(e) => setImageFiles(Array.from(e.target.files))}
+                    />
+                    <p className="text-sm text-gray-500 mt-1">You can select multiple images</p>
+                </div>
+
+                {/* Price and Stock */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="flex flex-col">
-                        <label className="text-gray-700 font-medium">Product Name *</label>
+                        <label className="text-gray-700 font-medium">Price Per Piece *</label>
                         <input
-                            type="text"
+                            type="number"
+                            step="0.01"
                             className="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-red-400 focus:outline-none"
-                            placeholder="Enter Product Name"
-                            value={productName}
-                            onChange={(e) => setProductName(e.target.value)}
+                            placeholder="Enter Price Per Piece"
+                            value={pricePerPiece}
+                            onChange={(e) => setPricePerPiece(e.target.value)}
                             required
                         />
                     </div>
-
-                    {/* Category */}
                     <div className="flex flex-col">
-                        <label className="text-gray-700 font-medium">Category *</label>
+                        <label className="text-gray-700 font-medium">Stock (Available Pieces) *</label>
+                        <input
+                            type="number"
+                            className="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-red-400 focus:outline-none"
+                            placeholder="Enter Stock"
+                            value={stock}
+                            onChange={(e) => setStock(e.target.value)}
+                            required
+                        />
+                    </div>
+                    <div className="flex flex-col">
+                        <label className="text-gray-700 font-medium">Availability Status *</label>
                         <select
                             className="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-red-400 focus:outline-none"
-                            value={category}
-                            onChange={(e) => setCategory(e.target.value)}
+                            value={availabilityStatus}
+                            onChange={(e) => setAvailabilityStatus(e.target.value)}
                             required
                         >
-                            {categories.map(cat => (
-                                <option key={cat.value} value={cat.value}>
-                                    {cat.label}
-                                </option>
-                            ))}
+                            <option value="available">Available</option>
+                            <option value="not available">Not Available</option>
                         </select>
                     </div>
+                </div>
 
-                    {/* Product Images */}
-                    <div className="flex flex-col">
-                        <label className="text-gray-700 font-medium">Product Images *</label>
-                        <input
-                            type="file"
-                            className="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-red-400 focus:outline-none"
-                            onChange={(e) => setImageFiles(Array.from(e.target.files))}
-                            multiple
-                            accept="image/*"
-                            required
-                        />
-                        {imageFiles.length > 0 && (
-                            <small className="text-gray-500 mt-1">{imageFiles.length} image(s) selected</small>
-                        )}
-                    </div>
+                {/* Description */}
+                <div className="flex flex-col">
+                    <label className="text-gray-700 font-medium">Description</label>
+                    <textarea
+                        className="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-red-400 focus:outline-none"
+                        placeholder="Enter Product Description"
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        rows="3"
+                    />
+                </div>
 
-                    {/* Price Fields */}
-                    <div className="grid grid-cols-3 gap-4">
-                        <div className="flex flex-col">
-                            <label className="text-gray-700 font-medium">Price *</label>
-                            <input
-                                type="number"
-                                step="0.01"
-                                className="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-red-400 focus:outline-none"
-                                placeholder="Enter Price"
-                                value={price}
-                                onChange={(e) => setPrice(e.target.value)}
-                                required
-                            />
-                        </div>
-                        <div className="flex flex-col">
-                            <label className="text-gray-700 font-medium">Last Price *</label>
-                            <input
-                                type="number"
-                                step="0.01"
-                                className="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-red-400 focus:outline-none"
-                                placeholder="Enter Last Price"
-                                value={lastPrice}
-                                onChange={(e) => setLastPrice(e.target.value)}
-                                required
-                            />
-                        </div>
-                        <div className="flex flex-col">
-                            <label className="text-gray-700 font-medium">Quantity *</label>
-                            <input
-                                type="number"
-                                className="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-red-400 focus:outline-none"
-                                placeholder="Enter Quantity"
-                                value={quantity}
-                                onChange={(e) => setQuantity(e.target.value)}
-                                required
-                            />
-                        </div>
-                    </div>
-
-                    {/* Description */}
-                    <div className="flex flex-col">
-                        <label className="text-gray-700 font-medium">Description</label>
-                        <textarea
-                            className="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-red-400 focus:outline-none"
-                            placeholder="Enter Product Description"
-                            value={description}
-                            onChange={(e) => setDescription(e.target.value)}
-                            rows="3"
-                        />
-                    </div>
-
-                    {/* Pack Management Section */}
-                    <div className="border-t pt-4">
-                        <h3 className="text-xl font-bold text-gray-800 mb-4">Product Packs</h3>
-                        
-                        {/* Add Pack Form */}
-                        <div className="bg-gray-50 p-4 rounded-lg mb-4">
-                            <h4 className="font-semibold text-gray-700 mb-3">Add New Pack</h4>
-                            <div className="grid grid-cols-3 gap-3">
-                                <div className="flex flex-col">
-                                    <label className="text-gray-600 text-sm mb-1">Pack Name</label>
-                                    <input
-                                        type="text"
-                                        className="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-red-400 focus:outline-none"
-                                        placeholder="e.g., 10 Pack"
-                                        value={newPackName}
-                                        onChange={(e) => setNewPackName(e.target.value)}
-                                    />
-                                </div>
-                                <div className="flex flex-col">
-                                    <label className="text-gray-600 text-sm mb-1">Quantity</label>
-                                    <input
-                                        type="number"
-                                        className="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-red-400 focus:outline-none"
-                                        placeholder="10"
-                                        value={newPackQuantity}
-                                        onChange={(e) => setNewPackQuantity(e.target.value)}
-                                    />
-                                </div>
-                                <div className="flex flex-col">
-                                    <label className="text-gray-600 text-sm mb-1">Price</label>
-                                    <input
-                                        type="number"
-                                        step="0.01"
-                                        className="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-red-400 focus:outline-none"
-                                        placeholder="700.00"
-                                        value={newPackPrice}
-                                        onChange={(e) => setNewPackPrice(e.target.value)}
-                                    />
-                                </div>
+                {/* Bulk Offers Section */}
+                <div className="border-t pt-4">
+                    <h3 className="text-xl font-bold text-gray-800 mb-4">Bulk Offers (Optional)</h3>
+                    
+                    {/* Add Offer Form */}
+                    <div className="bg-gray-50 p-4 rounded-lg mb-4">
+                        <h4 className="font-semibold text-gray-700 mb-3">Add New Bulk Offer</h4>
+                        <div className="grid grid-cols-2 gap-3">
+                            <div className="flex flex-col">
+                                <label className="text-gray-600 text-sm mb-1">Number of Pieces</label>
+                                <input
+                                    type="number"
+                                    className="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-red-400 focus:outline-none"
+                                    placeholder="e.g., 20"
+                                    value={newOfferPieces}
+                                    onChange={(e) => setNewOfferPieces(e.target.value)}
+                                />
                             </div>
-                            <button
-                                type="button"
-                                onClick={handleAddPack}
-                                className="mt-3 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
-                            >
-                                Add Pack
-                            </button>
+                            <div className="flex flex-col">
+                                <label className="text-gray-600 text-sm mb-1">Offer Price</label>
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    className="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-red-400 focus:outline-none"
+                                    placeholder="e.g., 1500.00"
+                                    value={newOfferPrice}
+                                    onChange={(e) => setNewOfferPrice(e.target.value)}
+                                />
+                            </div>
                         </div>
+                        <button
+                            type="button"
+                            onClick={handleAddOffer}
+                            className="mt-3 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+                        >
+                            Add Bulk Offer
+                        </button>
+                    </div>
 
-                        {/* Display Added Packs */}
-                        {packs.length > 0 && (
-                            <div className="space-y-2">
-                                <h4 className="font-semibold text-gray-700">Added Packs:</h4>
-                                {packs.map((pack, index) => (
-                                    <div key={index} className="flex items-center justify-between bg-blue-50 p-3 rounded-lg">
-                                        <div className="flex-1">
-                                            <span className="font-semibold text-gray-800">{pack.packName}</span>
-                                            <span className="text-gray-600 mx-2">-</span>
-                                            <span className="text-gray-700">Qty: {pack.packQuantity}</span>
-                                            <span className="text-gray-600 mx-2">-</span>
-                                            <span className="text-red-600 font-semibold">Rs. {pack.packPrice.toFixed(2)}</span>
-                                        </div>
-                                        <button
-                                            type="button"
-                                            onClick={() => handleRemovePack(index)}
-                                            className="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors text-sm"
-                                        >
-                                            Remove
-                                        </button>
+                    {/* Display Added Offers */}
+                    {bulkOffers.length > 0 && (
+                        <div className="space-y-2">
+                            <h4 className="font-semibold text-gray-700">Added Bulk Offers:</h4>
+                            {bulkOffers.map((offer, index) => (
+                                <div key={index} className="flex items-center justify-between bg-green-50 p-3 rounded-lg">
+                                    <div className="flex-1">
+                                        <span className="font-semibold text-gray-800">{offer.pieces} pieces</span>
+                                        <span className="text-gray-600 mx-2">-</span>
+                                        <span className="text-green-600 font-semibold">Rs. {offer.offerPrice.toFixed(2)}</span>
+                                        <span className="text-gray-600 text-sm ml-2">
+                                            (Rs. {(offer.offerPrice / offer.pieces).toFixed(2)} per piece)
+                                        </span>
                                     </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => handleRemoveOffer(index)}
+                                        className="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors text-sm"
+                                    >
+                                        Remove
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
 
-                    {/* Submit Button */}
+                {/* Action Buttons */}
+                <div className="flex gap-4">
+                    <button
+                        type="button"
+                        className="flex-1 px-4 py-2 bg-gray-500 text-white font-medium rounded-md hover:bg-gray-600 focus:ring focus:ring-gray-300 focus:outline-none"
+                        onClick={() => navigate("/admin/products")}
+                        disabled={loading}
+                    >
+                        Cancel
+                    </button>
                     <button
                         type="submit"
-                        disabled={loading}
-                        className={`w-full py-3 rounded-lg font-semibold text-white transition-colors ${
+                        className={`flex-1 px-4 py-2 font-medium rounded-md focus:ring focus:ring-red-300 focus:outline-none ${
                             loading 
-                                ? 'bg-gray-400 cursor-not-allowed' 
-                                : 'bg-red-600 hover:bg-red-700'
+                                ? 'bg-red-400 cursor-not-allowed' 
+                                : 'bg-red-600 hover:bg-red-700 text-white'
                         }`}
+                        disabled={loading}
                     >
-                        {loading ? "Adding Product..." : "Add Product"}
+                        {loading ? 'Creating Product...' : 'Add Product'}
                     </button>
-                </form>
-            </div>
+                </div>
+            </form>
         </div>
     );
 }

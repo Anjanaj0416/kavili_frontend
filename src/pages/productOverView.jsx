@@ -1,66 +1,76 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate, useParams, Link } from "react-router-dom";
-import { ShoppingCart, Heart, Star, Package, Truck, Shield, ArrowLeft, Plus, Minus } from "lucide-react";
 import axios from "axios";
+import { useEffect, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { Minus, Plus, ShoppingCart, ArrowLeft, Truck, Shield, Star } from "lucide-react";
 import toast from "react-hot-toast";
-import NotFound from "../components/notFound";
-import { addToCart, clearCart } from "../utils/cartFunction";
-import ProductReviews from "../components/ProductReviews";
+import { addToCart } from "../utils/cartFunction";
 import AddToCartModal from "../components/AddToCartModal";
+import NotFound from "../components/notFound";
+import ProductReviews from "../components/ProductReviews";
 
 export default function ProductOverView() {
-    const params = useParams();
     const navigate = useNavigate();
+    const { category, productId } = useParams();
 
-    const { category, productId } = params;
-
-    const [product, setProduct] = useState({});
-    const [relatedProducts, setRelatedProducts] = useState([]);
+    const [product, setProduct] = useState(null);
     const [states, setStates] = useState("Loading");
-    const [relatedLoading, setRelatedLoading] = useState(false);
-    const [quantity, setQuantity] = useState(1);
-    const [selectedImage, setSelectedImage] = useState(0);
-    const [selectedPack, setSelectedPack] = useState(null);
-    const [customQuantity, setCustomQuantity] = useState(1);
-    const [currentPrice, setCurrentPrice] = useState(0);
-
-    // NEW: State for Add to Cart Modal
+    const [mainImage, setMainImage] = useState("");
+    const [pieces, setPieces] = useState(1);
+    const [selectedOffer, setSelectedOffer] = useState(null);
+    const [calculatedPrice, setCalculatedPrice] = useState(0);
     const [showModal, setShowModal] = useState(false);
+    const [relatedProducts, setRelatedProducts] = useState([]);
+    const [relatedLoading, setRelatedLoading] = useState(false);
 
     useEffect(() => {
-        console.log("Category:", category, "Product ID:", productId);
-        loadProduct();
-    }, [category, productId]);
-
-    const loadProduct = () => {
-        axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/products/category/${category}/${productId}`)
-            .then((res) => {
-                console.log(res.data);
-
-                if (res.data == null || !res.data.product) {
+        if (productId && category) {
+            axios.get(
+                `${import.meta.env.VITE_BACKEND_URL}/api/products/category/${category}/${productId}`
+            )
+                .then((res) => {
+                    if (res.data && res.data.product) {
+                        setProduct(res.data.product);
+                        setMainImage(res.data.product.images?.[0] || "");
+                        setStates("found");
+                        
+                        // Set initial calculated price
+                        const pricePerPiece = res.data.product.pricePerPiece || res.data.product.price || 0;
+                        setCalculatedPrice(pricePerPiece);
+                        
+                        // Fetch related products
+                        fetchRelatedProducts(category);
+                    } else {
+                        setStates("not-found");
+                    }
+                })
+                .catch((error) => {
+                    console.error("Error fetching product:", error);
                     setStates("not-found");
-                } else {
-                    setProduct(res.data.product);
-                    setCurrentPrice(res.data.product.lastPrice);
-                    setStates("found");
-                    loadRelatedProducts(category, res.data.product.productId);
-                }
-            })
-            .catch((error) => {
-                console.error("Error fetching product:", error);
-                if (error.response && error.response.status === 404) {
-                    setStates("not-found");
-                } else {
-                    toast.error("Failed to load product");
-                    setStates("error");
-                }
-            });
-    };
+                });
+        }
+    }, [productId, category]);
 
-    const loadRelatedProducts = (categoryName, currentProductId) => {
+    // Calculate price whenever pieces or selected offer changes
+    useEffect(() => {
+        if (!product) return;
+
+        if (selectedOffer) {
+            // If an offer is selected, use the offer price
+            setCalculatedPrice(selectedOffer.offerPrice);
+        } else {
+            // Calculate price based on pieces
+            const pricePerPiece = product.pricePerPiece || product.price || 0;
+            setCalculatedPrice(pieces * pricePerPiece);
+        }
+    }, [pieces, selectedOffer, product]);
+
+    const fetchRelatedProducts = (productCategory) => {
         setRelatedLoading(true);
+        const currentProductId = productId;
 
-        axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/products/category/${categoryName}`)
+        axios.get(
+            `${import.meta.env.VITE_BACKEND_URL}/api/products/category/${productCategory}`
+        )
             .then((res) => {
                 const filteredProducts = (res.data.products || res.data)
                     .filter(p => p.productId !== currentProductId)
@@ -75,77 +85,55 @@ export default function ProductOverView() {
             });
     };
 
-    const handlePackSelection = (pack) => {
-        if (selectedPack && selectedPack.packName === pack.packName) {
-            // Deselect pack
-            setSelectedPack(null);
-            setCurrentPrice(product.lastPrice);
-            setQuantity(customQuantity);
+    const handleOfferSelection = (offer) => {
+        if (selectedOffer && selectedOffer.pieces === offer.pieces) {
+            // Deselect offer
+            setSelectedOffer(null);
+            setPieces(1);
         } else {
-            // Select new pack
-            setSelectedPack(pack);
-            setCurrentPrice(pack.packPrice);
-            setQuantity(pack.packQuantity);
+            // Select new offer
+            setSelectedOffer(offer);
+            setPieces(offer.pieces);
         }
     };
 
     const handleCustomSelection = () => {
-        setSelectedPack(null);
-        setCurrentPrice(product.lastPrice);
-        setQuantity(customQuantity);
+        setSelectedOffer(null);
+        setPieces(1);
     };
 
-    const handleQuantityChange = (increment) => {
-        if (selectedPack) {
-            // If pack is selected, don't allow quantity change
-            toast.info("Quantity is fixed for packs. Select Custom to adjust quantity.");
+    const handlePiecesChange = (increment) => {
+        if (selectedOffer) {
+            toast.info("Pieces are fixed for bulk offers. Select Custom to adjust pieces.");
             return;
         }
         
         if (increment) {
-            setCustomQuantity(prev => Math.min(prev + 1, product.quantity));
+            setPieces(prev => prev + 1);
         } else {
-            setCustomQuantity(prev => Math.max(prev - 1, 1));
+            setPieces(prev => Math.max(prev - 1, 1));
         }
-        setQuantity(prev => increment ? Math.min(prev + 1, product.quantity) : Math.max(prev - 1, 1));
     };
 
-    // MODIFIED: Updated handleAddToCart to show modal
     const handleAddToCart = () => {
-        if (product.quantity === 0) {
-            toast.error("Product is out of stock");
+        if (product.availabilityStatus === 'not available') {
+            toast.error("Product is currently not available");
             return;
         }
 
-        if (quantity > product.quantity) {
-            toast.error(`Only ${product.quantity} items available in stock`);
-            return;
-        }
-
-        // Use the existing addToCart function signature (productId, qty)
-        addToCart(product.productId, quantity);
-        
-        // Show success toast
-        toast.success(`${quantity} ${product.productName} added to cart!`);
-        
-        // Show the modal
+        addToCart(product.productId, pieces);
+        toast.success(`${pieces} piece(s) of ${product.productName} added to cart!`);
         setShowModal(true);
     };
 
-    // Handler for Keep Shopping button
     const handleKeepShopping = () => {
         setShowModal(false);
     };
 
-    // Handler for Pay Now button
     const handlePayNow = () => {
         setShowModal(false);
         navigate('/cart');
     };
-
-    const discount = product.price && product.lastPrice
-        ? Math.round(((product.price - product.lastPrice) / product.price) * 100)
-        : 0;
 
     if (states === "not-found") {
         return <NotFound />;
@@ -162,16 +150,17 @@ export default function ProductOverView() {
         );
     }
 
+    const pricePerPiece = product.pricePerPiece || product.price || 0;
+
     return (
         <div className="min-h-screen bg-[#F8F4EF]">
-            {/* Add to Cart Modal */}
             <AddToCartModal 
                 isOpen={showModal}
                 onClose={() => setShowModal(false)}
                 onKeepShopping={handleKeepShopping}
                 onPayNow={handlePayNow}
                 productName={product.productName}
-                quantity={quantity}
+                quantity={pieces}
             />
 
             {/* Breadcrumb */}
@@ -210,33 +199,29 @@ export default function ProductOverView() {
                                 <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden relative">
                                     {product.images && product.images.length > 0 ? (
                                         <img
-                                            src={product.images[selectedImage]}
+                                            src={mainImage}
                                             alt={product.productName}
-                                            className="w-full h-full object-contain"
+                                            className="w-full h-full object-cover"
                                         />
                                     ) : (
-                                        <div className="w-full h-full flex items-center justify-center">
-                                            <Package className="w-24 h-24 text-gray-300" />
-                                        </div>
-                                    )}
-                                    {discount > 0 && (
-                                        <div className="absolute top-4 left-4 bg-red-500 text-white px-3 py-1 rounded-full font-bold text-sm">
-                                            -{discount}%
+                                        <div className="w-full h-full flex items-center justify-center text-gray-400">
+                                            No Image Available
                                         </div>
                                     )}
                                 </div>
 
                                 {/* Thumbnail Images */}
                                 {product.images && product.images.length > 1 && (
-                                    <div className="flex gap-2 overflow-x-auto">
+                                    <div className="grid grid-cols-4 gap-2">
                                         {product.images.map((image, index) => (
                                             <button
                                                 key={index}
-                                                onClick={() => setSelectedImage(index)}
-                                                className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${selectedImage === index
-                                                    ? 'border-[#c9a961] ring-2 ring-[#c9a961] ring-opacity-50'
-                                                    : 'border-gray-200 hover:border-[#c9a961]'
-                                                    }`}
+                                                onClick={() => setMainImage(image)}
+                                                className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${
+                                                    mainImage === image
+                                                        ? 'border-[#c9a961] ring-2 ring-[#c9a961] ring-opacity-50'
+                                                        : 'border-gray-200 hover:border-[#c9a961]'
+                                                }`}
                                             >
                                                 <img
                                                     src={image}
@@ -264,63 +249,107 @@ export default function ProductOverView() {
                                 {product.productName}
                             </h1>
 
-                            {/* Stock Status */}
+                            {/* Availability Status */}
                             <div className="flex items-center gap-2">
-                                {product.quantity > 0 ? (
+                                {product.availabilityStatus === 'available' ? (
                                     <>
                                         <div className="w-3 h-3 bg-green-500 rounded-full"></div>
                                         <span className="text-green-700 font-medium">
-                                            In Stock ({product.quantity} available)
+                                            Available
                                         </span>
                                     </>
                                 ) : (
                                     <>
                                         <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                                        <span className="text-red-700 font-medium">Out of Stock</span>
+                                        <span className="text-red-700 font-medium">Not Available</span>
                                     </>
                                 )}
                             </div>
 
-                            {/* Pack Selection */}
-                            {product.packs && product.packs.length > 0 && (
+                            {/* Price Per Piece */}
+                            <div className="border-t border-b border-gray-200 py-4">
+                                <p className="text-sm text-gray-600 mb-1">Price per piece:</p>
+                                <p className="text-2xl font-bold text-[#c9a961]">
+                                    Rs. {pricePerPiece.toFixed(2)}
+                                </p>
+                            </div>
+
+                            {/* Bulk Offers */}
+                            {product.bulkOffers && product.bulkOffers.length > 0 && (
                                 <div className="border-t border-b border-gray-200 py-4">
-                                    <h3 className="font-semibold text-gray-800 mb-3">Amount : {selectedPack ? selectedPack.packName : `${customQuantity} Pack`}</h3>
-                                    <div className="flex flex-wrap gap-3">
-                                        {product.packs.map((pack, index) => (
-                                            <button
-                                                key={index}
-                                                onClick={() => handlePackSelection(pack)}
-                                                className={`px-4 py-2 border-2 rounded-lg font-semibold transition-all ${selectedPack && selectedPack.packName === pack.packName
-                                                    ? 'border-orange-500 bg-orange-50 text-orange-700'
-                                                    : 'border-gray-300 hover:border-orange-400'
-                                                    }`}
-                                            >
-                                                {pack.packName}
-                                            </button>
-                                        ))}
+                                    <h3 className="font-semibold text-gray-800 mb-3">
+                                        Select Amount: {selectedOffer ? `${selectedOffer.pieces} pieces (Bulk Offer)` : `${pieces} piece(s)`}
+                                    </h3>
+                                    <div className="space-y-2">
+                                        {/* Custom Option */}
                                         <button
                                             onClick={handleCustomSelection}
-                                            className={`px-4 py-2 border-2 rounded-lg font-semibold transition-all ${!selectedPack
-                                                ? 'border-orange-500 bg-orange-50 text-orange-700'
-                                                : 'border-gray-300 hover:border-orange-400'
-                                                }`}
+                                            className={`w-full text-left p-3 rounded-lg border-2 transition-all ${
+                                                !selectedOffer
+                                                    ? 'border-[#c9a961] bg-[#c9a961] bg-opacity-10'
+                                                    : 'border-gray-200 hover:border-[#c9a961]'
+                                            }`}
                                         >
-                                            CUSTOM
+                                            <div className="flex justify-between items-center">
+                                                <span className="font-medium">Custom Amount</span>
+                                                <span className="text-[#c9a961] font-semibold">
+                                                    Rs. {pricePerPiece.toFixed(2)} per piece
+                                                </span>
+                                            </div>
                                         </button>
+
+                                        {/* Bulk Offers */}
+                                        {product.bulkOffers.map((offer, index) => {
+                                            const pricePerPieceInOffer = offer.offerPrice / offer.pieces;
+                                            const savings = (pricePerPiece * offer.pieces) - offer.offerPrice;
+                                            const savingsPercent = ((savings / (pricePerPiece * offer.pieces)) * 100).toFixed(0);
+
+                                            return (
+                                                <button
+                                                    key={index}
+                                                    onClick={() => handleOfferSelection(offer)}
+                                                    className={`w-full text-left p-3 rounded-lg border-2 transition-all ${
+                                                        selectedOffer?.pieces === offer.pieces
+                                                            ? 'border-green-600 bg-green-50'
+                                                            : 'border-gray-200 hover:border-green-600'
+                                                    }`}
+                                                >
+                                                    <div className="flex justify-between items-center mb-1">
+                                                        <span className="font-semibold text-gray-800">
+                                                            {offer.pieces} pieces
+                                                        </span>
+                                                        <span className="text-green-600 font-bold">
+                                                            Rs. {offer.offerPrice.toFixed(2)}
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex justify-between items-center text-sm">
+                                                        <span className="text-gray-600">
+                                                            Rs. {pricePerPieceInOffer.toFixed(2)} per piece
+                                                        </span>
+                                                        <span className="text-green-600 font-medium">
+                                                            Save {savingsPercent}% (Rs. {savings.toFixed(2)})
+                                                        </span>
+                                                    </div>
+                                                </button>
+                                            );
+                                        })}
                                     </div>
                                 </div>
                             )}
 
-                            {/* Price */}
-                            <div className="flex items-center gap-4">
-                                <span className="text-4xl font-bold text-[#c9a961]">
-                                    Rs. {currentPrice.toFixed(2)}
-                                </span>
-                                {product.price && product.price > currentPrice && !selectedPack && (
-                                    <span className="text-xl text-gray-400 line-through">
-                                        Rs. {product.price.toFixed(2)}
+                            {/* Calculated Total Price */}
+                            <div className="bg-[#c9a961] bg-opacity-10 p-4 rounded-lg">
+                                <div className="flex justify-between items-center">
+                                    <div>
+                                        <p className="text-sm text-gray-600">Total Price for {pieces} piece(s):</p>
+                                        {selectedOffer && (
+                                            <p className="text-xs text-green-600 font-medium">Bulk Offer Applied</p>
+                                        )}
+                                    </div>
+                                    <span className="text-3xl font-bold text-[#c9a961]">
+                                        Rs. {calculatedPrice.toFixed(2)}
                                     </span>
-                                )}
+                                </div>
                             </div>
 
                             {/* Description */}
@@ -331,32 +360,30 @@ export default function ProductOverView() {
                                 </div>
                             )}
 
-                            {/* Quantity Selector and Add to Cart */}
+                            {/* Pieces Selector and Add to Cart */}
                             <div className="space-y-4">
                                 <div className="flex items-center gap-4">
-                                    {!selectedPack && (
+                                    {!selectedOffer && (
                                         <div className="flex items-center border-2 border-gray-300 rounded-lg">
                                             <button
-                                                onClick={() => handleQuantityChange(false)}
-                                                disabled={quantity <= 1}
+                                                onClick={() => handlePiecesChange(false)}
+                                                disabled={pieces <= 1}
                                                 className="p-3 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                                             >
                                                 <Minus size={20} className="text-gray-600" />
                                             </button>
                                             <input
                                                 type="number"
-                                                value={quantity}
+                                                value={pieces}
                                                 onChange={(e) => {
                                                     const val = parseInt(e.target.value) || 1;
-                                                    setQuantity(Math.min(Math.max(val, 1), product.quantity));
-                                                    setCustomQuantity(Math.min(Math.max(val, 1), product.quantity));
+                                                    setPieces(Math.max(val, 1));
                                                 }}
                                                 className="w-16 text-center border-x-2 border-gray-300 py-3 focus:outline-none"
                                             />
                                             <button
-                                                onClick={() => handleQuantityChange(true)}
-                                                disabled={quantity >= product.quantity}
-                                                className="p-3 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                                onClick={() => handlePiecesChange(true)}
+                                                className="p-3 hover:bg-gray-100 transition-colors"
                                             >
                                                 <Plus size={20} className="text-gray-600" />
                                             </button>
@@ -364,11 +391,11 @@ export default function ProductOverView() {
                                     )}
                                     <button
                                         onClick={handleAddToCart}
-                                        disabled={product.quantity === 0}
-                                        className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-[#FF8C00] text-white font-semibold rounded-lg hover:bg-[#FF7700] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                        disabled={product.availabilityStatus === 'not available'}
+                                        className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-[#FF8C00] text-white font-semibold rounded-lg hover:bg-[#FF7700] transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-400"
                                     >
                                         <ShoppingCart size={20} />
-                                        ADD TO CART
+                                        {product.availabilityStatus === 'not available' ? 'NOT AVAILABLE' : 'ADD TO CART'}
                                     </button>
                                 </div>
                             </div>
@@ -379,21 +406,21 @@ export default function ProductOverView() {
                                     <Truck className="text-[#c9a961]" size={24} />
                                     <div>
                                         <p className="font-semibold text-gray-800">Free Delivery</p>
-                                        <p className="text-sm text-gray-600">On orders over Rs. 2000</p>
+                                        <p className="text-sm text-gray-600">On orders over Rs. 5000</p>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-3">
                                     <Shield className="text-[#c9a961]" size={24} />
                                     <div>
                                         <p className="font-semibold text-gray-800">Secure Payment</p>
-                                        <p className="text-sm text-gray-600">100% secure payment</p>
+                                        <p className="text-sm text-gray-600">100% secure transactions</p>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-3">
-                                    <Package className="text-[#c9a961]" size={24} />
+                                    <Star className="text-[#c9a961]" size={24} />
                                     <div>
                                         <p className="font-semibold text-gray-800">Quality Assured</p>
-                                        <p className="text-sm text-gray-600">Premium products</p>
+                                        <p className="text-sm text-gray-600">Best products only</p>
                                     </div>
                                 </div>
                             </div>
@@ -402,56 +429,45 @@ export default function ProductOverView() {
                 </div>
 
                 {/* Product Reviews Section */}
-                <ProductReviews productId={productId} category={category} />
+                <div className="mt-12">
+                    <ProductReviews productId={productId} />
+                </div>
 
                 {/* Related Products */}
                 {relatedProducts.length > 0 && (
                     <div className="mt-12">
                         <h2 className="text-2xl font-bold text-gray-800 mb-6">Related Products</h2>
-                        {relatedLoading ? (
-                            <div className="text-center py-8">
-                                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#c9a961] mx-auto"></div>
-                            </div>
-                        ) : (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                                {relatedProducts.map((relatedProduct) => (
-                                    <Link
-                                        key={relatedProduct.productId}
-                                        to={`/products/${relatedProduct.category}/${relatedProduct.productId}`}
-                                        className="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow overflow-hidden"
-                                    >
-                                        <div className="aspect-square bg-gray-100">
-                                            {relatedProduct.images && relatedProduct.images[0] ? (
-                                                <img
-                                                    src={relatedProduct.images[0]}
-                                                    alt={relatedProduct.productName}
-                                                    className="w-full h-full object-cover"
-                                                />
-                                            ) : (
-                                                <div className="w-full h-full flex items-center justify-center">
-                                                    <Package className="w-16 h-16 text-gray-300" />
-                                                </div>
-                                            )}
-                                        </div>
-                                        <div className="p-4">
-                                            <h3 className="font-semibold text-gray-800 mb-2 line-clamp-2">
-                                                {relatedProduct.productName}
-                                            </h3>
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-lg font-bold text-[#c9a961]">
-                                                    Rs. {relatedProduct.lastPrice?.toFixed(2)}
-                                                </span>
-                                                {relatedProduct.price > relatedProduct.lastPrice && (
-                                                    <span className="text-sm text-gray-400 line-through">
-                                                        Rs. {relatedProduct.price?.toFixed(2)}
-                                                    </span>
-                                                )}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                            {relatedProducts.map((relatedProduct) => (
+                                <Link
+                                    key={relatedProduct.productId}
+                                    to={`/category/${relatedProduct.category}/productInfo/${relatedProduct.productId}`}
+                                    className="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow overflow-hidden"
+                                >
+                                    <div className="aspect-square bg-gray-100">
+                                        {relatedProduct.images && relatedProduct.images[0] ? (
+                                            <img
+                                                src={relatedProduct.images[0]}
+                                                alt={relatedProduct.productName}
+                                                className="w-full h-full object-cover"
+                                            />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center text-gray-400">
+                                                No Image
                                             </div>
-                                        </div>
-                                    </Link>
-                                ))}
-                            </div>
-                        )}
+                                        )}
+                                    </div>
+                                    <div className="p-4">
+                                        <h3 className="font-semibold text-gray-800 mb-2 line-clamp-2">
+                                            {relatedProduct.productName}
+                                        </h3>
+                                        <p className="text-[#c9a961] font-bold">
+                                            Rs. {(relatedProduct.pricePerPiece || relatedProduct.price || 0).toFixed(2)} /piece
+                                        </p>
+                                    </div>
+                                </Link>
+                            ))}
+                        </div>
                     </div>
                 )}
             </div>
