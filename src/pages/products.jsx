@@ -125,7 +125,7 @@ export default function ProductPage() {
                     ))}
                 </div>
 
-                <div className="w-[90%]  h-screen flex flex-wrap justify-center mt-9 mx-auto">
+                <div className="w-[90%] min-h-screen flex flex-wrap justify-center mt-9 mx-auto pb-20">
                     {LoadingStatus === "Loading" && (
                         <div className="w-full flex justify-center items-center h-64">
                             <span className="text-2xl">Loading products...</span>
