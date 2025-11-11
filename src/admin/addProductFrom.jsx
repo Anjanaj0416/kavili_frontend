@@ -7,18 +7,20 @@ import uploadMediaToMongoDB from "../utils/mediaUpload";
 export default function AddProductForm() {
     const [productId, setProductId] = useState("");
     const [productName, setProductName] = useState("");
-    const [alternativeName, setAlternativeName] = useState("");
     const [imageFiles, setImageFiles] = useState([]);
     const [price, setPrice] = useState("");
     const [lastPrice, setLastPrice] = useState("");
-    const [description, setDescription] = useState("");
     const [quantity, setQuantity] = useState("");
+    const [description, setDescription] = useState("");
     const [category, setCategory] = useState("electronics");
-    const [tags, setTags] = useState("");
-    const [uploading, setUploading] = useState(false);
+    const [packs, setPacks] = useState([]);
+    const [newPackName, setNewPackName] = useState("");
+    const [newPackQuantity, setNewPackQuantity] = useState("");
+    const [newPackPrice, setNewPackPrice] = useState("");
+    const [loading, setLoading] = useState(false);
+
     const navigate = useNavigate();
 
-    // Available categories
     const categories = [
         { value: 'electronics', label: 'Electronics' },
         { value: 'clothing', label: 'Clothing' },
@@ -27,194 +29,190 @@ export default function AddProductForm() {
         { value: 'furniture', label: 'Furniture' }
     ];
 
-    async function handleSubmit() {
-        // Validation
-        if (!productName || !price || !lastPrice || !quantity || !category) {
+    const handleAddPack = () => {
+        if (!newPackName || !newPackQuantity || !newPackPrice) {
+            toast.error("Please fill all pack fields");
+            return;
+        }
+
+        const pack = {
+            packName: newPackName,
+            packQuantity: parseInt(newPackQuantity),
+            packPrice: parseFloat(newPackPrice)
+        };
+
+        setPacks([...packs, pack]);
+        setNewPackName("");
+        setNewPackQuantity("");
+        setNewPackPrice("");
+        toast.success("Pack added");
+    };
+
+    const handleRemovePack = (index) => {
+        setPacks(packs.filter((_, i) => i !== index));
+        toast.success("Pack removed");
+    };
+
+    async function handleSubmit(e) {
+        e.preventDefault();
+
+        if (!productName || !price || !lastPrice || !quantity) {
             toast.error("Please fill in all required fields");
             return;
         }
 
         if (imageFiles.length === 0) {
-            toast.error("Please select at least one product image");
+            toast.error("Please select at least one image");
             return;
         }
 
-        setUploading(true);
+        setLoading(true);
 
         try {
-            const alterName = alternativeName ? alternativeName.split(",").map(name => name.trim()) : [];
-            const productTags = tags ? tags.split(",").map(tag => tag.trim()) : [];
-
-            // Convert images to Base64 and store in MongoDB
-            console.log(`📸 Converting ${imageFiles.length} images...`);
             const imagePromises = [];
-            
             for (let i = 0; i < imageFiles.length; i++) {
                 imagePromises.push(uploadMediaToMongoDB(imageFiles[i]));
             }
 
             const base64Images = await Promise.all(imagePromises);
-            console.log('✅ All images converted successfully');
 
-            const product = {
+            const newProduct = {
                 productId: productId || undefined,
-                productName: productName,
-                altNames: alterName,
-                images: base64Images, // Store Base64 strings directly
+                productName,
+                images: base64Images,
                 price: parseFloat(price),
                 lastPrice: parseFloat(lastPrice),
-                description: description,
                 quantity: parseInt(quantity),
-                category: category,
-                tags: productTags
+                description,
+                category,
+                packs: packs
             };
 
-            // Get admin token (try both keys for compatibility)
             const token = localStorage.getItem("authToken") || localStorage.getItem("token");
 
             if (!token) {
                 toast.error("Authentication required. Please login again.");
+                setLoading(false);
                 return;
             }
 
-            await axios.post(import.meta.env.VITE_BACKEND_URL + "/api/products", product, {
-                headers: {
-                    "Authorization": `Bearer ${token}`,
-                    "Content-Type": "application/json"
+            const response = await axios.post(
+                import.meta.env.VITE_BACKEND_URL + "/api/products",
+                newProduct,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
                 }
-            });
+            );
 
             toast.success("Product added successfully!");
             navigate("/admin/products");
-        } catch (err) {
-            console.error("Error adding product:", err);
-            toast.error(err.message || "Failed to add product");
+
+        } catch (error) {
+            console.error("Error adding product:", error);
+            toast.error(error.response?.data?.message || "Failed to add product");
         } finally {
-            setUploading(false);
+            setLoading(false);
         }
     }
 
-    const handleFileChange = (e) => {
-        const files = Array.from(e.target.files);
-        setImageFiles(files);
-    };
-
     return (
-        <div className="w-full h-full flex items-center justify-center bg-gradient-to-r from-red-500 to-red-700 p-6">
-            <div className="bg-white shadow-lg rounded-lg p-6 w-full max-w-4xl">
-                <h1 className="text-[25px] font-bold text-center mb-6 text-gray-800">Add Product Form</h1>
+        <div className="w-full h-screen bg-gradient-to-br from-red-400 via-red-500 to-red-600 flex items-center justify-center p-4">
+            <div className="w-full max-w-4xl bg-white rounded-2xl shadow-2xl p-8">
+                <h1 className="text-3xl font-bold text-center text-gray-800 mb-6">Add Product Form</h1>
                 
-                <div className="flex flex-col gap-4">
-                    <div className="flex flex-row gap-4">
-                        <div className="flex flex-col w-full">
-                            <label className="text-gray-700 font-medium">Product ID (Optional)</label>
-                            <input
-                                type="text"
-                                className="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-red-400 focus:outline-none"
-                                placeholder="Leave empty for auto-generation"
-                                value={productId}
-                                onChange={(e) => setProductId(e.target.value)}
-                            />
-                        </div>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    {/* Product ID */}
+                    <div className="flex flex-col">
+                        <label className="text-gray-700 font-medium">Product ID (Optional)</label>
+                        <input
+                            type="text"
+                            className="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-red-400 focus:outline-none"
+                            placeholder="Leave empty for auto-generation"
+                            value={productId}
+                            onChange={(e) => setProductId(e.target.value)}
+                        />
                     </div>
 
-                    <div className="flex flex-row gap-4">
-                        <div className="flex flex-col w-full">
-                            <label className="text-gray-700 font-medium">Product Name *</label>
-                            <input
-                                type="text"
-                                className="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-red-400 focus:outline-none"
-                                placeholder="Enter Product Name"
-                                value={productName}
-                                onChange={(e) => setProductName(e.target.value)}
-                                required
-                            />
-                        </div>
-                        <div className="flex flex-col w-full">
-                            <label className="text-gray-700 font-medium">Alternative names</label>
-                            <input
-                                type="text"
-                                className="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-red-400 focus:outline-none"
-                                placeholder="Separate with commas"
-                                value={alternativeName}
-                                onChange={(e) => setAlternativeName(e.target.value)}
-                            />
-                        </div>
+                    {/* Product Name */}
+                    <div className="flex flex-col">
+                        <label className="text-gray-700 font-medium">Product Name *</label>
+                        <input
+                            type="text"
+                            className="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-red-400 focus:outline-none"
+                            placeholder="Enter Product Name"
+                            value={productName}
+                            onChange={(e) => setProductName(e.target.value)}
+                            required
+                        />
                     </div>
 
-                    <div className="flex flex-row gap-4">
-                        <div className="flex flex-col w-full">
-                            <label className="text-gray-700 font-medium">Category *</label>
-                            <select
-                                className="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-red-400 focus:outline-none"
-                                value={category}
-                                onChange={(e) => setCategory(e.target.value)}
-                                required
-                            >
-                                {categories.map(cat => (
-                                    <option key={cat.value} value={cat.value}>
-                                        {cat.label}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                        <div className="flex flex-col w-full">
-                            <label className="text-gray-700 font-medium">Tags</label>
-                            <input
-                                type="text"
-                                className="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-red-400 focus:outline-none"
-                                placeholder="Separate with commas (e.g., new, sale, featured)"
-                                value={tags}
-                                onChange={(e) => setTags(e.target.value)}
-                            />
-                        </div>
+                    {/* Category */}
+                    <div className="flex flex-col">
+                        <label className="text-gray-700 font-medium">Category *</label>
+                        <select
+                            className="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-red-400 focus:outline-none"
+                            value={category}
+                            onChange={(e) => setCategory(e.target.value)}
+                            required
+                        >
+                            {categories.map(cat => (
+                                <option key={cat.value} value={cat.value}>
+                                    {cat.label}
+                                </option>
+                            ))}
+                        </select>
                     </div>
 
-                    <div className="flex flex-col w-full">
+                    {/* Product Images */}
+                    <div className="flex flex-col">
                         <label className="text-gray-700 font-medium">Product Images *</label>
                         <input
                             type="file"
                             className="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-red-400 focus:outline-none"
-                            onChange={handleFileChange}
+                            onChange={(e) => setImageFiles(Array.from(e.target.files))}
                             multiple
                             accept="image/*"
                             required
                         />
                         {imageFiles.length > 0 && (
-                            <p className="text-sm text-gray-600 mt-1">
-                                {imageFiles.length} image(s) selected
-                            </p>
+                            <small className="text-gray-500 mt-1">{imageFiles.length} image(s) selected</small>
                         )}
                     </div>
 
-                    <div className="flex flex-row gap-4 w-full mt-4">
-                        <div className="flex flex-col w-full">
+                    {/* Price Fields */}
+                    <div className="grid grid-cols-3 gap-4">
+                        <div className="flex flex-col">
                             <label className="text-gray-700 font-medium">Price *</label>
                             <input
                                 type="number"
                                 step="0.01"
                                 className="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-red-400 focus:outline-none"
+                                placeholder="Enter Price"
                                 value={price}
                                 onChange={(e) => setPrice(e.target.value)}
                                 required
                             />
                         </div>
-                        <div className="flex flex-col w-full">
+                        <div className="flex flex-col">
                             <label className="text-gray-700 font-medium">Last Price *</label>
                             <input
                                 type="number"
                                 step="0.01"
                                 className="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-red-400 focus:outline-none"
+                                placeholder="Enter Last Price"
                                 value={lastPrice}
                                 onChange={(e) => setLastPrice(e.target.value)}
                                 required
                             />
                         </div>
-                        <div className="flex flex-col w-full">
+                        <div className="flex flex-col">
                             <label className="text-gray-700 font-medium">Quantity *</label>
                             <input
                                 type="number"
                                 className="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-red-400 focus:outline-none"
+                                placeholder="Enter Quantity"
                                 value={quantity}
                                 onChange={(e) => setQuantity(e.target.value)}
                                 required
@@ -222,29 +220,106 @@ export default function AddProductForm() {
                         </div>
                     </div>
 
-                    <div className="flex flex-col w-full">
+                    {/* Description */}
+                    <div className="flex flex-col">
                         <label className="text-gray-700 font-medium">Description</label>
                         <textarea
                             className="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-red-400 focus:outline-none"
                             placeholder="Enter Product Description"
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
-                            rows="4"
+                            rows="3"
                         />
                     </div>
 
+                    {/* Pack Management Section */}
+                    <div className="border-t pt-4">
+                        <h3 className="text-xl font-bold text-gray-800 mb-4">Product Packs</h3>
+                        
+                        {/* Add Pack Form */}
+                        <div className="bg-gray-50 p-4 rounded-lg mb-4">
+                            <h4 className="font-semibold text-gray-700 mb-3">Add New Pack</h4>
+                            <div className="grid grid-cols-3 gap-3">
+                                <div className="flex flex-col">
+                                    <label className="text-gray-600 text-sm mb-1">Pack Name</label>
+                                    <input
+                                        type="text"
+                                        className="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-red-400 focus:outline-none"
+                                        placeholder="e.g., 10 Pack"
+                                        value={newPackName}
+                                        onChange={(e) => setNewPackName(e.target.value)}
+                                    />
+                                </div>
+                                <div className="flex flex-col">
+                                    <label className="text-gray-600 text-sm mb-1">Quantity</label>
+                                    <input
+                                        type="number"
+                                        className="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-red-400 focus:outline-none"
+                                        placeholder="10"
+                                        value={newPackQuantity}
+                                        onChange={(e) => setNewPackQuantity(e.target.value)}
+                                    />
+                                </div>
+                                <div className="flex flex-col">
+                                    <label className="text-gray-600 text-sm mb-1">Price</label>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        className="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-red-400 focus:outline-none"
+                                        placeholder="700.00"
+                                        value={newPackPrice}
+                                        onChange={(e) => setNewPackPrice(e.target.value)}
+                                    />
+                                </div>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={handleAddPack}
+                                className="mt-3 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+                            >
+                                Add Pack
+                            </button>
+                        </div>
+
+                        {/* Display Added Packs */}
+                        {packs.length > 0 && (
+                            <div className="space-y-2">
+                                <h4 className="font-semibold text-gray-700">Added Packs:</h4>
+                                {packs.map((pack, index) => (
+                                    <div key={index} className="flex items-center justify-between bg-blue-50 p-3 rounded-lg">
+                                        <div className="flex-1">
+                                            <span className="font-semibold text-gray-800">{pack.packName}</span>
+                                            <span className="text-gray-600 mx-2">-</span>
+                                            <span className="text-gray-700">Qty: {pack.packQuantity}</span>
+                                            <span className="text-gray-600 mx-2">-</span>
+                                            <span className="text-red-600 font-semibold">Rs. {pack.packPrice.toFixed(2)}</span>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => handleRemovePack(index)}
+                                            className="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors text-sm"
+                                        >
+                                            Remove
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Submit Button */}
                     <button
-                        onClick={handleSubmit}
-                        disabled={uploading}
-                        className={`w-full text-white font-bold py-3 rounded-md transition-colors ${
-                            uploading 
+                        type="submit"
+                        disabled={loading}
+                        className={`w-full py-3 rounded-lg font-semibold text-white transition-colors ${
+                            loading 
                                 ? 'bg-gray-400 cursor-not-allowed' 
                                 : 'bg-red-600 hover:bg-red-700'
                         }`}
                     >
-                        {uploading ? '⏳ Adding Product...' : 'Add Product'}
+                        {loading ? "Adding Product..." : "Add Product"}
                     </button>
-                </div>
+                </form>
             </div>
         </div>
     );

@@ -12,7 +12,6 @@ export default function EditProductForm() {
   const [product, setProduct] = useState(location.state?.product || null);
   const [formProductId, setFormProductId] = useState("");
   const [productName, setProductName] = useState("");
-  const [alternativeNames, setAlternativeNames] = useState("");
   const [imageFiles, setImageFiles] = useState([]);
   const [existingImages, setExistingImages] = useState([]);
   const [price, setPrice] = useState("");
@@ -20,7 +19,10 @@ export default function EditProductForm() {
   const [stock, setStock] = useState("");
   const [description, setDescription] = useState("");
   const [productCategory, setProductCategory] = useState("electronics");
-  const [tags, setTags] = useState("");
+  const [packs, setPacks] = useState([]);
+  const [newPackName, setNewPackName] = useState("");
+  const [newPackQuantity, setNewPackQuantity] = useState("");
+  const [newPackPrice, setNewPackPrice] = useState("");
   const [loading, setLoading] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const [isFetching, setIsFetching] = useState(false);
@@ -77,19 +79,15 @@ export default function EditProductForm() {
     if (!product) return;
 
     try {
-      const altNames = product.altNames ? product.altNames.join(",") : "";
-      const productTags = product.tags ? product.tags.join(",") : "";
-      
       setFormProductId(product.productId || "");
       setProductName(product.productName || "");
-      setAlternativeNames(altNames);
       setExistingImages(product.images || []);
       setPrice(product.price || "");
       setLastPrice(product.lastPrice || "");
       setStock(product.stock || product.quantity || "");
       setDescription(product.description || "");
       setProductCategory(product.category || "electronics");
-      setTags(productTags);
+      setPacks(product.packs || []);
       setIsInitialized(true);
     } catch (error) {
       console.error("Error initializing form:", error);
@@ -97,6 +95,30 @@ export default function EditProductForm() {
       navigate("/admin/products");
     }
   }, [product, navigate]);
+
+  const handleAddPack = () => {
+    if (!newPackName || !newPackQuantity || !newPackPrice) {
+      toast.error("Please fill all pack fields");
+      return;
+    }
+
+    const pack = {
+      packName: newPackName,
+      packQuantity: parseInt(newPackQuantity),
+      packPrice: parseFloat(newPackPrice)
+    };
+
+    setPacks([...packs, pack]);
+    setNewPackName("");
+    setNewPackQuantity("");
+    setNewPackPrice("");
+    toast.success("Pack added");
+  };
+
+  const handleRemovePack = (index) => {
+    setPacks(packs.filter((_, i) => i !== index));
+    toast.success("Pack removed");
+  };
 
   async function handleSubmit() {
     if (!product) {
@@ -107,9 +129,6 @@ export default function EditProductForm() {
     setLoading(true);
 
     try {
-      const altNames = alternativeNames.split(",").map(name => name.trim()).filter(name => name);
-      const productTags = tags.split(",").map(tag => tag.trim()).filter(tag => tag);
-      
       let allImages = [...existingImages];
       
       // Convert and add new images if any are selected
@@ -129,15 +148,14 @@ export default function EditProductForm() {
       const productData = {
         productId: formProductId,
         productName: productName,
-        altNames: altNames,
-        images: allImages, // All images (existing + new) as Base64
+        images: allImages,
         price: parseFloat(price) || 0,
         lastPrice: parseFloat(lastPrice) || 0,
         stock: parseInt(stock) || 0,
         quantity: parseInt(stock) || 0,
         description: description,
         category: productCategory,
-        tags: productTags
+        packs: packs
       };
 
       const token = localStorage.getItem("authToken") || localStorage.getItem("token");
@@ -191,66 +209,44 @@ export default function EditProductForm() {
         <h1 className="text-3xl font-bold text-gray-800 mb-6">Edit Product</h1>
 
         <div className="space-y-4">
-          <div className="flex gap-4">
-            <div className="flex flex-col flex-1">
-              <label className="text-gray-700 font-medium">Product ID</label>
-              <input
-                type="text"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100"
-                value={formProductId}
-                disabled
-              />
-            </div>
+          {/* Product ID */}
+          <div className="flex flex-col">
+            <label className="text-gray-700 font-medium">Product ID</label>
+            <input
+              type="text"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100"
+              value={formProductId}
+              disabled
+            />
           </div>
 
-          <div className="flex gap-4">
-            <div className="flex flex-col flex-1">
-              <label className="text-gray-700 font-medium">Product Name</label>
-              <input
-                type="text"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring focus:ring-blue-200 focus:outline-none"
-                placeholder="Enter Product Name"
-                value={productName}
-                onChange={(e) => setProductName(e.target.value)}
-              />
-            </div>
-            <div className="flex flex-col flex-1">
-              <label className="text-gray-700 font-medium">Alternative Names</label>
-              <input
-                type="text"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring focus:ring-blue-200 focus:outline-none"
-                placeholder="Comma-separated"
-                value={alternativeNames}
-                onChange={(e) => setAlternativeNames(e.target.value)}
-              />
-            </div>
+          {/* Product Name */}
+          <div className="flex flex-col">
+            <label className="text-gray-700 font-medium">Product Name</label>
+            <input
+              type="text"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring focus:ring-blue-200 focus:outline-none"
+              placeholder="Enter Product Name"
+              value={productName}
+              onChange={(e) => setProductName(e.target.value)}
+            />
           </div>
 
-          <div className="flex gap-4">
-            <div className="flex flex-col flex-1">
-              <label className="text-gray-700 font-medium">Category</label>
-              <select
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring focus:ring-blue-200 focus:outline-none"
-                value={productCategory}
-                onChange={(e) => setProductCategory(e.target.value)}
-              >
-                {categories.map(cat => (
-                  <option key={cat.value} value={cat.value}>{cat.label}</option>
-                ))}
-              </select>
-            </div>
-            <div className="flex flex-col flex-1">
-              <label className="text-gray-700 font-medium">Tags</label>
-              <input
-                type="text"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring focus:ring-blue-200 focus:outline-none"
-                placeholder="Enter tags (comma-separated)"
-                value={tags}
-                onChange={(e) => setTags(e.target.value)}
-              />
-            </div>
+          {/* Category */}
+          <div className="flex flex-col">
+            <label className="text-gray-700 font-medium">Category</label>
+            <select
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring focus:ring-blue-200 focus:outline-none"
+              value={productCategory}
+              onChange={(e) => setProductCategory(e.target.value)}
+            >
+              {categories.map(cat => (
+                <option key={cat.value} value={cat.value}>{cat.label}</option>
+              ))}
+            </select>
           </div>
 
+          {/* Current Images */}
           {existingImages.length > 0 && (
             <div className="flex flex-col">
               <label className="text-gray-700 font-medium mb-2">Current Images</label>
@@ -275,6 +271,7 @@ export default function EditProductForm() {
             </div>
           )}
 
+          {/* Add New Images */}
           <div className="flex flex-col">
             <label className="text-gray-700 font-medium">Add New Images</label>
             <input
@@ -289,6 +286,7 @@ export default function EditProductForm() {
             </small>
           </div>
 
+          {/* Price Fields */}
           <div className="flex flex-wrap gap-4">
             <div className="flex flex-col flex-1 min-w-[150px]">
               <label className="text-gray-700 font-medium">Price</label>
@@ -326,6 +324,7 @@ export default function EditProductForm() {
             </div>
           </div>
 
+          {/* Description */}
           <div className="flex flex-col">
             <label className="text-gray-700 font-medium">Description</label>
             <textarea
@@ -337,6 +336,82 @@ export default function EditProductForm() {
             />
           </div>
 
+          {/* Pack Management Section */}
+          <div className="border-t pt-4">
+            <h3 className="text-xl font-bold text-gray-800 mb-4">Product Packs</h3>
+            
+            {/* Add Pack Form */}
+            <div className="bg-gray-50 p-4 rounded-lg mb-4">
+              <h4 className="font-semibold text-gray-700 mb-3">Add New Pack</h4>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="flex flex-col">
+                  <label className="text-gray-600 text-sm mb-1">Pack Name</label>
+                  <input
+                    type="text"
+                    className="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                    placeholder="e.g., 10 Pack"
+                    value={newPackName}
+                    onChange={(e) => setNewPackName(e.target.value)}
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <label className="text-gray-600 text-sm mb-1">Quantity</label>
+                  <input
+                    type="number"
+                    className="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                    placeholder="10"
+                    value={newPackQuantity}
+                    onChange={(e) => setNewPackQuantity(e.target.value)}
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <label className="text-gray-600 text-sm mb-1">Price</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    className="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                    placeholder="700.00"
+                    value={newPackPrice}
+                    onChange={(e) => setNewPackPrice(e.target.value)}
+                  />
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={handleAddPack}
+                className="mt-3 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+              >
+                Add Pack
+              </button>
+            </div>
+
+            {/* Display Added Packs */}
+            {packs.length > 0 && (
+              <div className="space-y-2">
+                <h4 className="font-semibold text-gray-700">Added Packs:</h4>
+                {packs.map((pack, index) => (
+                  <div key={index} className="flex items-center justify-between bg-blue-50 p-3 rounded-lg">
+                    <div className="flex-1">
+                      <span className="font-semibold text-gray-800">{pack.packName}</span>
+                      <span className="text-gray-600 mx-2">-</span>
+                      <span className="text-gray-700">Qty: {pack.packQuantity}</span>
+                      <span className="text-gray-600 mx-2">-</span>
+                      <span className="text-blue-600 font-semibold">Rs. {pack.packPrice.toFixed(2)}</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleRemovePack(index)}
+                      className="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors text-sm"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Action Buttons */}
           <div className="flex gap-4">
             <button
               type="button"
@@ -350,13 +425,13 @@ export default function EditProductForm() {
               type="button"
               className={`flex-1 px-4 py-2 font-medium rounded-md focus:ring focus:ring-blue-300 focus:outline-none ${
                 loading 
-                  ? 'bg-gray-400 cursor-not-allowed text-white'
-                  : 'bg-blue-600 hover:bg-blue-700 text-white'
+                  ? 'bg-gray-400 text-white cursor-not-allowed' 
+                  : 'bg-blue-600 text-white hover:bg-blue-700'
               }`}
               onClick={handleSubmit}
               disabled={loading}
             >
-              {loading ? '⏳ Updating...' : 'Update Product'}
+              {loading ? 'Updating...' : 'Update Product'}
             </button>
           </div>
         </div>
