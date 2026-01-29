@@ -34,7 +34,7 @@ const PromotionalBanner = () => {
     <div className="w-full bg-white">
       <div className="w-full">
         {/* Banner Container */}
-        <div className="relative h-[500px] w-full overflow-hidden">
+        <div className="relative h-[300px] sm:h-[400px] md:h-[500px] w-full overflow-hidden">
           {/* Image Carousel */}
           <div className="relative w-full h-full">
             {promotionalImages.map((image, index) => (
@@ -54,15 +54,15 @@ const PromotionalBanner = () => {
 
                 {/* Content Overlay */}
                 <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-8">
-                  <h3 className="text-[#c9a961] text-2xl md:text-3xl font-semibold mb-4 animate-fade-in">
+                  <h3 className="text-[#c9a961] text-lg sm:text-xl md:text-2xl lg:text-3xl font-semibold mb-2 sm:mb-3 md:mb-4 animate-fade-in px-4">
                     Sweeten Up Your Holidays!
                   </h3>
-                  <h2 className="text-white text-5xl md:text-7xl font-bold mb-6 leading-tight animate-slide-up">
+                  <h2 className="text-white text-2xl sm:text-3xl md:text-5xl lg:text-7xl font-bold mb-4 sm:mb-5 md:mb-6 leading-tight animate-slide-up px-4">
                     MAKE EVERY OCCASION
                     <br />
                     EXTRA SWEET
                   </h2>
-                  <button className="bg-[#4a3728] hover:bg-[#3a2818] text-white px-10 py-4 rounded-lg font-bold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg animate-fade-in-delay">
+                  <button className="bg-[#4a3728] hover:bg-[#3a2818] text-white px-6 sm:px-8 md:px-10 py-3 sm:py-3.5 md:py-4 rounded-lg font-bold text-sm sm:text-base md:text-lg transition-all duration-300 transform hover:scale-105 shadow-lg animate-fade-in-delay">
                     SHOP NOW & SHARE THE SWEETNESS
                   </button>
                 </div>
@@ -71,14 +71,14 @@ const PromotionalBanner = () => {
           </div>
 
           {/* Dot Indicators */}
-          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-3 z-20 ">
+          <div className="absolute bottom-4 sm:bottom-6 md:bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-2 sm:space-x-3 z-20">
             {promotionalImages.map((_, index) => (
               <button
                 key={index}
                 onClick={() => goToImage(index)}
                 className={`transition-all duration-300 rounded-full ${index === currentImageIndex
-                    ? 'w-12 h-3 bg-[#c9a961]'
-                    : 'w-3 h-3 bg-white bg-opacity-50 hover:bg-opacity-75'
+                  ? 'w-12 h-3 bg-[#c9a961]'
+                  : 'w-3 h-3 bg-white bg-opacity-50 hover:bg-opacity-75'
                   }`}
                 aria-label={`Go to image ${index + 1}`}
               />
@@ -235,26 +235,26 @@ const CategoryDisplay = ({ onCategoryClick }) => {
 
   return (
     <>
-      <div className="w-full h-[700px] bg-gradient-to-br from-[#d4b876] via-[#e0c589] to-white py-16 px-4 relative overflow-hidden">
+      <div className="w-full min-h-[500px] sm:min-h-[600px] md:h-[700px] bg-gradient-to-br from-[#d4b876] via-[#e0c589] to-white py-8 sm:py-12 md:py-16 px-2 sm:px-4 relative overflow-hidden">
         {/* Animated Background Elements */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-20 left-10 w-72 h-72 bg-[#c9a961] rounded-full opacity-20 blur-3xl animate-blob"></div>
-          <div className="absolute top-40 right-20 w-96 h-96 bg-[#4a3728] rounded-full opacity-20 blur-3xl animate-blob animation-delay-2000"></div>
-          <div className="absolute bottom-20 left-1/3 w-80 h-80 bg-[#c9a961] rounded-full opacity-20 blur-3xl animate-blob animation-delay-4000"></div>
+          <div className="hidden sm:block absolute top-20 left-10 w-72 h-72 bg-[#c9a961] rounded-full opacity-20 blur-3xl animate-blob"></div>
+          <div className="hidden sm:block absolute top-40 right-20 w-96 h-96 bg-[#4a3728] rounded-full opacity-20 blur-3xl animate-blob animation-delay-2000"></div>
+          <div className="hidden sm:block absolute bottom-20 left-1/3 w-80 h-80 bg-[#c9a961] rounded-full opacity-20 blur-3xl animate-blob animation-delay-4000"></div>
         </div>
 
         <div className="max-w-7xl mx-auto relative z-10">
           {/* Animated Header */}
-          <div className={`flex items-center justify-center mb-16 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-10'}`}>
+          <div className={`flex items-center justify-center mb-8 sm:mb-12 md:mb-16 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-10'}`}>
             <div className="relative group">
               <div className="absolute inset-0 bg-gradient-to-r from-[#c9a961] to-[#4a3728] rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300 opacity-70"></div>
-              <div className="relative bg-white rounded-2xl shadow-2xl px-12 py-6 transform group-hover:scale-105 transition-all duration-300">
+              <div className="relative bg-white rounded-xl sm:rounded-2xl shadow-2xl px-4 sm:px-8 md:px-12 py-4 sm:py-5 md:py-6 transform group-hover:scale-105 transition-all duration-300">
                 <div className="flex items-center space-x-3">
-                  <Sparkles className="w-8 h-8 text-[#c9a961] animate-pulse" />
-                  <h1 className="text-5xl font-bold bg-gradient-to-r from-[#c9a961] to-[#4a3728] bg-clip-text text-transparent h-[60px]">
+                  <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-[#c9a961] animate-pulse" />
+                  <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-[#c9a961] to-[#4a3728] bg-clip-text text-transparent min-h-[40px] sm:min-h-[50px] md:min-h-[60px] text-center">
                     Discover Our Categories
                   </h1>
-                  <Sparkles className="w-8 h-8 text-[#c9a961] animate-pulse animation-delay-500" />
+                  <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-[#c9a961] animate-pulse animation-delay-500" />
                 </div>
               </div>
             </div>
@@ -265,22 +265,22 @@ const CategoryDisplay = ({ onCategoryClick }) => {
             {/* Navigation Buttons */}
             <button
               onClick={prevSlide}
-              className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-4 z-20 bg-white hover:bg-[#f5f0e8] rounded-full p-4 shadow-2xl transition-all duration-300 hover:scale-110 group"
+              className="absolute left-0 sm:left-auto sm:-translate-x-4 top-1/2 transform -translate-y-1/2 z-20 bg-white hover:bg-[#f5f0e8] rounded-full p-2 sm:p-3 md:p-4 shadow-2xl transition-all duration-300 hover:scale-110 group"
               aria-label="Previous slide"
             >
-              <ChevronLeft className="w-8 h-8 text-[#4a3728] group-hover:text-[#3a2818]" />
+              <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-[#4a3728] group-hover:text-[#3a2818]" />
             </button>
 
             <button
               onClick={nextSlide}
-              className="absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-4 z-20 bg-white hover:bg-[#f5f0e8] rounded-full p-4 shadow-2xl transition-all duration-300 hover:scale-110 group"
+              className="absolute right-0 sm:right-auto sm:translate-x-4 top-1/2 transform -translate-y-1/2 z-20 bg-white hover:bg-[#f5f0e8] rounded-full p-2 sm:p-3 md:p-4 shadow-2xl transition-all duration-300 hover:scale-110 group"
               aria-label="Next slide"
             >
-              <ChevronRight className="w-8 h-8 text-[#4a3728] group-hover:text-[#3a2818]" />
+              <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-[#4a3728] group-hover:text-[#3a2818]" />
             </button>
 
             {/* Category Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 px-16 py-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 md:gap-8 px-2 sm:px-8 md:px-16 py-4 sm:py-6 md:py-8">
               {loading ? (
                 // Enhanced Loading Skeletons
                 Array.from({ length: 4 }).map((_, index) => (
@@ -304,7 +304,7 @@ const CategoryDisplay = ({ onCategoryClick }) => {
                     onClick={() => handleCategoryClick(category.id)}
                     onMouseEnter={() => setHoveredCard(category.id)}
                     onMouseLeave={() => setHoveredCard(null)}
-                    className={`bg-white rounded-2xl shadow-xl overflow-hidden cursor-pointer transform transition-all duration-500 hover:shadow-3xl hover:-translate-y-3 group ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+                    className={`bg-white rounded-xl sm:rounded-2xl shadow-xl overflow-hidden cursor-pointer transform transition-all duration-500 hover:shadow-3xl hover:-translate-y-2 sm:hover:-translate-y-3 group ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
                       }`}
                     style={{
                       animationDelay: `${300 + index * 100}ms`,
@@ -312,7 +312,7 @@ const CategoryDisplay = ({ onCategoryClick }) => {
                     }}
                   >
                     {/* Image Container with Overlay */}
-                    <div className="relative h-56 overflow-hidden">
+                    <div className="h-40 sm:h-48 md:h-56 overflow-hidden relative">
                       <img
                         src={category.image}
                         alt={category.name}
@@ -335,11 +335,11 @@ const CategoryDisplay = ({ onCategoryClick }) => {
                     </div>
 
                     {/* Card Content */}
-                    <div className="p-6 bg-gradient-to-br from-white to-[#f5f0e8] group-hover:from-[#f5f0e8] group-hover:to-[#ede4d4] transition-all duration-500">
-                      <h3 className="text-2xl font-bold text-gray-800 mb-2 group-hover:text-[#4a3728] transition-colors duration-300">
+                    <div className="p-4 sm:p-5 md:p-6 bg-gradient-to-br from-white to-[#f5f0e8] group-hover:from-[#f5f0e8] group-hover:to-[#ede4d4] transition-all duration-500">
+                      <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-800 mb-1 sm:mb-2 group-hover:text-[#4a3728] transition-colors duration-300">
                         {category.name}
                       </h3>
-                      <p className="text-gray-600 text-sm leading-relaxed group-hover:text-gray-700 transition-colors duration-300">
+                      <p className="text-gray-600 text-xs sm:text-sm leading-relaxed group-hover:text-gray-700 transition-colors duration-300">
                         {category.description}
                       </p>
 

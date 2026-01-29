@@ -247,9 +247,9 @@ export default function Register() {
     };
 
     return (
-        <div className="min-h-screen flex">
+        <div className="min-h-screen flex flex-col md:flex-row mt-10 ">
             {/* Left Side - Decorative */}
-            <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-[#c9a961] via-[#d4b876] to-[#e0c589] relative overflow-hidden">
+            <div className="w-full h-[200px] sm:h-[250px] md:h-[300px] bg-gradient-to-br from-[#c9a961] via-[#d4b876] to-[#e0c589] overflow-hidden relative">
                 <div className="absolute inset-0">
                     <div className="absolute inset-0 bg-black opacity-10"></div>
                     <div className="absolute top-20 left-10 w-64 h-64 bg-gradient-to-br from-[#e0c589] to-[#b89551] rounded-full opacity-70"></div>
@@ -261,7 +261,7 @@ export default function Register() {
             </div>
 
             {/* Right Side - Registration Form */}
-            <div className="flex items-center justify-center p-4 w-full lg:w-1/2 overflow-y-auto mt-10 bg-[#f5f0e8]">
+            <div className="flex items-center justify-center p-4 sm:p-6 md:p-8 w-full lg:w-1/2 bg-[#f5f0e8]">
                 <div className="w-full max-w-md my-8">
                     <div className="bg-white rounded-2xl shadow-2xl overflow-hidden mt-4">
                         {/* Header */}

@@ -44,11 +44,11 @@ const HeroImageCarousel = () => {
   return (
     <>
       {/* Smaller decorative circles - BEHIND the big circle */}
-      <div className="absolute right-24 top-[200px] transform -translate-y-1/2 w-[300px] h-[300px] bg-gradient-to-br from-[#4a3728] to-[#d4b876] rounded-full opacity-80 z-0"></div>
-      <div className="absolute right-[700px] top-[550px] transform -translate-y-1/2 w-[200px] h-[200px] bg-gradient-to-br from-[#645430] to-[#c9a961] rounded-full opacity-80 z-0"></div>
-      <div className="absolute right-[10px] top-[420px] transform -translate-y-1/2 w-[200px] h-[200px] bg-gradient-to-br from-[#c9a961] to-[#b89551] rounded-full opacity-80 z-0"></div>
-      <div className="absolute right-[180px] top-[560px] transform -translate-y-1/2 w-[150px] h-[150px] bg-gradient-to-br from-[#c9a961] to-[#d4b876] rounded-full opacity-80 z-0 "></div>
-      <div className="absolute right-[750px] top-[250px] transform -translate-y-1/2 w-[100px] h-[100px] bg-gradient-to-br from-[#f0e3bb] to-[#e0c589] rounded-full opacity-80 z-0"></div>
+      <div className="hidden lg:block absolute right-24 top-[200px] transform -translate-y-1/2 w-[300px] h-[300px] bg-gradient-to-br from-[#4a3728] to-[#d4b876] rounded-full opacity-80 z-0"></div>
+      <div className="hidden lg:block absolute right-[700px] top-[550px] transform -translate-y-1/2 w-[200px] h-[200px] bg-gradient-to-br from-[#645430] to-[#c9a961] rounded-full opacity-80 z-0"></div>
+      <div className="hidden lg:block absolute right-[10px] top-[420px] transform -translate-y-1/2 w-[200px] h-[200px] bg-gradient-to-br from-[#c9a961] to-[#b89551] rounded-full opacity-80 z-0"></div>
+      <div className="hidden lg:block absolute right-[180px] top-[560px] transform -translate-y-1/2 w-[150px] h-[150px] bg-gradient-to-br from-[#c9a961] to-[#d4b876] rounded-full opacity-80 z-0"></div>
+      <div className="hidden lg:block absolute right-[750px] top-[250px] transform -translate-y-1/2 w-[100px] h-[100px] bg-gradient-to-br from-[#f0e3bb] to-[#e0c589] rounded-full opacity-80 z-0"></div>
 
       {/* Main Circle with Rotating Images - IN FRONT */}
       <div className="absolute right-[200px] top-[400px] transform -translate-y-1/2 w-[580px] h-[580px] rounded-full overflow-hidden shadow-2xl z-10 ">
@@ -87,7 +87,7 @@ export default function HomePage() {
           <Route path="/" element={
             <div className="relative">
               {/* Hero Background */}
-              <div className="h-[750px] bg-gradient-to-br from-[#4a3728] via-[#d4b876] to-[#e0c589] overflow-hidden relative">
+              <div className="h-[400px] sm:h-[500px] md:h-[600px] lg:h-[750px] bg-gradient-to-br from-[#4a3728] via-[#d4b876] to-[#e0c589] overflow-hidden relative">
                 {/* Background overlay */}
                 <div className="absolute inset-0 bg-opacity-20"></div>
 
@@ -99,24 +99,24 @@ export default function HomePage() {
 
                     {/* Text content */}
                     {/* Text content */}
-                    <div className="absolute left-20 top-1/2 transform -translate-y-1/2 z-20 max-w-3xl w-[600px]">
-                      <h1 className="text-6xl font-bold text-[#4a3728] mb-4 drop-shadow-lg">
+                    <div className="absolute left-4 sm:left-8 md:left-12 lg:left-20 top-1/2 transform -translate-y-1/2 z-20 max-w-full sm:max-w-2xl md:max-w-3xl w-[90%] sm:w-[80%] md:w-[600px] px-4">
+                      <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-[#4a3728] mb-2 sm:mb-3 md:mb-4 drop-shadow-lg">
                         AUTHENTIC
                       </h1>
-                      <h2 className="text-5xl font-bold text-[#c9a961] mb-6 drop-shadow-lg">
+                      <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-[#c9a961] mb-3 sm:mb-4 md:mb-6 drop-shadow-lg">
                         HEALTHY FOOD
                       </h2>
-                      <p className="text-xl text-white mb-3 drop-shadow-md leading-relaxed">
+                      <p className="text-sm sm:text-base md:text-lg lg:text-xl text-white mb-2 sm:mb-3 drop-shadow-md leading-relaxed">
                         <span className="font-semibold">REAL FOOD</span> is your Trusted Food Supplier of Sri Lankan Traditional Sweet & Authentic Ready Made Curry Bottles since 1996..
                       </p>
-                      <p className="text-xl text-white mb-6 drop-shadow-md">
+                      <p className="text-sm sm:text-base md:text-lg lg:text-xl text-white mb-4 sm:mb-5 md:mb-6 drop-shadow-md">
                         Get delivered a wide range of Vegen Food products to your doorstep.
                       </p>
-                      <p className="text-lg text-[#4a3728] font-bold mb-8 drop-shadow-md">
+                      <p className="text-base sm:text-lg md:text-xl text-[#4a3728] font-bold mb-4 sm:mb-6 md:mb-8 drop-shadow-md">
                         NO ADDED ARTIFICIAL INGREDIENTS & PRESERVATIVES
                       </p>
                       <Link to="/products">
-                        <button className="bg-[#4a3728] hover:bg-[#3a2818] text-white px-10 py-4 rounded-lg font-semibold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
+                        <button className="bg-[#4a3728] hover:bg-[#3a2818] text-white px-6 sm:px-8 md:px-10 py-3 sm:py-3.5 md:py-4 rounded-lg font-semibold text-sm sm:text-base md:text-lg transition-all duration-300 transform hover:scale-105 shadow-lg">
                           SHOP NOW
                         </button>
                       </Link>

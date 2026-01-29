@@ -44,7 +44,7 @@ const Login = ({ onLoginSuccess, onBack }) => {
         setGoogleLoading(true);
         try {
             const result = await signInWithGoogle();
-            
+
             if (result.success && result.user) {
                 toast.success('Google authentication successful! Checking account...');
 
@@ -108,7 +108,7 @@ const Login = ({ onLoginSuccess, onBack }) => {
         setFacebookLoading(true);
         try {
             const result = await signInWithFacebook();
-            
+
             if (result.success && result.user) {
                 toast.success('Facebook authentication successful! Checking account...');
 
@@ -202,11 +202,11 @@ const Login = ({ onLoginSuccess, onBack }) => {
 
                 // Navigate to My Orders page
                 setTimeout(() => {
-                    navigate('/myOrders', { 
+                    navigate('/myOrders', {
                         replace: true,
-                        state: { 
-                            loginSuccess: true, 
-                            user: result.data.user 
+                        state: {
+                            loginSuccess: true,
+                            user: result.data.user
                         }
                     });
                 }, 1500);
@@ -226,31 +226,31 @@ const Login = ({ onLoginSuccess, onBack }) => {
     };
 
     return (
-        <div className="min-h-screen flex mt-2">
+        <div className="min-h-screen flex flex-col md:flex-row mt-10 ">
             {/* Left Side - Decorative */}
-            <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-[#c9a961] via-[#d4b876] to-[#e0c589] relative overflow-hidden">
+            <div className="w-full h-[200px] sm:h-[250px] md:h-[300px] bg-gradient-to-br from-[#c9a961] via-[#d4b876] to-[#e0c589] overflow-hidden relative">
                 <div className="absolute inset-0">
                     <div className="absolute inset-0 bg-black opacity-10"></div>
-                    <div className="absolute top-20 left-10 w-64 h-64 bg-gradient-to-br from-[#e0c589] to-[#b89551] rounded-full opacity-70"></div>
-                    <div className="absolute bottom-20 right-10 w-80 h-80 bg-gradient-to-br from-[#e0c589] to-[#b89551] rounded-full opacity-60"></div>
+                    <div className="absolute top-10 sm:top-20 left-5 sm:left-10 w-48 sm:w-64 h-48 sm:h-64 bg-gradient-to-br from-[#e0c589] to-[#b89551] rounded-full opacity-70"></div>
+                    <div className="absolute bottom-10 sm:bottom-20 right-5 sm:right-10 w-64 sm:w-80 h-64 sm:h-80 bg-gradient-to-br from-[#e0c589] to-[#b89551] rounded-full opacity-60"></div>
                 </div>
                 <div className="w-full h-full flex items-center justify-center">
-                    <span className="text-6xl font-bold text-white">Login</span>
+                    <span className="text-4xl sm:text-5xl md:text-6xl font-bold text-white">Login</span>
                 </div>
             </div>
 
             {/* Right Side - Login Form */}
-            <div className="flex items-center justify-center p-4 w-full lg:w-1/2 bg-[#f5f0e8]">
+            <div className="flex items-center justify-center p-4 sm:p-6 md:p-8 w-full lg:w-1/2 bg-[#f5f0e8]">
                 <div className="w-full max-w-md">
                     <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
                         {/* Header */}
-                        <div className="bg-gradient-to-r from-[#c9a961] to-[#4a3728] p-6">
-                            <h2 className="text-3xl font-bold text-white text-center">Welcome Back</h2>
-                            <p className="text-white text-center mt-2 text-sm">Sign in to continue</p>
+                        <div className="bg-gradient-to-r from-[#c9a961] to-[#4a3728] p-4 sm:p-6">
+                            <h2 className="text-2xl sm:text-3xl font-bold text-white text-center">Welcome Back</h2>
+                            <p className="text-white text-center mt-2 text-xs sm:text-sm">Sign in to continue</p>
                         </div>
 
                         {/* Content */}
-                        <div className="p-8">
+                        <div className="p-4 sm:p-6 md:p-8">
                             <div className="space-y-6">
                                 {/* Social Login Buttons */}
                                 <div className="space-y-3">
@@ -258,7 +258,7 @@ const Login = ({ onLoginSuccess, onBack }) => {
                                     <button
                                         onClick={handleGoogleSignIn}
                                         disabled={googleLoading || facebookLoading || loading}
-                                        className="w-full bg-white border-2 border-gray-300 hover:border-gray-400 text-gray-700 py-3 px-4 rounded-lg font-semibold transition-all duration-200 disabled:bg-gray-100 disabled:cursor-not-allowed shadow-md hover:shadow-lg flex items-center justify-center gap-3"
+                                         className="w-full bg-white border-2 border-gray-300 hover:border-gray-400 text-gray-700 py-2.5 sm:py-3 px-3 sm:px-4 rounded-lg text-sm sm:text-base font-semibold transition-all duration-200 disabled:bg-gray-100 disabled:cursor-not-allowed shadow-md hover:shadow-lg flex items-center justify-center gap-2 sm:gap-3"
                                     >
                                         {googleLoading ? (
                                             <div className="flex items-center gap-2">
@@ -268,10 +268,10 @@ const Login = ({ onLoginSuccess, onBack }) => {
                                         ) : (
                                             <>
                                                 <svg className="w-5 h-5" viewBox="0 0 24 24">
-                                                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                                                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                                                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                                                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                                                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                                                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                                                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                                                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
                                                 </svg>
                                                 <span>Continue with Google</span>
                                             </>
@@ -292,7 +292,7 @@ const Login = ({ onLoginSuccess, onBack }) => {
                                         ) : (
                                             <>
                                                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                                                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                                                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
                                                 </svg>
                                                 <span>Continue with Facebook</span>
                                             </>
@@ -324,7 +324,7 @@ const Login = ({ onLoginSuccess, onBack }) => {
                                                 name="firstName"
                                                 value={formData.firstName}
                                                 onChange={handleInputChange}
-                                                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#c9a961] focus:border-transparent transition-all"
+                                                className="w-full pl-9 sm:pl-10 pr-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#c9a961] focus:border-transparent transition-all text-sm sm:text-base"
                                                 placeholder="Enter your first name"
                                                 disabled={loading || googleLoading || facebookLoading}
                                             />
@@ -343,7 +343,7 @@ const Login = ({ onLoginSuccess, onBack }) => {
                                                 name="phonenumber"
                                                 value={formData.phonenumber}
                                                 onChange={handleInputChange}
-                                                className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#c9a961] focus:border-transparent transition-all"
+                                                className="w-full pl-9 sm:pl-10 pr-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#c9a961] focus:border-transparent transition-all text-sm sm:text-base"
                                                 placeholder="0771234567"
                                                 maxLength="10"
                                                 disabled={loading || googleLoading || facebookLoading}
@@ -365,7 +365,7 @@ const Login = ({ onLoginSuccess, onBack }) => {
                                     <button
                                         onClick={handleSubmit}
                                         disabled={loading || googleLoading || facebookLoading}
-                                        className="w-full bg-gradient-to-r from-[#c9a961] to-[#4a3728] text-white py-3 px-4 rounded-lg font-semibold transition-all duration-200 hover:from-[#b89551] hover:to-[#3a2818] disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
+                                        className="w-full bg-gradient-to-r from-[#c9a961] to-[#4a3728] text-white py-2.5 sm:py-3 px-4 rounded-lg text-sm sm:text-base font-semibold transition-all duration-200"
                                     >
                                         {loading ? (
                                             <div className="flex items-center justify-center gap-2">
@@ -380,11 +380,10 @@ const Login = ({ onLoginSuccess, onBack }) => {
 
                                 {/* Error/Success Message */}
                                 {message && (
-                                    <div className={`p-3 rounded-lg text-sm ${
-                                        message.includes('successful') 
-                                            ? 'bg-green-50 text-green-700 border border-green-200' 
-                                            : 'bg-red-50 text-red-700 border border-red-200'
-                                    }`}>
+                                    <div className={`p-3 rounded-lg text-sm ${message.includes('successful')
+                                        ? 'bg-green-50 text-green-700 border border-green-200'
+                                        : 'bg-red-50 text-red-700 border border-red-200'
+                                        }`}>
                                         {message}
                                     </div>
                                 )}
@@ -405,7 +404,7 @@ const Login = ({ onLoginSuccess, onBack }) => {
                                 {/* Back Button */}
                                 <button
                                     onClick={handleBackClick}
-                                    className="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 px-4 rounded-lg font-semibold transition-colors duration-200"
+                                    className="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 py-2.5 sm:py-3 px-4 rounded-lg text-sm sm:text-base font-semibold transition-colors duration-200"
                                 >
                                     ← Back
                                 </button>
