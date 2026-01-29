@@ -62,6 +62,14 @@ export default function ProductPage() {
         return `${baseClass} bg-white text-black hover:bg-black hover:text-white`;
     };
 
+    // Handler for when a product is deleted
+    const handleProductDelete = (deletedProductId) => {
+        // Remove the deleted product from the state
+        setProducts(prevProducts => 
+            prevProducts.filter(product => product.productId !== deletedProductId)
+        );
+    };
+
     return (
         <>
             <div className="w-full h-full overflow-y-scroll flex flex-wrap justify-center">
@@ -113,6 +121,7 @@ export default function ProductPage() {
                                 key={product.productId}
                                 product={product}
                                 category={selectedCategory === "ALL" ? product.category : selectedCategory}
+                                onDelete={handleProductDelete}
                             />
                         ))
                     )}
@@ -121,4 +130,3 @@ export default function ProductPage() {
         </>
     );
 }
-
