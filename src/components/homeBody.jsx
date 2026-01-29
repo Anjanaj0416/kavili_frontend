@@ -262,10 +262,10 @@ const CategoryDisplay = ({ onCategoryClick }) => {
 
           {/* Category Carousel */}
           <div className={`relative transition-all duration-1000 delay-200 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
-            {/* Navigation Buttons */}
+            {/* Navigation Buttons - FIXED */}
             <button
               onClick={prevSlide}
-              className="absolute left-0 sm:left-auto sm:-translate-x-4 top-1/2 transform -translate-y-1/2 z-20 bg-white hover:bg-[#f5f0e8] rounded-full p-2 sm:p-3 md:p-4 shadow-2xl transition-all duration-300 hover:scale-110 group"
+              className="absolute left-2 sm:left-4 md:-left-12 lg:-left-16 top-1/2 transform -translate-y-1/2 z-20 bg-white hover:bg-[#f5f0e8] rounded-full p-2 sm:p-3 md:p-4 shadow-2xl transition-all duration-300 hover:scale-110 group"
               aria-label="Previous slide"
             >
               <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-[#4a3728] group-hover:text-[#3a2818]" />
@@ -273,7 +273,7 @@ const CategoryDisplay = ({ onCategoryClick }) => {
 
             <button
               onClick={nextSlide}
-              className="absolute right-0 sm:right-auto sm:translate-x-4 top-1/2 transform -translate-y-1/2 z-20 bg-white hover:bg-[#f5f0e8] rounded-full p-2 sm:p-3 md:p-4 shadow-2xl transition-all duration-300 hover:scale-110 group"
+              className="absolute right-2 sm:right-4 md:-right-12 lg:-right-16 top-1/2 transform -translate-y-1/2 z-20 bg-white hover:bg-[#f5f0e8] rounded-full p-2 sm:p-3 md:p-4 shadow-2xl transition-all duration-300 hover:scale-110 group"
               aria-label="Next slide"
             >
               <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-[#4a3728] group-hover:text-[#3a2818]" />

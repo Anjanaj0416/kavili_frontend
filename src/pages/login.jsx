@@ -226,9 +226,9 @@ const Login = ({ onLoginSuccess, onBack }) => {
     };
 
     return (
-        <div className="min-h-screen flex flex-col md:flex-row mt-10 ">
+        <div className="min-h-screen flex flex-col md:flex-row">
             {/* Left Side - Decorative */}
-            <div className="w-full h-[200px] sm:h-[250px] md:h-[300px] bg-gradient-to-br from-[#c9a961] via-[#d4b876] to-[#e0c589] overflow-hidden relative">
+            <div className="w-full md:w-1/2 h-[200px] sm:h-[250px] md:min-h-screen bg-gradient-to-br from-[#c9a961] via-[#d4b876] to-[#e0c589] overflow-hidden relative">
                 <div className="absolute inset-0">
                     <div className="absolute inset-0 bg-black opacity-10"></div>
                     <div className="absolute top-10 sm:top-20 left-5 sm:left-10 w-48 sm:w-64 h-48 sm:h-64 bg-gradient-to-br from-[#e0c589] to-[#b89551] rounded-full opacity-70"></div>
@@ -240,7 +240,7 @@ const Login = ({ onLoginSuccess, onBack }) => {
             </div>
 
             {/* Right Side - Login Form */}
-            <div className="flex items-center justify-center p-4 sm:p-6 md:p-8 w-full lg:w-1/2 bg-[#f5f0e8]">
+            <div className="flex items-center justify-center p-4 sm:p-6 md:p-8 w-full md:w-1/2 bg-[#f5f0e8]">
                 <div className="w-full max-w-md">
                     <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
                         {/* Header */}
