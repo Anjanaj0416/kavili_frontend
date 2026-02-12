@@ -109,11 +109,12 @@ export default function ProductPage() {
                         <button
                             key={category.value}
                             className={`${getCategoryButtonClass(category.value)} min-w-[80px] sm:min-w-[100px] px-4 sm:px-6 ${category.name === "ALL" ? "w-[100px]" :
-                                category.name === "CLOTHES" ? "w-[150px]" :
-                                    category.name === "ELECTRONICS" ? "w-[200px]" :
-                                        category.name === "FOOD" ? "w-[10%]" :
-                                            category.name === "FURNITURE" ? "w-[200px]" :
-                                                "w-[150px]"
+                                    category.name === "SWEETS" ? "w-[150px]" :
+                                        category.name === "SAVORY" ? "w-[150px]" :
+                                            category.name === "BEVERAGES" ? "w-[180px]" :
+                                                category.name === "SPICES" ? "w-[150px]" :
+                                                    category.name === "CURRIES" ? "w-[150px]" :
+                                                        "w-[150px]"
                                 }`}
                             onClick={() => handleCategoryClick(category.value)}
                         >

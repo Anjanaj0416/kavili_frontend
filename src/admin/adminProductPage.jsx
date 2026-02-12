@@ -13,11 +13,11 @@ export default function ProductPage() {
 
     const categories = [
         { name: "ALL", value: "ALL" },
-        { name: "CLOTHES", value: "clothing" },
-        { name: "ELECTRONICS", value: "electronics" },
-        { name: "FOOD", value: "food" },
-        { name: "FURNITURE", value: "furniture" },
-        { name: "HOME", value: "home" }
+        { name: "SWEETS", value: "sweets" },
+        { name: "SAVORY", value: "savory" },
+        { name: "BEVERAGES", value: "beverages" },
+        { name: "SPICES", value: "spices" },
+        { name: "CURRIES", value: "curries" }
     ];
 
     useEffect(() => {
@@ -65,7 +65,7 @@ export default function ProductPage() {
     // Handler for when a product is deleted
     const handleProductDelete = (deletedProductId) => {
         // Remove the deleted product from the state
-        setProducts(prevProducts => 
+        setProducts(prevProducts =>
             prevProducts.filter(product => product.productId !== deletedProductId)
         );
     };
@@ -88,12 +88,13 @@ export default function ProductPage() {
                     {categories.map((category) => (
                         <button
                             key={category.value}
-                            className={`${getCategoryButtonClass(category.value)} ${category.name === "ALL" ? "w-[100px]" :
-                                category.name === "CLOTHES" ? "w-[150px]" :
-                                    category.name === "ELECTRONICS" ? "w-[200px]" :
-                                        category.name === "FOOD" ? "w-[10%]" :
-                                            category.name === "FURNITURE" ? "w-[200px]" :
-                                                "w-[150px]"
+                            className={`${getCategoryButtonClass(category.value)} min-w-[80px] sm:min-w-[100px] px-4 sm:px-6 ${category.name === "ALL" ? "w-[100px]" :
+                                category.name === "SWEETS" ? "w-[150px]" :
+                                    category.name === "SAVORY" ? "w-[150px]" :
+                                        category.name === "BEVERAGES" ? "w-[180px]" :
+                                            category.name === "SPICES" ? "w-[150px]" :
+                                                category.name === "CURRIES" ? "w-[150px]" :
+                                                    "w-[150px]"
                                 }`}
                             onClick={() => handleCategoryClick(category.value)}
                         >

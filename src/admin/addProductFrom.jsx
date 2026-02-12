@@ -21,12 +21,13 @@ export default function AddProductForm() {
     const navigate = useNavigate();
 
     const categories = [
-        { value: 'electronics', label: 'Electronics' },
-        { value: 'clothing', label: 'Clothing' },
-        { value: 'home', label: 'Home & Garden' },
-        { value: 'food', label: 'Food & Beverages' },
-        { value: 'furniture', label: 'Furniture' }
-    ];
+    { name: "ALL", value: "ALL" },
+    { name: "SWEETS", value: "sweets" },
+    { name: "SAVORY", value: "savory" },
+    { name: "BEVERAGES", value: "beverages" },
+    { name: "SPICES", value: "spices" },
+    { name: "CURRIES", value: "curries" }
+];
 
     const handleAddOffer = () => {
         if (!newOfferPieces || !newOfferPrice) {

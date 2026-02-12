@@ -135,37 +135,36 @@ const CategoryDisplay = ({ onCategoryClick }) => {
   // Default categories with images (fallback if API fails)
   const defaultCategories = [
     {
-      id: 'electronics',
-      name: 'Electronics',
-      description: 'Latest gadgets and devices',
-      image: 'https://images.unsplash.com/photo-1498049794561-7780e7231661?w=400&h=300&fit=crop'
+      id: 'sweets',
+      name: 'Traditional Sweets',
+      description: 'Authentic Sri Lankan sweets',
+      image: 'https://images.unsplash.com/photo-1587241321921-91a834d82ffc?w=400&h=300&fit=crop'
     },
     {
-      id: 'clothing',
-      name: 'Clothing',
-      description: 'Fashion and apparel',
-      image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&h=300&fit=crop'
+      id: 'savory',
+      name: 'Savory Snacks',
+      description: 'Crunchy traditional snacks',
+      image: 'https://images.unsplash.com/photo-1599490659213-e2b9527c8286?w=400&h=300&fit=crop'
     },
     {
-      id: 'home',
-      name: 'Home & Garden',
-      description: 'Home essentials and decor',
-      image: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400&h=300&fit=crop'
+      id: 'beverages',
+      name: 'Traditional Beverages',
+      description: 'Refreshing traditional drinks',
+      image: 'https://images.unsplash.com/photo-1544145945-f90425340c7e?w=400&h=300&fit=crop'
     },
     {
-      id: 'food',
-      name: 'Food & Beverages',
-      description: 'Fresh and packaged foods',
-      image: 'https://images.unsplash.com/photo-1567306226416-28f0efdc88ce?w=400&h=300&fit=crop'
+      id: 'spices',
+      name: 'Spices & Mixes',
+      description: 'Authentic curry powders',
+      image: 'https://images.unsplash.com/photo-1596040033229-a0b3b6b3c713?w=400&h=300&fit=crop'
     },
     {
-      id: 'furniture',
-      name: 'Furniture',
-      description: 'Quality furniture pieces',
-      image: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400&h=300&fit=crop'
+      id: 'curries',
+      name: 'Ready-Made Curries',
+      description: 'Convenient curry bottles',
+      image: 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=400&h=300&fit=crop'
     }
   ];
-
   useEffect(() => {
     fetchCategories();
     // Trigger animations after mount
@@ -196,13 +195,13 @@ const CategoryDisplay = ({ onCategoryClick }) => {
 
   const getImageForCategory = (categoryId) => {
     const imageMap = {
-      'electronics': 'https://images.unsplash.com/photo-1498049794561-7780e7231661?w=400&h=300&fit=crop',
-      'clothing': 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&h=300&fit=crop',
-      'home': 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400&h=300&fit=crop',
-      'food': 'https://images.unsplash.com/photo-1567306226416-28f0efdc88ce?w=400&h=300&fit=crop',
-      'furniture': 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400&h=300&fit=crop'
+      'sweets': 'https://images.unsplash.com/photo-1587241321921-91a834d82ffc?w=400&h=300&fit=crop',
+      'savory': 'https://images.unsplash.com/photo-1599490659213-e2b9527c8286?w=400&h=300&fit=crop',
+      'beverages': 'https://images.unsplash.com/photo-1544145945-f90425340c7e?w=400&h=300&fit=crop',
+      'spices': 'https://images.unsplash.com/photo-1596040033229-a0b3b6b3c713?w=400&h=300&fit=crop',
+      'curries': 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=400&h=300&fit=crop'
     };
-    return imageMap[categoryId] || 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400&h=300&fit=crop';
+    return imageMap[categoryId] || 'https://images.unsplash.com/photo-1567306226416-28f0efdc88ce?w=400&h=300&fit=crop';
   };
 
   const handleCategoryClick = (categoryId) => {
